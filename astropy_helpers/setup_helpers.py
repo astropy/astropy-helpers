@@ -32,11 +32,7 @@ from setuptools.command.build_py import build_py as SetuptoolsBuildPy
 from setuptools.command.register import register as SetuptoolsRegister
 from setuptools import find_packages
 
-from .tests.helper import astropy_test
-from .utils import silence
-from .utils.compat.misc import invalidate_caches
-from .utils.misc import walk_skip_hidden
-from .utils.exceptions import AstropyDeprecationWarning
+from .utils import silence, invalidate_caches, walk_skip_hidden
 
 
 try:
@@ -360,8 +356,6 @@ def register_commands(package, version, release):
         return _registered_commands
 
     _registered_commands = {
-        'test': generate_test_command(package),
-
          # Use distutils' sdist because it respects package_data.
          # setuptools/distributes sdist requires duplication of information in
          # MANIFEST.in
@@ -408,11 +402,6 @@ def register_commands(package, version, release):
         add_command_option('install', *option)
 
     return _registered_commands
-
-
-def generate_test_command(package_name):
-    return type(package_name + '_test_command', (astropy_test,),
-                {'package_name': package_name})
 
 
 def generate_build_ext_command(packagename, release):
@@ -596,55 +585,6 @@ class AstropyBuildPy(SetuptoolsBuildPy):
                 self.copy_file(default_cfg,
                                os.path.join(self.build_lib, default_cfg),
                                preserve_mode=False)
-
-
-def generate_default_config(build_lib, package):
-    config_path = os.path.relpath(package)
-    filename = os.path.join(config_path, package + '.cfg')
-
-    if os.path.exists(filename):
-        log.info('regenerating default {0}.cfg file'.format(package))
-    else:
-        log.info('generating default {0}.cfg file'.format(package))
-
-    if PY3:
-        builtins = 'builtins'
-    else:
-        builtins = '__builtin__'
-
-    # astropy may have been built with a numpy that setuptools
-    # downloaded and installed into the current directory for us.
-    # Therefore, we need to extend the sys.path of the subprocess
-    # that's generating the config file, with the sys.path of this
-    # process.
-
-    subproccode = (
-        'import sys; sys.path.extend({paths!r});'
-        'import {builtins};{builtins}._ASTROPY_SETUP_ = True;'
-        'from astropy.config.configuration import generate_all_config_items;'
-        'generate_all_config_items({pkgnm!r}, True, filename={filenm!r})')
-    subproccode = subproccode.format(builtins=builtins,
-                                     pkgnm=package,
-                                     filenm=os.path.abspath(filename),
-                                     paths=sys.path)
-
-    # Note that cwd=build_lib--we're importing astropy from the build/ dir
-    # but using the astropy/ source dir as the config directory
-    proc = subprocess.Popen([sys.executable, '-c', subproccode],
-                             stdout=subprocess.PIPE, stderr=subprocess.PIPE,
-                             cwd=build_lib)
-    stdout, stderr = proc.communicate()
-
-    if proc.returncode == 0 and os.path.exists(filename):
-        return filename
-    else:
-        msg = ('Generation of default configuration item failed! Stdout '
-               'and stderr are shown below.\n'
-               'Stdout:\n{stdout}\nStderr:\n{stderr}')
-        if isinstance(msg, bytes):
-            msg = msg.decode('UTF-8')
-        log.error(msg.format(stdout=stdout.decode('UTF-8'),
-                             stderr=stderr.decode('UTF-8')))
 
 
 def add_command_option(command, name, doc, is_bool=False):
@@ -996,10 +936,6 @@ def update_package_files(srcdir, extensions, package_data, packagenames,
     with affiliated packages.  Affiliated packages should update their
     setup.py to use `get_package_info` instead.
     """
-    warnings.warn(
-        "astropy.setup_helpers.update_package_files is deprecated.  Update "
-        "your setup.py to use astropy.setup_helpers.get_package_info instead.",
-        AstropyDeprecationWarning)
 
     info = get_package_info(srcdir)
     extensions.extend(info['ext_modules'])
