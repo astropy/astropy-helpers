@@ -195,9 +195,10 @@ def get_dummy_distribution():
     global _registered_commands
 
     if _registered_commands is None:
-        raise RuntimeError('astropy.setup_helpers.register_commands() must be '
-                           'called before using '
-                           'astropy.setup_helpers.get_dummy_distribution()')
+        raise RuntimeError(
+            'astropy_helpers.setup_helpers.register_commands() must be '
+            'called before using '
+            'astropy_helpers.setup_helpers.get_dummy_distribution()')
 
     # Pre-parse the Distutils command-line options and config files to if
     # the option is set.
