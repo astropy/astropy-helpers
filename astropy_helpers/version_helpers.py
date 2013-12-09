@@ -29,7 +29,7 @@ import sys
 from distutils import log
 
 from . import git_helpers
-from .setup_helpers import is_distutils_display_option
+from .setup_helpers import is_distutils_display_option, get_pkg_version_module
 from .utils import invalidate_caches
 
 
@@ -130,9 +130,8 @@ def generate_version_py(packagename, version, release=None, debug=None,
     """Regenerate the version.py module if necessary."""
 
     try:
-        version_module = __import__(packagename + '.version',
-                                    fromlist=['_last_generated_version',
-                                              'version', 'release', 'debug'])
+        version_module = get_pkg_version_module(packagename)
+
         try:
             last_generated_version = version_module._last_generated_version
         except AttributeError:
