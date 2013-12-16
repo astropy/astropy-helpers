@@ -22,6 +22,9 @@ class _DummyFile(object):
     def write(self, s):
         pass
 
+    def flush(self):
+        pass
+
 
 @contextlib.contextmanager
 def silence():
@@ -31,9 +34,19 @@ def silence():
     old_stderr = sys.stderr
     sys.stdout = _DummyFile()
     sys.stderr = _DummyFile()
-    yield
-    sys.stdout = old_stdout
-    sys.stderr = old_stderr
+    exception_occurred = False
+    try:
+        yield
+    except:
+        exception_occurred = True
+        # Go ahead and clean up so that exception handling can work normally
+        sys.stdout = old_stdout
+        sys.stderr = old_stderr
+        raise
+
+    if not exception_occurred:
+        sys.stdout = old_stdout
+        sys.stderr = old_stderr
 
 
 if sys.platform == 'win32':
