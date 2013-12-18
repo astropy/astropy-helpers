@@ -12,7 +12,7 @@ from distutils.debug import DEBUG
 from setuptools import Distribution
 
 
-if sys.version[0] < 3:
+if sys.version_info[0] < 3:
     _str_types = (str, unicode)
 else:
     _str_types = (str, bytes)
