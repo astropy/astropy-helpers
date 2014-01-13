@@ -212,7 +212,7 @@ def _check_submodule(path):
         # earler versions of git returned 0 even if the requested submodule
         # does not exist
         log.debug('git submodule command failed '
-                  'unexpectedly:\n{0}'.format(sterr))
+                  'unexpectedly:\n{0}'.format(stderr))
         return False
     else:
         # The stdout should only contain one line--the status of the
