@@ -262,7 +262,7 @@ def _update_submodule(submodule, status):
     except OSError as e:
         err_msg = str(e)
     else:
-        if p.returncode != 0 or stderr:
+        if p.returncode != 0:
             err_msg = stderr
 
     if err_msg:
