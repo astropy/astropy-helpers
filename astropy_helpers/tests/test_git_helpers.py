@@ -2,19 +2,22 @@ import imp
 import os
 import re
 
+from setuptools.sandbox import run_setup
+
 from . import *
 
 
 _DEV_VERSION_RE = re.compile(r'\d+\.\d+(?:\.\d+)?\.dev(\d+)')
 
 
-def test_update_git_devstr(testpackage):
+def test_update_git_devstr(testpackage, capsys):
     """Tests that the commit number in the package's version string updates
     after git commits even without re-running setup.py.
     """
 
-    stdout, stderr, ret = run_cmd('setup.py', ['--version'])
-    assert ret == 0
+    run_setup('setup.py', ['--version'])
+
+    stdout, stderr = capsys.readouterr()
     version = stdout.strip()
 
     m = _DEV_VERSION_RE.match(version)
