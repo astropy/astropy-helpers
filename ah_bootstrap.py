@@ -1,15 +1,10 @@
-import setuptools_bootstrap
-
 import contextlib
 import errno
+import imp
 import os
 import re
 import subprocess as sp
 import sys
-
-from distutils import log
-from distutils.debug import DEBUG
-from setuptools import Distribution
 
 
 if sys.version_info[0] < 3:
@@ -17,6 +12,37 @@ if sys.version_info[0] < 3:
 else:
     _str_types = (str, bytes)
 
+# Some pre-setuptools checks to ensure that either distribute or setuptools >=
+# 0.7 is used (over pre-distribute setuptools) if it is available on the path;
+# otherwise the latest setuptools will be downloaded and bootstrapped with
+# ``ez_setup.py``.  This used to be included in a separate file called
+# setuptools_bootstrap.py; but it was combined into ah_bootstrap.py
+try:
+    import pkg_resources
+    _setuptools_req = pkg_resources.Requirement.parse('setuptools>=0.7')
+    # This may raise a DistributionNotFound in which case no version of
+    # setuptools or distribute is properly instlaled
+    _setuptools = pkg_resources.get_distribution('setuptools')
+    if _setuptools not in _setuptools_req:
+        # Older version of setuptools; check if we have distribute; again if
+        # this results in DistributionNotFound we want to give up
+        _distribute = pkg_resources.get_distribution('distribute')
+        if _setuptools != _distribute:
+            # It's possible on some pathological systems to have an old version
+            # of setuptools and distribute on sys.path simultaneously; make
+            # sure distribute is the one that's used
+            sys.path.insert(1, _distribute.location)
+            _distribute.activate()
+            imp.reload(pkg_resources)
+except:
+    # There are several types of exceptions that can occur here; if all else
+    # fails bootstrap and use the bootstrapped version
+    from ez_setup import use_setuptools
+    use_setuptools()
+
+from distutils import log
+from distutils.debug import DEBUG
+from setuptools import Distribution
 
 # TODO: Maybe enable checking for a specific version of astropy_helpers?
 
