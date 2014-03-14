@@ -42,3 +42,13 @@ def test_update_git_devstr(testpackage, capsys):
     m = _DEV_VERSION_RE.match(packagename.__version__)
     assert m
     assert int(m.group(1)) == revcount + 1
+
+    # This doesn't test astropy_helpers.get_helpers.update_git_devstr directly
+    # since a copy of that function is made in packagename.version (so that it
+    # can work without astropy_helpers installed).  In order to get test
+    # coverage on the actual astropy_helpers copy of that function just call it
+    # directly and compare to the value in packagename
+    from astropy_helpers.git_helpers import update_git_devstr
+
+    newversion = update_git_devstr(version, path=str(testpackage))
+    assert newversion == packagename.__version__
