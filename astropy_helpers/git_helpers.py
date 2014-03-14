@@ -60,9 +60,8 @@ def get_git_devstr(sha=False, show_warning=True, path=None):
 
     path : str or None
         If a string, specifies the directory to look in to find the git
-        repository.  If None, the location of the file this function is in
-        is used to infer the git repository location.  If given a filename it
-        uses the directory containing that file.
+        repository.  If `None`, the current working directory is used.
+        If given a filename it uses the directory containing that file.
 
     Returns
     -------
@@ -74,7 +73,7 @@ def get_git_devstr(sha=False, show_warning=True, path=None):
     """
 
     if path is None:
-        path = __file__
+        path = os.getcwd()
 
     if not os.path.isdir(path):
         path = os.path.abspath(os.path.dirname(path))
