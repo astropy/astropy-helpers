@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # Licensed under a 3-clause BSD style license - see LICENSE.rst
 
-import setuptools_bootstrap
+import ah_bootstrap
 import pkg_resources
 from setuptools import setup
 from astropy_helpers.version_helpers import generate_version_py
