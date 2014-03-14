@@ -1,0 +1,3 @@
+[submodule "astropy_helpers/tests/testpackage"]
+	path = astropy_helpers/tests/testpackage
+	url = git@github.com:embray/package-template.git
