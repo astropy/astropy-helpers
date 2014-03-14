@@ -99,7 +99,8 @@ def _get_version_py_str(packagename, version, release, debug, uses_git=True):
 
     if uses_git:
         loader = pkgutil.get_loader(git_helpers)
-        source_lines = (loader.get_source() or '').splitlines()
+        source = loader.get_source(git_helpers.__name__) or ''
+        source_lines = source.splitlines()
         if not source_lines:
             log.warn('Cannot get source code for astropy_helpers.git_helpers; '
                      'git support disabled.')
