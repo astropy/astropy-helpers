@@ -27,7 +27,7 @@ def run_cmd(cmd, args, path=None):
 
 
 @pytest.fixture
-def testpackage(tmpdir):
+def testpackage(tmpdir, request):
     """Create a copy of the testpackage repository (containing the package
     template) in a tempdir and change directories to that temporary copy.
 
@@ -38,6 +38,16 @@ def testpackage(tmpdir):
     tmp_package = tmpdir.join('testpackage')
     shutil.copytree(os.path.join(PACKAGE_DIR, 'testpackage'),
                     str(tmp_package))
+
+    def finalize(old_cwd=os.getcwd()):
+        os.chdir(old_cwd)
+
+    # Before changing directores import the local ah_boostrap module so that it
+    # is tested, and *not* the copy that happens to be included in the test
+    # package
+
+    import ah_bootstrap
+
     os.chdir(str(tmp_package))
 
     if 'packagename' in sys.modules:
@@ -47,5 +57,7 @@ def testpackage(tmpdir):
         sys.path.remove('')
 
     sys.path.insert(0, '')
+
+    request.addfinalizer(finalize)
 
     return tmp_package
