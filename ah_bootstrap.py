@@ -45,10 +45,11 @@ from distutils.debug import DEBUG
 from setuptools import Distribution
 
 # TODO: Maybe enable checking for a specific version of astropy_helpers?
+DIST_NAME = 'astropy-helpers'
+PACKAGE_NAME = 'astropy_helpers'
 
 
-def use_astropy_helpers(path='astropy_helpers', download_if_needed=True,
-                        index_url=None):
+def use_astropy_helpers(path=None, download_if_needed=True, index_url=None):
     """
     Ensure that the `astropy_helpers` module is available and is importable.
     This supports automatic submodule initialization if astropy_helpers is
@@ -83,6 +84,9 @@ def use_astropy_helpers(path='astropy_helpers', download_if_needed=True,
         If provided, use a different URL for the Python package index than the
         main PyPI server.
     """
+
+    if path is None:
+        path = PACKAGE_NAME
 
     if not isinstance(path, _str_types):
         if path is not None:
@@ -164,8 +168,7 @@ def _do_download(find_links=None, index_url=None):
                         opts['allow_hosts'] = ('setup script', allow_hosts)
                 return opts
 
-        attrs = {'setup_requires': ['astropy-helpers']}
-
+        attrs = {'setup_requires': [DIST_NAME]}
         if DEBUG:
             dist = _Distribution(attrs=attrs)
         else:
