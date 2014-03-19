@@ -3,6 +3,8 @@ import shutil
 import subprocess as sp
 import sys
 
+from setuptools.sandbox import run_setup
+
 import pytest
 
 PACKAGE_DIR = os.path.dirname(__file__)
@@ -61,3 +63,44 @@ def package_template(tmpdir, request):
     request.addfinalizer(finalize)
 
     return tmp_package
+
+
+TEST_PACKAGE_SETUP_PY = """\
+#!/usr/bin/env python
+
+from setuptools import setup
+
+setup(name='astropy-helpers-test', version='0.0',
+      packages=['_astropy_helpers_test_'],
+      zip_safe=False)
+"""
+
+
+@pytest.fixture
+def testpackage(tmpdir):
+    """
+    This fixture creates a simplified package called _astropy_helpers_test_
+    used primarily for testing ah_boostrap, but without using the
+    astropy_helpers package directly and getting it confused with the
+    astropy_helpers package already under test.
+    """
+
+    old_cwd = os.path.abspath(os.getcwd())
+    source = tmpdir.mkdir('testpkg')
+
+    os.chdir(str(source))
+    try:
+
+        source.mkdir('_astropy_helpers_test_')
+        source.ensure('_astropy_helpers_test_', '__init__.py')
+        source.join('setup.py').write(TEST_PACKAGE_SETUP_PY)
+
+        # Make the new test package into a git repo
+        run_cmd('git', ['init'])
+        run_cmd('git', ['add', '--all'])
+        run_cmd('git', ['commit', '-m', 'test package'])
+
+    finally:
+        os.chdir(old_cwd)
+
+    return source
