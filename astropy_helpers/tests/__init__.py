@@ -28,6 +28,18 @@ def run_cmd(cmd, args, path=None):
     return streams + (p.returncode,)
 
 
+@pytest.fixture(scope='function', autouse=True)
+def reset_distutils_log():
+    """
+    This is a setup/teardown fixture that ensures the log-level of the
+    distutils log is always set to a default of WARN, since different
+    settings could affect tests that check the contents of stdout.
+    """
+
+    from distutils import log
+    log.set_threshold(log.WARN)
+
+
 @pytest.fixture
 def package_template(tmpdir, request):
     """Create a copy of the package_template repository (containing the package
@@ -104,3 +116,37 @@ def testpackage(tmpdir):
         os.chdir(old_cwd)
 
     return source
+
+
+# Ugly workaround:
+# setuptools includes a copy of tempfile.TemporaryDirectory for older Python
+# versions that do not have that class.  But the copy included in setuptools is
+# affected by this bug:  http://bugs.python.org/issue10188
+# Patch setuptools' TemporaryDirectory so that it doesn't crash on shutdown
+class TemporaryDirectory(object):
+    """"
+    Very simple temporary directory context manager.
+    Will try to delete afterward, but will also ignore OS and similar
+    errors on deletion.
+    """
+    def __init__(self):
+        import tempfile
+        self.name = None # Handle mkdtemp raising an exception
+        self.name = tempfile.mkdtemp()
+
+    def __enter__(self):
+        return self.name
+
+    def __exit__(self, exctype, excvalue, exctrace):
+        import shutil
+        try:
+            shutil.rmtree(self.name, True)
+        except OSError: #removal errors are not the only possible
+            pass
+        self.name = None
+
+try:
+    from tempfile import TemporaryDirectory
+except ImportError:
+    import setuptools.py31compat
+    setuptools.py31compat.TemporaryDirectory = TemporaryDirectory
