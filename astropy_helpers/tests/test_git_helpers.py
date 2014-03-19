@@ -10,7 +10,7 @@ from . import *
 _DEV_VERSION_RE = re.compile(r'\d+\.\d+(?:\.\d+)?\.dev(\d+)')
 
 
-def test_update_git_devstr(testpackage, capsys):
+def test_update_git_devstr(package_template, capsys):
     """Tests that the commit number in the package's version string updates
     after git commits even without re-running setup.py.
     """
@@ -50,5 +50,5 @@ def test_update_git_devstr(testpackage, capsys):
     # directly and compare to the value in packagename
     from astropy_helpers.git_helpers import update_git_devstr
 
-    newversion = update_git_devstr(version, path=str(testpackage))
+    newversion = update_git_devstr(version, path=str(package_template))
     assert newversion == packagename.__version__

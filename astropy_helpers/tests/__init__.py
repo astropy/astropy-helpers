@@ -27,16 +27,16 @@ def run_cmd(cmd, args, path=None):
 
 
 @pytest.fixture
-def testpackage(tmpdir, request):
-    """Create a copy of the testpackage repository (containing the package
+def package_template(tmpdir, request):
+    """Create a copy of the package_template repository (containing the package
     template) in a tempdir and change directories to that temporary copy.
 
     Also ensures that any previous imports of the test package are unloaded
     from `sys.modules`.
     """
 
-    tmp_package = tmpdir.join('testpackage')
-    shutil.copytree(os.path.join(PACKAGE_DIR, 'testpackage'),
+    tmp_package = tmpdir.join('package_template')
+    shutil.copytree(os.path.join(PACKAGE_DIR, 'package_template'),
                     str(tmp_package))
 
     def finalize(old_cwd=os.getcwd()):
