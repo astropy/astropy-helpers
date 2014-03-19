@@ -1,5 +1,6 @@
 import glob
 import os
+import shutil
 import textwrap
 
 from setuptools.sandbox import run_setup
@@ -81,6 +82,57 @@ def test_bootstrap_from_submodule(tmpdir, testpackage, capsys):
         assert path == str(tmpdir.join('clone', '_astropy_helpers_test_',
                                        '_astropy_helpers_test_',
                                        '__init__.py'))
+    finally:
+        os.chdir(old_cwd)
+
+
+def test_bootstrap_from_archive(tmpdir, testpackage, capsys):
+    """
+    Tests importing _astropy_helpers_test_ from a .tar.gz source archive
+    shipped alongside the package that uses it.
+    """
+
+    orig_repo = tmpdir.mkdir('orig')
+    old_cwd = os.getcwd()
+
+    # Ensure ah_bootstrap is imported from the local directory
+    import ah_bootstrap
+
+    os.chdir(str(testpackage))
+    # Make a source distribution of the test package
+    with silence():
+        run_setup('setup.py', ['sdist', '--dist-dir=dist',
+                               '--formats=gztar'])
+
+    dist_dir = testpackage.join('dist')
+    archives = glob.glob(str(dist_dir.join('*.tar.gz')))
+    assert len(archives) == 1
+    dist_file = archives[0]
+
+    try:
+        os.chdir(str(orig_repo))
+        shutil.copy(dist_file, str(orig_repo))
+
+        # Write a test setup.py that uses ah_bootstrap; it also ensures that
+        # any previous reference to astropy_helpers is first wiped from
+        # sys.modules
+        args = 'path={0!r}'.format(os.path.basename(dist_file))
+        orig_repo.join('setup.py').write(TEST_SETUP_PY.format(args=args))
+
+        run_setup('setup.py', [])
+
+        stdout, stderr = capsys.readouterr()
+        path = stdout.strip()
+
+        # Installation from the .tar.gz should have resulted in a .egg
+        # directory that the _astropy_helpers_test_ package was imported from
+        eggs = glob.glob('*.egg')
+        assert eggs
+        egg = orig_repo.join(eggs[0])
+        assert os.path.isdir(str(egg))
+
+        assert path == str(egg.join('_astropy_helpers_test_',
+                                    '__init__.pyc'))
     finally:
         os.chdir(old_cwd)
 
