@@ -263,16 +263,16 @@ def _check_submodule(path):
 
 
 def _update_submodule(submodule, status):
-    if status == ' ':
+    if status == b' ':
         # The submodule is up to date; no action necessary
         return
-    elif status == '-':
+    elif status == b'-':
         cmd = ['update', '--init']
         log.info('Initializing submodule {0!r}'.format(submodule))
-    elif status == '+':
+    elif status == b'+':
         cmd = ['update']
         log.info('Updating submodule {0!r}'.format(submodule))
-    elif status == 'U':
+    elif status == b'U':
         raise _AHBoostrapSystemExit(
             'Error: Submodule {0} contains unresolved merge conflicts.  '
             'Please complete or abandon any changes in the submodule so that '
@@ -304,6 +304,8 @@ def _update_submodule(submodule, status):
 
 class _DummyFile(object):
     """A noop writeable object."""
+
+    errors = ''  # Required for Python 3.x
 
     def write(self, s):
         pass

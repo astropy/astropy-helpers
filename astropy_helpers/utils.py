@@ -19,6 +19,8 @@ else:
 class _DummyFile(object):
     """A noop writeable object."""
 
+    errors = ''  # Required for Python 3.x
+
     def write(self, s):
         pass
 

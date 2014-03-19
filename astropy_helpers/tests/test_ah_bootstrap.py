@@ -29,7 +29,9 @@ finally:
     ah_bootstrap.PACKAGE_NAME = 'astropy_helpers'
 
 import _astropy_helpers_test_
-print(os.path.abspath(_astropy_helpers_test_.__file__))
+filename = os.path.abspath(_astropy_helpers_test_.__file__)
+filename = filename.replace('.pyc', '.py')  # More consistent this way
+print(filename)
 """
 
 
@@ -122,7 +124,7 @@ def test_bootstrap_from_archive(tmpdir, testpackage, capsys):
         run_setup('setup.py', [])
 
         stdout, stderr = capsys.readouterr()
-        path = stdout.strip()
+        path = stdout.splitlines()[-1].strip()
 
         # Installation from the .tar.gz should have resulted in a .egg
         # directory that the _astropy_helpers_test_ package was imported from
@@ -132,7 +134,7 @@ def test_bootstrap_from_archive(tmpdir, testpackage, capsys):
         assert os.path.isdir(str(egg))
 
         assert path == str(egg.join('_astropy_helpers_test_',
-                                    '__init__.pyc'))
+                                    '__init__.py'))
     finally:
         os.chdir(old_cwd)
 
@@ -175,7 +177,11 @@ def test_download_if_needed(tmpdir, testpackage, capsys):
         run_setup('setup.py', [])
 
         stdout, stderr = capsys.readouterr()
-        path = stdout.strip()
+
+        # Just take the last line--on Python 2.6 distutils logs warning
+        # messages to stdout instead of stderr, causing them to be mixed up
+        # with our expected output
+        path = stdout.splitlines()[-1].strip()
 
         # easy_install should have worked by 'installing' astropy_helpers as a
         # .egg in the current directory
@@ -185,6 +191,6 @@ def test_download_if_needed(tmpdir, testpackage, capsys):
         assert os.path.isdir(str(egg))
 
         assert path == str(egg.join('_astropy_helpers_test_',
-                                    '__init__.pyc'))
+                                    '__init__.py'))
     finally:
         os.chdir(old_cwd)
