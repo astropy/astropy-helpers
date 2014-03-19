@@ -175,6 +175,9 @@ def _do_download(find_links=None, index_url=None):
             with _silence():
                 dist = _Distribution(attrs=attrs)
     except Exception as e:
+        if DEBUG:
+            raise
+
         msg = 'Error retrieving astropy helpers from {0}:\n{1}'
         if find_links:
             source = find_links[0]
@@ -183,7 +186,7 @@ def _do_download(find_links=None, index_url=None):
         else:
             source = 'PyPI'
 
-        raise Exception(msg.format(source, str(e)))
+        raise Exception(msg.format(source, repr(e)))
 
 
 def _directory_import(path, download_if_needed, is_submodule=None):
