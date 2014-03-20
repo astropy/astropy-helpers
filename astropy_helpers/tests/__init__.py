@@ -118,35 +118,8 @@ def testpackage(tmpdir):
     return source
 
 
-# Ugly workaround:
-# setuptools includes a copy of tempfile.TemporaryDirectory for older Python
-# versions that do not have that class.  But the copy included in setuptools is
-# affected by this bug:  http://bugs.python.org/issue10188
-# Patch setuptools' TemporaryDirectory so that it doesn't crash on shutdown
-class TemporaryDirectory(object):
-    """"
-    Very simple temporary directory context manager.
-    Will try to delete afterward, but will also ignore OS and similar
-    errors on deletion.
-    """
-    def __init__(self):
-        import tempfile
-        self.name = None # Handle mkdtemp raising an exception
-        self.name = tempfile.mkdtemp()
-
-    def __enter__(self):
-        return self.name
-
-    def __exit__(self, exctype, excvalue, exctrace):
-        import shutil
-        try:
-            shutil.rmtree(self.name, True)
-        except OSError: #removal errors are not the only possible
-            pass
-        self.name = None
-
-try:
-    from tempfile import TemporaryDirectory
-except ImportError:
-    import setuptools.py31compat
-    setuptools.py31compat.TemporaryDirectory = TemporaryDirectory
+# Ugly workaround
+# Note sure exactly why, but there is some weird interaction between setuptools
+# entry points and the way run_setup messes with sys.modules that causes this
+# module go out out of scope during the tests; importing it here prevents that
+import setuptools.py31compat
