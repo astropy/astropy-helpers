@@ -4,6 +4,7 @@
 import ah_bootstrap
 import pkg_resources
 from setuptools import setup
+from astropy_helpers.setup_helpers import register_commands, get_package_info
 from astropy_helpers.version_helpers import generate_version_py
 
 NAME = 'astropy_helpers'
@@ -27,7 +28,7 @@ setup(
     long_description='',
     download_url='{0}/astropy-{1}.tar.gz'.format(DOWNLOAD_BASE_URL, VERSION),
     classifiers=[],
-    cmdclass={},
+    cmdclass=register_commands(NAME, VERSION, RELEASE),
     zip_safe=False,
-    packages=[NAME]
+    **get_package_info(exclude=['astropy_helpers.tests'])
 )

@@ -946,7 +946,7 @@ def update_package_files(srcdir, extensions, package_data, packagenames,
     package_dirs.update(info['package_dir'])
 
 
-def get_package_info(srcdir):
+def get_package_info(srcdir='.', exclude=()):
     """
     Collates all of the information for building all subpackages
     subpackages and returns a dictionary of keyword arguments that can
@@ -993,13 +993,13 @@ def get_package_info(srcdir):
     skip_2to3 = []
 
     # Use the find_packages tool to locate all packages and modules
-    packages = filter_packages(find_packages())
+    packages = filter_packages(find_packages(srcdir, exclude=exclude))
 
     # For each of the setup_package.py modules, extract any
     # information that is needed to install them.  The build options
     # are extracted first, so that their values will be available in
     # subsequent calls to `get_extensions`, etc.
-    for setuppkg in iter_setup_packages(srcdir):
+    for setuppkg in iter_setup_packages(srcdir, packages):
         if hasattr(setuppkg, 'get_build_options'):
             options = setuppkg.get_build_options()
             for option in options:
@@ -1016,7 +1016,7 @@ def get_package_info(srcdir):
             skip_2to3.append(
                 os.path.dirname(setuppkg.__file__))
 
-    for setuppkg in iter_setup_packages(srcdir):
+    for setuppkg in iter_setup_packages(srcdir, packages):
         # get_extensions must include any Cython extensions by their .pyx
         # filename.
         if hasattr(setuppkg, 'get_extensions'):
@@ -1051,7 +1051,7 @@ def get_package_info(srcdir):
         }
 
 
-def iter_setup_packages(srcdir):
+def iter_setup_packages(srcdir, packages):
     """ A generator that finds and imports all of the ``setup_package.py``
     modules in the source packages.
 
@@ -1062,9 +1062,13 @@ def iter_setup_packages(srcdir):
         `modname` is the module name for the ``setup_package.py`` modules.
 
     """
-    for root, dirs, files in walk_skip_hidden(srcdir):
-        if 'setup_package.py' in files:
-            filename = os.path.join(root, 'setup_package.py')
+
+    for packagename in packages:
+        package_parts = packagename.split('.')
+        package_path = os.path.join(srcdir, *package_parts)
+        setup_package = os.path.join(package_path, 'setup_package.py')
+
+        if os.path.isfile(setup_package):
             module = import_file(filename)
             yield module
 
@@ -1083,12 +1087,15 @@ def iter_pyx_files(srcdir):
 
     """
     for dirpath, dirnames, filenames in walk_skip_hidden(srcdir):
-        modbase = dirpath.replace(os.sep, '.')
+        srcdir_parts = srcdir.split(os.sep)
+        packagename_parts = dirpath.split(os.sep)[len(srcdir_parts):]
+        packagename = '.'.join(packagename_parts)
+
         for fn in filenames:
             if fn.endswith('.pyx'):
-                fullfn = os.path.join(dirpath, fn)
+                fullfn = os.path.relpath(os.path.join(dirpath, fn))
                 # Package must match file name
-                extmod = modbase + '.' + fn[:-4]
+                extmod = '.'.join([packagename, fn[:-4]])
                 yield (extmod, fullfn)
 
 
