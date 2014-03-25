@@ -1069,7 +1069,7 @@ def iter_setup_packages(srcdir, packages):
         setup_package = os.path.join(package_path, 'setup_package.py')
 
         if os.path.isfile(setup_package):
-            module = import_file(filename)
+            module = import_file(setup_package)
             yield module
 
 
