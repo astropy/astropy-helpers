@@ -121,7 +121,7 @@ def use_astropy_helpers(path=None, download_if_needed=True, index_url=None,
                 'Error: The requested path {0!r} for importing '
                 'astropy_helpers does not exist.'.format(path))
     elif os.path.isdir(path):
-        if _directory_import(path, download_if_needed, is_submodule=use_git):
+        if _directory_import(path, download_if_needed, use_git=use_git):
             return
     elif os.path.isfile(path):
         # Handle importing from a source archive; this also uses setup_requires
@@ -205,12 +205,16 @@ def _do_download(find_links=None, index_url=None):
         raise Exception(msg.format(source, repr(e)))
 
 
-def _directory_import(path, download_if_needed, is_submodule=None):
+def _directory_import(path, download_if_needed, is_submodule=None,
+                      use_git=True):
     # Return True on success, False on failure but download is allowed, and
     # otherwise raise SystemExit
     # Check to see if the path is a git submodule
-    if is_submodule is None:
-        is_submodule = _check_submodule(path)
+    if use_git:
+        if is_submodule is None:
+            is_submodule = _check_submodule(path)
+    else:
+        is_submodule = False
 
     log.info(
         'Attempting to import astropy_helpers from {0} {1!r}'.format(
