@@ -6,6 +6,11 @@ import re
 import subprocess as sp
 import sys
 
+try:
+    from ConfigParser import ConfigParser
+except ImportError:
+    from configparser import ConfigParser
+
 
 if sys.version_info[0] < 3:
     _str_types = (str, unicode)
@@ -392,3 +397,50 @@ class _AHBootstrapSystemExit(SystemExit):
 # submodule is initialized.  We ignore this information for now
 _git_submodule_status_re = re.compile(
     b'^(?P<status>[+-U ])(?P<commit>[0-9a-f]{40}) (?P<submodule>\S+)( .*)?$')
+
+
+# Implement the auto-use feature; this allows use_astropy_helpers() to be used
+# at import-time automatically so long as the correct options are specified in
+# setup.cfg
+_CFG_OPTIONS = [('autouse', bool), ('path', str), ('download_if_needed', bool),
+                ('index_ur', str), ('use_git', bool)]
+
+def _main():
+    if not os.path.exists('setup.cfg'):
+        return
+
+    cfg = ConfigParser()
+
+    try:
+        cfg.read('setup.cfg')
+    except Exception as e:
+        if DEBUG:
+            raise
+
+        log.error(
+            "Error reading setup.cfg: {0!r}\nastropy_helpers will not be "
+            "automatically bootstrapped and package installation may fail."
+            "\n{1}".format(e, _err_help_msg))
+        return
+
+    if not cfg.has_section('ah_bootstrap'):
+        return
+
+    kwargs = {}
+
+    for option, type_ in _CFG_OPTIONS:
+        if not cfg.has_option('ah_bootstrap', option):
+            continue
+
+        if type_ is bool:
+            value = cfg.getboolean('ah_bootstrap', option)
+        else:
+            value = cfg.get('ah_bootstrap', option)
+
+        kwargs[option] = value
+
+    if kwargs.pop('autouse', False):
+        use_astropy_helpers(**kwargs)
+
+
+_main()
