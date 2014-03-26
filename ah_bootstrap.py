@@ -86,6 +86,12 @@ def use_astropy_helpers(path=None, download_if_needed=True, index_url=None,
         main PyPI server.
     """
 
+    # True by default, unless the --offline option was provided on the command
+    # line
+    if '--offline' in sys.argv:
+        download_if_needed = False
+        sys.argv.remove('--offline')
+
     if path is None:
         path = PACKAGE_NAME
 
@@ -138,7 +144,16 @@ def use_astropy_helpers(path=None, download_if_needed=True, index_url=None,
 
     # If we made it this far, go ahead and attempt to download/activate
     try:
-        _do_download(index_url=index_url)
+        if download_if_needed:
+            log.warn(
+                "Downloading astropy_helpers; run setup.py with the --offline "
+                "option to force offline installation.")
+            _do_download(index_url=index_url)
+        else:
+            raise _AHBootstrapSystemExit(
+                "No source for the astropy_helpers package; astropy_helpers "
+                "must be available as a prerequisite to installing this "
+                "package.")
     except Exception as e:
         if DEBUG:
             raise
