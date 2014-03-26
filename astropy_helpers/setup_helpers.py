@@ -11,6 +11,7 @@ import errno
 import imp
 import inspect
 import os
+import pkgutil
 import re
 import shlex
 import shutil
@@ -761,6 +762,8 @@ if HAVE_SPHINX:
             SphinxBuildDoc.finalize_options(self)
 
         def run(self):
+            # TODO: Break this method up into a few more subroutines and
+            # document them better
             import webbrowser
 
             if PY3:
@@ -793,18 +796,22 @@ if HAVE_SPHINX:
             build_cmd = self.get_finalized_command('build')
             build_cmd_path = os.path.abspath(build_cmd.build_lib)
 
+            ah_importer = pkgutil.get_importer('astropy_helpers')
+            ah_path = os.path.abspath(ah_importer.path)
+
             #Now generate the source for and spawn a new process that runs the
             #command.  This is needed to get the correct imports for the built
             #version
-
             runlines, runlineno = inspect.getsourcelines(SphinxBuildDoc.run)
             subproccode = textwrap.dedent("""
-            from sphinx.setup_command import *
+                from sphinx.setup_command import *
 
-            os.chdir({srcdir!r})
-            sys.path.insert(0, {build_cmd_path!r})
+                os.chdir({srcdir!r})
+                sys.path.insert(0, {build_cmd_path!r})
+                sys.path.insert(0, {ah_path!r})
 
-            """).format(build_cmd_path=build_cmd_path, srcdir=self.source_dir)
+            """).format(build_cmd_path=build_cmd_path, ah_path=ah_path,
+                        srcdir=self.source_dir)
             #runlines[1:] removes 'def run(self)' on the first line
             subproccode += textwrap.dedent(''.join(runlines[1:]))
 
