@@ -47,7 +47,12 @@ except:
 
 from distutils import log
 from distutils.debug import DEBUG
+
+# In case it didn't successfully import before the ez_setup checks
+import pkg_resources
+
 from setuptools import Distribution
+from setuptools.sandbox import run_setup
 
 # TODO: Maybe enable checking for a specific version of astropy_helpers?
 DIST_NAME = 'astropy-helpers'
@@ -133,6 +138,7 @@ def use_astropy_helpers(path=None, download_if_needed=True, index_url=None,
         # but points easy_install directly to the source archive
         try:
             _do_download(find_links=[path])
+            return
         except Exception as e:
             if download_if_needed:
                 log.warn('{0}\nWill attempt to download astropy_helpers from '
@@ -212,6 +218,13 @@ def _do_download(find_links=None, index_url=None):
 
 def _directory_import(path, download_if_needed, is_submodule=None,
                       use_git=True):
+    """
+    Import astropy_helpers from the given path, which will be added to
+    sys.path.
+
+    Must return True if the import succeeded, and False otherwise.
+    """
+
     # Return True on success, False on failure but download is allowed, and
     # otherwise raise SystemExit
     # Check to see if the path is a git submodule
@@ -224,10 +237,22 @@ def _directory_import(path, download_if_needed, is_submodule=None,
     log.info(
         'Attempting to import astropy_helpers from {0} {1!r}'.format(
             'submodule' if is_submodule else 'directory', path))
+
+    path = os.path.abspath(path)
+    # If astropy_helpers is provided as a full source distribution, ensure that
+    # the egg-info/dist-info for the source copy is available so that
+    # pkg_resources knows about it
+    setup_py = os.path.join(path, 'setup.py')
+    add_dist = True
+    if os.path.isfile(setup_py):
+        with _silence():
+            run_setup(os.path.join(path, 'setup.py'), ['egg_info'])
+        pkg_resources.working_set.add_entry(path)
+        add_dist = False
+
     sys.path.insert(0, path)
     try:
-        __import__('astropy_helpers')
-        return True
+        mod = __import__('astropy_helpers')
     except ImportError:
         sys.path.remove(path)
 
@@ -235,11 +260,21 @@ def _directory_import(path, download_if_needed, is_submodule=None,
             log.warn(
                 'Failed to import astropy_helpers from {0!r}; will '
                 'attempt to download it from PyPI instead.'.format(path))
+            return False
         else:
             raise _AHBoostrapSystemExit(
                 'Failed to import astropy_helpers from {0!r}:\n'
                 '{1}'.format(path))
+
     # Otherwise, success!
+    if add_dist:
+        # If necessary go ahead and create a distribution entry for this
+        # package on the current working set
+        dist = pkg_resources.Distribution(path, project_name=DIST_NAME,
+                                          version=mod.__version__)
+        pkg_resources.working_set.add(dist)
+
+    return True
 
 
 def _check_submodule(path):
