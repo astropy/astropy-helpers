@@ -615,6 +615,10 @@ def add_command_option(command, name, doc, is_bool=False):
     dist = get_dummy_distribution()
     cmdcls = dist.get_command_class(command)
 
+    if (hasattr(cmdcls, '_astropy_helpers_options') and
+            name in cmdcls._astropy_helpers_options):
+        return
+
     attr = name.replace('-', '_')
 
     if hasattr(cmdcls, attr):
@@ -640,6 +644,15 @@ def add_command_option(command, name, doc, is_bool=False):
     # attribute with the same name as the option (with '-' replaced with '_')
     # in order for that option to be recognized as valid
     setattr(cmdcls, attr, None)
+
+    # This caches the options added through add_command_option so that if it is
+    # run multiple times in the same interpreter repeated adds are ignored
+    # (this way we can still raise a RuntimeError if a custom option overrides
+    # a built-in option)
+    if not hasattr(cmdcls, '_astropy_helpers_options'):
+        cmdcls._astropy_helpers_options = set([name])
+    else:
+        cmdcls._astropy_helpers_options.add(name)
 
 
 class AstropyRegister(SetuptoolsRegister):
