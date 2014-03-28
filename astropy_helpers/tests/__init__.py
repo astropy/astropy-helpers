@@ -53,8 +53,7 @@ def package_template(tmpdir, request):
     shutil.copytree(os.path.join(PACKAGE_DIR, 'package_template'),
                     str(tmp_package))
 
-    def finalize(old_cwd=os.getcwd()):
-        os.chdir(old_cwd)
+    old_cwd = os.getcwd()
 
     # Before changing directores import the local ah_boostrap module so that it
     # is tested, and *not* the copy that happens to be included in the test
@@ -62,15 +61,30 @@ def package_template(tmpdir, request):
 
     import ah_bootstrap
 
+    # This is required to prevent the multiprocessing atexit bug
+    import multiprocessing
+
     os.chdir(str(tmp_package))
 
     if 'packagename' in sys.modules:
         del sys.modules['packagename']
 
+    old_astropy_helpers = None
+    if 'astropy_helpers' in sys.modules:
+        # Delete the astropy_helpers that was imported by running the tests so
+        # as to not confuse the astropy_helpers that will be used in testing
+        # the package
+        old_astropy_helpers = sys.modules['astropy_helpers']
+        del sys.modules['astropy_helpers']
+
     if '' in sys.path:
         sys.path.remove('')
 
     sys.path.insert(0, '')
+
+    def finalize(old_cwd=old_cwd, old_astropy_helpers=old_astropy_helpers):
+        os.chdir(old_cwd)
+        sys.modules['astropy_helpers'] = old_astropy_helpers
 
     request.addfinalizer(finalize)
 
