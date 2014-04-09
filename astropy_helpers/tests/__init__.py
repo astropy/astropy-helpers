@@ -111,12 +111,9 @@ def testpackage(tmpdir):
     astropy_helpers package already under test.
     """
 
-    old_cwd = os.path.abspath(os.getcwd())
     source = tmpdir.mkdir('testpkg')
 
-    os.chdir(str(source))
-    try:
-
+    with source.as_cwd():
         source.mkdir('_astropy_helpers_test_')
         source.ensure('_astropy_helpers_test_', '__init__.py')
         source.join('setup.py').write(TEST_PACKAGE_SETUP_PY)
@@ -125,9 +122,6 @@ def testpackage(tmpdir):
         run_cmd('git', ['init'])
         run_cmd('git', ['add', '--all'])
         run_cmd('git', ['commit', '-m', 'test package'])
-
-    finally:
-        os.chdir(old_cwd)
 
     return source
 

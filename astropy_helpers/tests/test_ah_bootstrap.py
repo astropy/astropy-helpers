@@ -45,13 +45,11 @@ def test_bootstrap_from_submodule(tmpdir, testpackage, capsys):
     """
 
     orig_repo = tmpdir.mkdir('orig')
-    old_cwd = os.getcwd()
 
     # Ensure ah_bootstrap is imported from the local directory
     import ah_bootstrap
 
-    try:
-        os.chdir(str(orig_repo))
+    with orig_repo.as_cwd():
         run_cmd('git', ['init'])
 
         # Write a test setup.py that uses ah_bootstrap; it also ensures that
@@ -84,8 +82,6 @@ def test_bootstrap_from_submodule(tmpdir, testpackage, capsys):
         assert path == str(tmpdir.join('clone', '_astropy_helpers_test_',
                                        '_astropy_helpers_test_',
                                        '__init__.py'))
-    finally:
-        os.chdir(old_cwd)
 
 
 def test_bootstrap_from_archive(tmpdir, testpackage, capsys):
@@ -95,24 +91,21 @@ def test_bootstrap_from_archive(tmpdir, testpackage, capsys):
     """
 
     orig_repo = tmpdir.mkdir('orig')
-    old_cwd = os.getcwd()
 
     # Ensure ah_bootstrap is imported from the local directory
     import ah_bootstrap
 
-    os.chdir(str(testpackage))
     # Make a source distribution of the test package
     with silence():
-        run_setup('setup.py', ['sdist', '--dist-dir=dist',
-                               '--formats=gztar'])
+        run_setup(str(testpackage.join('setup.py')),
+                  ['sdist', '--dist-dir=dist', '--formats=gztar'])
 
     dist_dir = testpackage.join('dist')
     archives = glob.glob(str(dist_dir.join('*.tar.gz')))
     assert len(archives) == 1
     dist_file = archives[0]
 
-    try:
-        os.chdir(str(orig_repo))
+    with orig_repo.as_cwd():
         shutil.copy(dist_file, str(orig_repo))
 
         # Write a test setup.py that uses ah_bootstrap; it also ensures that
@@ -135,8 +128,6 @@ def test_bootstrap_from_archive(tmpdir, testpackage, capsys):
 
         assert path == str(egg.join('_astropy_helpers_test_',
                                     '__init__.py'))
-    finally:
-        os.chdir(old_cwd)
 
 
 def test_download_if_needed(tmpdir, testpackage, capsys):
@@ -153,21 +144,18 @@ def test_download_if_needed(tmpdir, testpackage, capsys):
     """
 
     source = tmpdir.mkdir('source')
-    old_cwd = os.getcwd()
 
     # Ensure ah_bootstrap is imported from the local directory
     import ah_bootstrap
 
-    os.chdir(str(testpackage))
     # Make a source distribution of the test package
     with silence():
-        run_setup('setup.py', ['sdist', '--dist-dir=dist',
-                               '--formats=gztar'])
+        run_setup(str(testpackage.join('setup.py')),
+                  ['sdist', '--dist-dir=dist', '--formats=gztar'])
 
     dist_dir = testpackage.join('dist')
 
-    os.chdir(str(source))
-    try:
+    with source.as_cwd():
         source.join('setup.py').write(TEST_SETUP_PY.format(args=''))
         source.join('setup.cfg').write(textwrap.dedent("""\
             [easy_install]
