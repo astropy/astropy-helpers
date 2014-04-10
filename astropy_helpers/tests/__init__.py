@@ -96,14 +96,17 @@ TEST_PACKAGE_SETUP_PY = """\
 
 from setuptools import setup
 
-setup(name='astropy-helpers-test', version='0.0',
+NAME = 'astropy-helpers-test'
+VERSION = {version!r}
+
+setup(name=NAME, version=VERSION,
       packages=['_astropy_helpers_test_'],
       zip_safe=False)
 """
 
 
 @pytest.fixture
-def testpackage(tmpdir):
+def testpackage(tmpdir, version='0.1'):
     """
     This fixture creates a simplified package called _astropy_helpers_test_
     used primarily for testing ah_boostrap, but without using the
@@ -115,8 +118,10 @@ def testpackage(tmpdir):
 
     with source.as_cwd():
         source.mkdir('_astropy_helpers_test_')
-        source.ensure('_astropy_helpers_test_', '__init__.py')
-        source.join('setup.py').write(TEST_PACKAGE_SETUP_PY)
+        init = source.join('_astropy_helpers_test_', '__init__.py')
+        init.write('__version__ = {0!r}'.format(version))
+        setup_py = TEST_PACKAGE_SETUP_PY.format(version=version)
+        source.join('setup.py').write(setup_py)
 
         # Make the new test package into a git repo
         run_cmd('git', ['init'])
