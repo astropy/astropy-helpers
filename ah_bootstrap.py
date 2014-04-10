@@ -195,7 +195,9 @@ def use_astropy_helpers(path=None, download_if_needed=None, index_url=None,
     if dist is not None and auto_upgrade and not is_submodule:
         # A version of astropy-helpers was found on the available path, but
         # check to see if a bugfix release is available on PyPI
-        dist = _do_upgrade(dist, index_url)
+        upgrade = _do_upgrade(dist, index_url)
+        if upgrade is not None:
+            dist = upgrade
     elif dist is None:
         # Last resort--go ahead and try to download the latest version from
         # PyPI
@@ -288,7 +290,9 @@ def _do_upgrade(dist, index_url):
     package_index = PackageIndex(index_url=index_url)
 
     upgrade = package_index.obtain(req)
-    return _do_download(version=upgrade.version, index_url=index_url)
+
+    if upgrade is not None:
+        return _do_download(version=upgrade.version, index_url=index_url)
 
 
 def _directory_import(path):
@@ -302,16 +306,23 @@ def _directory_import(path):
     # Return True on success, False on failure but download is allowed, and
     # otherwise raise SystemExit
     path = os.path.abspath(path)
-    # If astropy_helpers is provided as a full source distribution, ensure that
-    # the egg-info/dist-info for the source copy is available so that
-    # pkg_resources knows about it
-    setup_py = os.path.join(path, 'setup.py')
-    if os.path.isfile(setup_py):
-        with _silence():
-            run_setup(os.path.join(path, 'setup.py'), ['egg_info'])
-        pkg_resources.working_set.add_entry(path)
+    pkg_resources.working_set.add_entry(path)
+    dist = pkg_resources.working_set.by_key.get(DIST_NAME)
 
-    return pkg_resources.working_set.by_key.get(DIST_NAME)
+    if dist is None:
+        # We didn't find an egg-info/dist-info in the given path, but if a
+        # setup.py exists we can generate it
+        setup_py = os.path.join(path, 'setup.py')
+        if os.path.isfile(setup_py):
+            with _silence():
+                run_setup(os.path.join(path, 'setup.py'), ['egg_info'])
+
+            for dist in pkg_resources.find_distributions(path, True):
+                # There should be only one...
+                pkg_resources.working_set.add(dist, path, False)
+                break
+
+    return dist
 
 
 def _check_submodule(path):
