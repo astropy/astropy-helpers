@@ -33,6 +33,7 @@ from setuptools.command.build_py import build_py as SetuptoolsBuildPy
 from setuptools.command.register import register as SetuptoolsRegister
 from setuptools import find_packages
 
+from .test_helpers import AstropyTest
 from .utils import silence, invalidate_caches, walk_skip_hidden
 
 
@@ -388,14 +389,12 @@ def register_commands(package, version, release):
          # setuptools/distributes sdist requires duplication of information in
          # MANIFEST.in
          'sdist': DistutilsSdist,
-
          # The exact form of the build_ext command depends on whether or not
          # we're building a release version
          'build_ext': generate_build_ext_command(package, release),
-
          # We have a custom build_py to generate the default configuration file
          'build_py': AstropyBuildPy,
-
+         'test': generate_test_command(package),
          'register': AstropyRegister
     }
 
@@ -430,6 +429,17 @@ def register_commands(package, version, release):
         add_command_option('install', *option)
 
     return _registered_commands
+
+
+def generate_test_command(package_name):
+    """
+    Creates a custom 'test' command for the given package which sets the
+    command's ``package_name`` class attribute to the name of the package being
+    tested.
+    """
+
+    return type(package_name.title() + 'Test', (AstropyTest,),
+                {'package_name': package_name})
 
 
 def generate_build_ext_command(packagename, release):

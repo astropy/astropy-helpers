@@ -17,6 +17,10 @@ generate_version_py(NAME, VERSION, RELEASE, False)
 # Use the updated version including the git rev count
 from astropy_helpers.version import version as VERSION
 
+cmdclass = register_commands(NAME, VERSION, RELEASE)
+# This package actually doesn't use the Astropy test command
+del cmdclass['test']
+
 setup(
     name=pkg_resources.safe_name(NAME),  # astropy_helpers -> astropy-helpers
     version=VERSION,
@@ -28,7 +32,7 @@ setup(
     long_description='',
     download_url='{0}/astropy-{1}.tar.gz'.format(DOWNLOAD_BASE_URL, VERSION),
     classifiers=[],
-    cmdclass=register_commands(NAME, VERSION, RELEASE),
+    cmdclass=cmdclass,
     zip_safe=False,
     **get_package_info(exclude=['astropy_helpers.tests'])
 )
