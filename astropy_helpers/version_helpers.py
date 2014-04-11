@@ -67,7 +67,7 @@ release = {rel}
 debug = {debug}
 
 try:
-    from .utils._compiler import compiler
+    from ._compiler import compiler
 except ImportError:
     compiler = "unknown"
 

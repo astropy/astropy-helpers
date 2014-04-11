@@ -487,6 +487,16 @@ def generate_build_ext_command(packagename, release):
         if self.force_rebuild:
             self.force = True
 
+        # Add a copy of the _compiler.so module as well, but only if there are
+        # in fact C modules to compile (otherwise there's no reason to include
+        # a record of the compiler used)
+        if self.extensions:
+            src_path = os.path.relpath(
+                os.path.join(os.path.dirname(__file__), 'src'))
+            ext = Extension(self.package_name + '._compiler',
+                            [os.path.join(src_path, 'compiler.c')])
+            self.extensions.insert(0, ext)
+
     def run(self):
         # For extensions that require 'numpy' in their include dirs, replace
         # 'numpy' with the actual paths
@@ -506,20 +516,21 @@ def generate_build_ext_command(packagename, release):
                     pyxfn = src[:-2] + '.pyx'
                     cfn = src
 
-                if os.path.isfile(pyxfn):
-                    if self.uses_cython:
-                        extension.sources[jdx] = pyxfn
+                if not os.path.isfile(pyxfn):
+                    continue
+
+                if self.uses_cython:
+                    extension.sources[jdx] = pyxfn
+                else:
+                    if os.path.isfile(cfn):
+                        extension.sources[jdx] = cfn
                     else:
-                        if os.path.isfile(cfn):
-                            extension.sources[jdx] = cfn
-                        else:
-                            msg = (
-                                'Could not find C file {0} for Cython file '
-                                '{1} when building extension {2}. '
-                                'Cython must be installed to build from a '
-                                'git checkout'.format(cfn, pyxfn,
-                                                      extension.name))
-                            raise IOError(errno.ENOENT, msg, cfn)
+                        msg = (
+                            'Could not find C file {0} for Cython file {1} '
+                            'when building extension {2}. Cython must be '
+                            'installed to build from a git checkout.'.format(
+                                cfn, pyxfn, extension.name))
+                        raise IOError(errno.ENOENT, msg, cfn)
 
         if orig_run is not None:
             # This should always be the case for a correctly implemented
@@ -552,6 +563,7 @@ def generate_build_ext_command(packagename, release):
     attrs['finalize_options'] = finalize_options
     attrs['force_rebuild'] = False
     attrs['uses_cython'] = uses_cython
+    attrs['package_name'] = packagename
 
     return type('build_ext', (basecls, object), attrs)
 
