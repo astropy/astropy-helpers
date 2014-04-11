@@ -1046,7 +1046,8 @@ def get_package_info(srcdir='.', exclude=()):
 
     # Locate any .pyx files not already specified, and add their extensions in.
     # The default include dirs include numpy to facilitate numerical work.
-    ext_modules.extend(get_cython_extensions(srcdir, ext_modules, ['numpy']))
+    ext_modules.extend(get_cython_extensions(srcdir, packages, ext_modules,
+                                             ['numpy']))
 
     # Now remove extensions that have the special name 'skip_cython', as they
     # exist Only to indicate that the cython extensions shouldn't be built
@@ -1093,8 +1094,9 @@ def iter_setup_packages(srcdir, packages):
             yield module
 
 
-def iter_pyx_files(srcdir):
-    """ A generator that yields Cython source files (ending in '.pyx') in the
+def iter_pyx_files(srcdir, package):
+    """
+    A generator that yields Cython source files (ending in '.pyx') in the
     source packages.
 
     Returns
@@ -1107,15 +1109,11 @@ def iter_pyx_files(srcdir):
 
     """
     for dirpath, dirnames, filenames in walk_skip_hidden(srcdir):
-        srcdir_parts = srcdir.split(os.sep)
-        packagename_parts = dirpath.split(os.sep)[len(srcdir_parts):]
-        packagename = '.'.join(packagename_parts)
-
         for fn in filenames:
             if fn.endswith('.pyx'):
                 fullfn = os.path.relpath(os.path.join(dirpath, fn))
                 # Package must match file name
-                extmod = '.'.join([packagename, fn[:-4]])
+                extmod = '.'.join([package, fn[:-4]])
                 yield (extmod, fullfn)
 
 
@@ -1154,8 +1152,10 @@ def should_build_with_cython(package, release=None):
         return False
 
 
-def get_cython_extensions(srcdir, prevextensions=tuple(), extincludedirs=None):
-    """ Looks for Cython files and generates Extensions if needed.
+def get_cython_extensions(srcdir, packages, prevextensions=tuple(),
+                          extincludedirs=None):
+    """
+    Looks for Cython files and generates Extensions if needed.
 
     Parameters
     ----------
@@ -1180,18 +1180,24 @@ def get_cython_extensions(srcdir, prevextensions=tuple(), extincludedirs=None):
     # existing .pyx sources in the previous sources, but we should also check
     # for .c files with the same remaining filename. So we look for .pyx and
     # .c files, and we strip the extension.
-
     prevsourcepaths = []
+    ext_modules = []
+
     for ext in prevextensions:
         for s in ext.sources:
             if s.endswith(('.pyx', '.c')):
-                prevsourcepaths.append(os.path.realpath(os.path.splitext(s)[0]))
+                sourcepath = os.path.realpath(os.path.splitext(s)[0])
+                prevsourcepaths.append(sourcepath)
 
-    ext_modules = []
-    for extmod, pyxfn in iter_pyx_files(srcdir):
-        if os.path.realpath(os.path.splitext(pyxfn)[0]) not in prevsourcepaths:
-            ext_modules.append(Extension(extmod, [pyxfn],
-                                         include_dirs=extincludedirs))
+    for package_name in packages:
+        package_parts = package_name.split('.')
+        package_path = os.path.join(srcdir, *package_parts)
+
+        for extmod, pyxfn in iter_pyx_files(package_path, package_name):
+            sourcepath = os.path.realpath(os.path.splitext(pyxfn)[0])
+            if sourcepath not in prevsourcepaths:
+                ext_modules.append(Extension(extmod, [pyxfn],
+                                             include_dirs=extincludedirs))
 
     return ext_modules
 
