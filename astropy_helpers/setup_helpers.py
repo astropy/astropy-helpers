@@ -1109,7 +1109,8 @@ def iter_setup_packages(srcdir, packages):
     for packagename in packages:
         package_parts = packagename.split('.')
         package_path = os.path.join(srcdir, *package_parts)
-        setup_package = os.path.join(package_path, 'setup_package.py')
+        setup_package = os.path.relpath(
+            os.path.join(package_path, 'setup_package.py'))
 
         if os.path.isfile(setup_package):
             module = import_file(setup_package)
