@@ -37,9 +37,12 @@ def test_update_git_devstr(package_template, capsys):
 
     import packagename.version
     imp.reload(packagename.version)
-    imp.reload(packagename)
 
-    m = _DEV_VERSION_RE.match(packagename.__version__)
+    # Previously this checked packagename.__version__, but in order for that to
+    # be updated we also have to re-import _astropy_init which could be tricky.
+    # Checking directly that the packagename.version module was updated is
+    # sufficient:
+    m = _DEV_VERSION_RE.match(packagename.version.version)
     assert m
     assert int(m.group(1)) == revcount + 1
 
@@ -51,4 +54,4 @@ def test_update_git_devstr(package_template, capsys):
     from astropy_helpers.git_helpers import update_git_devstr
 
     newversion = update_git_devstr(version, path=str(package_template))
-    assert newversion == packagename.__version__
+    assert newversion == packagename.version.version
