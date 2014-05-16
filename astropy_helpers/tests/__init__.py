@@ -10,12 +10,14 @@ import pytest
 PACKAGE_DIR = os.path.dirname(__file__)
 
 
-def run_cmd(cmd, args, path=None):
+def run_cmd(cmd, args, path=None, raise_error=True):
     """
     Runs a shell command with the given argument list.  Changes directory to
     ``path`` if given, otherwise runs the command in the current directory.
 
     Returns a 3-tuple of (stdout, stderr, exit code)
+
+    If ``raise_error=True`` raise an exception on non-zero exit codes.
     """
 
     if path is not None:
@@ -25,7 +27,15 @@ def run_cmd(cmd, args, path=None):
     p = sp.Popen([cmd] + list(args), stdout=sp.PIPE, stderr=sp.PIPE,
                  cwd=path)
     streams = tuple(s.decode('latin1').strip() for s in p.communicate())
-    return streams + (p.returncode,)
+    return_code = p.returncode
+
+    if raise_error and return_code != 0:
+        raise RuntimeError(
+            "The command `{0}` with args {1!r} exited with code {2}.\n"
+            "Stdout:\n\n{3}\n\nStderr:\n\n{4}".format(
+                cmd, list(args), return_code, streams[0], streams[1]))
+
+    return streams + (return_code,)
 
 
 @pytest.fixture(scope='function', autouse=True)
