@@ -24,7 +24,6 @@ def test_update_git_devstr(package_template, capsys):
     assert m, (
         "Stdout did not match the version string pattern:"
         "\n\n{0}\n\nStderr:\n\n{1}".format(stdout, stderr))
-
     revcount = int(m.group(1))
 
     import packagename
