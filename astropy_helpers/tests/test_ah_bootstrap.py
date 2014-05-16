@@ -66,7 +66,8 @@ def test_bootstrap_from_submodule(tmpdir, testpackage, capsys):
         run_cmd('git', ['submodule', 'add', str(testpackage),
                         '_astropy_helpers_test_'])
 
-        run_cmd('git', ['commit', '-m', 'test repository'])
+        run_cmd('git', ['commit', '--author=A U Thor <author@example.com>',
+                        '-m', 'test repository'])
 
         os.chdir(str(tmpdir))
 

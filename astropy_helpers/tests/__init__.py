@@ -136,7 +136,8 @@ def testpackage(tmpdir, version='0.1'):
         # Make the new test package into a git repo
         run_cmd('git', ['init'])
         run_cmd('git', ['add', '--all'])
-        run_cmd('git', ['commit', '-m', 'test package'])
+        run_cmd('git', ['commit', '--author=A U Thor <author@example.com>',
+                        '-m', 'test package'])
 
     return source
 
