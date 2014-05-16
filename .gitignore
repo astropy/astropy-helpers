@@ -12,15 +12,11 @@ __pycache__
 
 # Other generated files
 MANIFEST
-astropy/version.py
-astropy/cython_version.py
-astropy/astropy.cfg
-astropy/wcs/include/wcsconfig.h
+astropy_helpers/version.py
 
 # Sphinx
 _build
 _generated
-docs/api
 
 
 # Packages/installer info
