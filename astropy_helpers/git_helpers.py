@@ -95,8 +95,8 @@ def get_git_devstr(sha=False, show_warning=True, path=None):
 
     if p.returncode == 128:
         if show_warning:
-            warnings.warn('No git repository present! Using default dev '
-                          'version.')
+            warnings.warn('No git repository present at {0!r}! Using default '
+                          'dev version.'.format(path))
         return ''
     elif p.returncode != 0:
         if show_warning:
