@@ -6,6 +6,10 @@
 {# Add the google webfonts needed for the logo #}
 {% block extrahead %}
 <link href='https://fonts.googleapis.com/css?family=Source+Sans+Pro:200,600' rel='stylesheet' type='text/css'>
+{% if not embedded %}<script type="text/javascript" src="{{
+                                                         pathto('_static/copybutton.js',
+                                                         1) }}"></script>{% endif %}
+
 {% endblock %}
 
 
