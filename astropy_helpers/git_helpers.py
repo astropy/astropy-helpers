@@ -79,12 +79,12 @@ def get_git_devstr(sha=False, show_warning=True, path=None):
         path = os.path.abspath(os.path.dirname(path))
 
     if sha:
-        cmd = 'rev-parse'  # Faster for getting just the hash of HEAD
+        cmd = ['rev-parse']  # Faster for getting just the hash of HEAD
     else:
-        cmd = 'rev-list'
+        cmd = ['rev-list', '--count']
 
     try:
-        p = subprocess.Popen(['git', cmd, 'HEAD'], cwd=path,
+        p = subprocess.Popen(['git'] + cmd + ['HEAD'], cwd=path,
                              stdout=subprocess.PIPE, stderr=subprocess.PIPE,
                              stdin=subprocess.PIPE)
         stdout, stderr = p.communicate()
@@ -107,5 +107,4 @@ def get_git_devstr(sha=False, show_warning=True, path=None):
     if sha:
         return stdout.decode('utf-8')[:40]
     else:
-        nrev = stdout.decode('utf-8').count('\n')
-        return  str(nrev)
+        return stdout.decode('utf-8').strip()
