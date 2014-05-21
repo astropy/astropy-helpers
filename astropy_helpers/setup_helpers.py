@@ -493,8 +493,10 @@ def generate_build_ext_command(packagename, release):
         if self.extensions:
             src_path = os.path.relpath(
                 os.path.join(os.path.dirname(__file__), 'src'))
+            shutil.copy2(os.path.join(src_path, 'compiler.c'),
+                         os.path.join(self.package_name, '_compiler.c'))
             ext = Extension(self.package_name + '._compiler',
-                            [os.path.join(src_path, 'compiler.c')])
+                            [os.path.join(self.package_name, '_compiler.c')])
             self.extensions.insert(0, ext)
 
     def run(self):
