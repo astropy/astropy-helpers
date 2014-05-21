@@ -333,7 +333,7 @@ def get_debug_option(packagename):
 
     try:
         current_debug = get_pkg_version_module(packagename,
-                                               fromlist=['debug'])
+                                               fromlist=['debug'])[0]
     except (ImportError, AttributeError):
         current_debug = None
 
