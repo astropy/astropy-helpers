@@ -60,7 +60,8 @@ def package_template(tmpdir, request):
 
     tmp_package = tmpdir.join('package_template')
 
-    run_cmd('git', ['clone', os.path.join(PACKAGE_DIR, 'package_template'),
+    # TODO: update URL once package-template changes are merged
+    run_cmd('git', ['clone', '-b', 'astropy_helpers', 'http://github.com/embray/package-template',
                     str(tmp_package)])
 
     old_cwd = os.getcwd()
