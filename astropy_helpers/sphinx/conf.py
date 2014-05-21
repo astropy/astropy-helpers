@@ -37,7 +37,7 @@ def get_graphviz_version():
         return '0'
     tokens = output.split()
     for token in tokens:
-        if re.match(b'[0-9.]*', token):
+        if re.match(b'[0-9.]+', token):
             return token.decode('ascii')
     return '0'
 
@@ -135,7 +135,8 @@ extensions = [
     'astropy_helpers.sphinx.ext.tocdepthfix',
     'astropy_helpers.sphinx.ext.doctest',
     'astropy_helpers.sphinx.ext.changelog_links',
-    'astropy_helpers.sphinx.ext.viewcode'  # Use patched version of viewcode
+    'astropy_helpers.sphinx.ext.viewcode',  # Use patched version of viewcode
+    'astropy_helpers.sphinx.ext.smart_resolver'
     ]
 
 # Above, we use a patched version of viewcode rather than 'sphinx.ext.viewcode'
@@ -162,6 +163,10 @@ numpydoc_show_class_members = False
 autosummary_generate = True
 
 automodapi_toctreedirnm = 'api'
+
+# Class documentation should contain *both* the class docstring and
+# the __init__ docstring
+autoclass_content = "both"
 
 
 # -- Options for HTML output -------------------------------------------------
