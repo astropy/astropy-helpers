@@ -554,7 +554,7 @@ def generate_build_ext_command(packagename, release):
         # Update cython_version.py if building with Cython
         try:
             cython_version = get_pkg_version_module(
-                    packagename, fromlist=['cython_version'])
+                    packagename, fromlist=['cython_version'])[0]
         except (AttributeError, ImportError):
             cython_version = 'unknown'
         if self.uses_cython and self.uses_cython != cython_version:
