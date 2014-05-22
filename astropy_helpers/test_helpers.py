@@ -177,26 +177,27 @@ class AstropyTest(Command, object):
                    'sys.exit(result)')
             cmd = cmd.format(set_flag, self, cmd_pre=cmd_pre, cmd_post=cmd_post)
 
-            # override the config locations to not make a new directory nor use
-            # existing cache or config
-            os.environ['XDG_CONFIG_HOME'] = tempfile.mkdtemp('astropy_config')
-            os.environ['XDG_CACHE_HOME'] = tempfile.mkdtemp('astropy_cache')
-            os.mkdir(os.path.join(os.environ['XDG_CONFIG_HOME'], 'astropy'))
-            os.mkdir(os.path.join(os.environ['XDG_CACHE_HOME'], 'astropy'))
-
             # Run the tests in a subprocess--this is necessary since
             # new extension modules may have appeared, and this is the
             # easiest way to set up a new environment
-            try:
-                retcode = subprocess.call([sys.executable, '-c', cmd],
-                                          cwd=testing_path, close_fds=False)
-            finally:
-                # kill the temporary dirs
-                shutil.rmtree(os.environ['XDG_CONFIG_HOME'])
-                shutil.rmtree(os.environ['XDG_CACHE_HOME'])
-        finally:
 
             # Remove temporary directory
+            # On Python 3.x prior to 3.3, the creation of .pyc files
+            # is not atomic.  py.test jumps through some hoops to make
+            # this work by parsing import statements and carefully
+            # importing files atomically.  However, it can't detect
+            # when __import__ is used, so its carefulness still fails.
+            # The solution here (admittedly a bit of a hack), is to
+            # turn off the generation of .pyc files altogether by
+            # passing the `-B` switch to `python`.  This does mean
+            # that each core will have to compile .py file to bytecode
+            # itself, rather than getting lucky and borrowing the work
+            # already done by another core.  Compilation is an
+            # insignificant fraction of total testing time, though, so
+            # it's probably not worth worrying about.
+            retcode = subprocess.call([sys.executable, '-B', '-c', cmd],
+                                      cwd=testing_path, close_fds=False)
+        finally:
             shutil.rmtree(tmp_dir)
 
         raise SystemExit(retcode)
