@@ -137,7 +137,8 @@ class AstropyTest(Command, object):
                 else:
                     ignore_python_version = '3'
                 coveragerc_content = coveragerc_content.replace(
-                    "{ignore_python_version}", ignore_python_version)
+                    "{ignore_python_version}", ignore_python_version).replace(
+                        "{packagename}", self.package_name)
                 tmp_coveragerc = os.path.join(tmp_dir, 'coveragerc')
                 with open(tmp_coveragerc, 'wb') as tmp:
                     tmp.write(coveragerc_content.encode('utf-8'))
