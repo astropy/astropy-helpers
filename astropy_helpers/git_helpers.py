@@ -78,6 +78,9 @@ def get_git_devstr(sha=False, show_warning=True, path=None):
     if not os.path.isdir(path):
         path = os.path.abspath(os.path.dirname(path))
 
+    if not os.path.exists(os.path.join(path, '.git')):
+        return ''
+
     if sha:
         cmd = ['rev-parse']  # Faster for getting just the hash of HEAD
     else:
