@@ -52,6 +52,7 @@ else:
 # Configuration for intersphinx: refer to the Python standard library.
 intersphinx_mapping = {
     'python': ('http://docs.python.org/', None),
+    'python3': ('http://docs.python.org/3/', 'python3links.inv'),
     'numpy': ('http://docs.scipy.org/doc/numpy/', None),
     'scipy': ('http://docs.scipy.org/doc/scipy/reference/', None),
     'matplotlib': ('http://matplotlib.sourceforge.net/', None),
