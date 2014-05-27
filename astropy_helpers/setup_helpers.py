@@ -1144,7 +1144,7 @@ def iter_setup_packages(srcdir, packages):
             yield module
 
 
-def iter_pyx_files(srcdir, package):
+def iter_pyx_files(package_dir, package_name):
     """
     A generator that yields Cython source files (ending in '.pyx') in the
     source packages.
@@ -1156,15 +1156,16 @@ def iter_pyx_files(srcdir, package):
         full name of the module that the .pyx file would live in based
         on the source directory structure, and `fullfn` is the path to
         the .pyx file.
-
     """
-    for dirpath, dirnames, filenames in walk_skip_hidden(srcdir):
+    for dirpath, dirnames, filenames in walk_skip_hidden(package_dir):
         for fn in filenames:
             if fn.endswith('.pyx'):
                 fullfn = os.path.relpath(os.path.join(dirpath, fn))
                 # Package must match file name
-                extmod = '.'.join([package, fn[:-4]])
+                extmod = '.'.join([package_name, fn[:-4]])
                 yield (extmod, fullfn)
+
+        break  # Don't recurse into subdirectories
 
 
 def should_build_with_cython(package, release=None):
