@@ -668,8 +668,8 @@ def add_command_option(command, name, doc, is_bool=False):
 
     for idx, cmd in enumerate(cmdcls.user_options):
         if cmd[0] == name:
-            log.warning('Overriding existing {0!r} option '
-                        '{1!r}'.format(command, name))
+            log.warn('Overriding existing {0!r} option '
+                     '{1!r}'.format(command, name))
             del cmdcls.user_options[idx]
             if name in cmdcls.boolean_options:
                 cmdcls.boolean_options.remove(name)
