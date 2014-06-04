@@ -468,6 +468,18 @@ def generate_build_ext_command(packagename, release):
     orig_finalize = getattr(basecls, 'finalize_options', None)
 
     def finalize_options(self):
+        # Add a copy of the _compiler.so module as well, but only if there are
+        # in fact C modules to compile (otherwise there's no reason to include
+        # a record of the compiler used)
+        if self.extensions:
+            src_path = os.path.relpath(
+                os.path.join(os.path.dirname(__file__), 'src'))
+            shutil.copy2(os.path.join(src_path, 'compiler.c'),
+                         os.path.join(self.package_name, '_compiler.c'))
+            ext = Extension(self.package_name + '._compiler',
+                            [os.path.join(self.package_name, '_compiler.c')])
+            self.extensions.insert(0, ext)
+
         if orig_finalize is not None:
             orig_finalize(self)
 
@@ -489,18 +501,6 @@ def generate_build_ext_command(packagename, release):
         # the debug flag changed from the last build
         if self.force_rebuild:
             self.force = True
-
-        # Add a copy of the _compiler.so module as well, but only if there are
-        # in fact C modules to compile (otherwise there's no reason to include
-        # a record of the compiler used)
-        if self.extensions:
-            src_path = os.path.relpath(
-                os.path.join(os.path.dirname(__file__), 'src'))
-            shutil.copy2(os.path.join(src_path, 'compiler.c'),
-                         os.path.join(self.package_name, '_compiler.c'))
-            ext = Extension(self.package_name + '._compiler',
-                            [os.path.join(self.package_name, '_compiler.c')])
-            self.extensions.insert(0, ext)
 
     def run(self):
         # For extensions that require 'numpy' in their include dirs, replace
