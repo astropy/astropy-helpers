@@ -38,6 +38,25 @@ def run_cmd(cmd, args, path=None, raise_error=True):
 
 
 @pytest.fixture(scope='function', autouse=True)
+def reset_setup_helpers(request):
+    """
+    Saves and restores the global state of the astropy_helpers.setup_helpers
+    module between tests.
+    """
+
+    mod = __import__('astropy_helpers.setup_helpers', fromlist=[''])
+
+    old_state = mod._module_state.copy()
+
+    def finalizer(old_state=old_state):
+        mod = sys.modules.get('astropy_helpers.setup_helpers')
+        if mod is not None:
+            mod._module_state.update(old_state)
+
+    request.addfinalizer(finalizer)
+
+
+@pytest.fixture(scope='function', autouse=True)
 def reset_distutils_log():
     """
     This is a setup/teardown fixture that ensures the log-level of the

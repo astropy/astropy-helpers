@@ -37,22 +37,28 @@ from setuptools import find_packages
 from .test_helpers import AstropyTest
 from .utils import silence, invalidate_caches, walk_skip_hidden
 
+_module_state = {
+    'adjusted_compiler': False,
+    'registered_commands': None,
+    'have_cython': False,
+    'have_sphinx': False
+}
 
 try:
     import Cython
-    HAVE_CYTHON = True
+    _module_state['have_cython'] = True
 except ImportError:
-    HAVE_CYTHON = False
-
+    pass
 
 try:
     import sphinx
     from sphinx.setup_command import BuildDoc as SphinxBuildDoc
-    HAVE_SPHINX = True
+    _module_state['have_sphinx'] = True
 except ImportError:
-    HAVE_SPHINX = False
-except SyntaxError:  # occurs if markupsafe is recent version, which doesn't support Python 3.2
-    HAVE_SPHINX = False
+    pass
+except SyntaxError:
+    # occurs if markupsafe is recent version, which doesn't support Python 3.2
+    pass
 
 
 PY3 = sys.version_info[0] >= 3
@@ -62,7 +68,6 @@ PY3 = sys.version_info[0] >= 3
 Distribution.skip_2to3 = []
 
 
-_adjusted_compiler = False
 def adjust_compiler(package):
     """
     This function detects broken compilers and switches to another.  If
@@ -86,12 +91,11 @@ def adjust_compiler(package):
         (b'i686-apple-darwin[0-9]*-llvm-gcc-4.2', 'clang')
         ]
 
-    global _adjusted_compiler
-    if _adjusted_compiler:
+    if _module_state['adjusted_compiler']:
         return
 
     # Whatever the result of this function is, it only needs to be run once
-    _adjusted_compiler = True
+    _module_state['adjusted_compiler'] = True
 
     if 'CC' in os.environ:
 
@@ -195,9 +199,7 @@ def get_dummy_distribution():
     environment before calling the actual setup() function.
     """
 
-    global _registered_commands
-
-    if _registered_commands is None:
+    if _module_state['registered_commands'] is None:
         raise RuntimeError(
             'astropy_helpers.setup_helpers.register_commands() must be '
             'called before using '
@@ -207,7 +209,7 @@ def get_dummy_distribution():
     # the option is set.
     dist = Distribution({'script_name': os.path.basename(sys.argv[0]),
                          'script_args': sys.argv[1:]})
-    dist.cmdclass.update(_registered_commands)
+    dist.cmdclass.update(_module_state['registered_commands'])
 
     with silence():
         try:
@@ -378,14 +380,11 @@ def get_pkg_version_module(packagename, fromlist=None):
         return tuple(getattr(mod, member) for member in fromlist)
 
 
-_registered_commands = None
 def register_commands(package, version, release):
-    global _registered_commands
+    if _module_state['registered_commands'] is not None:
+        return _module_state['registered_commands']
 
-    if _registered_commands is not None:
-        return _registered_commands
-
-    _registered_commands = {
+    _module_state['registered_commands'] = registered_commands = {
         'test': generate_test_command(package),
 
         # Use distutils' sdist because it respects package_data.
@@ -410,17 +409,17 @@ def register_commands(package, version, release):
     }
 
 
-    if HAVE_SPHINX:
-        _registered_commands['build_sphinx'] = AstropyBuildSphinx
+    if _module_state['have_sphinx']:
+        registered_commands['build_sphinx'] = AstropyBuildSphinx
     else:
-        _registered_commands['build_sphinx'] = FakeBuildSphinx
+        registered_commands['build_sphinx'] = FakeBuildSphinx
 
     # Need to override the __name__ here so that the commandline options are
     # presented as being related to the "build" command, for example; normally
     # this wouldn't be necessary since commands also have a command_name
     # attribute, but there is a bug in distutils' help display code that it
     # uses __name__ instead of command_name. Yay distutils!
-    for name, cls in _registered_commands.items():
+    for name, cls in registered_commands.items():
         cls.__name__ = name
 
     # Add a few custom options; more of these can be added by specific packages
@@ -431,7 +430,7 @@ def register_commands(package, version, release):
         add_command_option('build', *option)
         add_command_option('install', *option)
 
-    return _registered_commands
+    return registered_commands
 
 
 def generate_test_command(package_name):
@@ -747,7 +746,7 @@ class AstropyRegister(SetuptoolsRegister):
             self.repository = value
 
 
-if HAVE_SPHINX:
+if _module_state['have_sphinx']:
     class AstropyBuildSphinx(SphinxBuildDoc):
         """ A version of the ``build_sphinx`` command that uses the
         version of Astropy that is built by the setup ``build`` command,
@@ -1188,7 +1187,8 @@ def should_build_with_cython(package, release=None):
     # files haven't been created yet (cython_version == 'unknown'). The latter
     # case can happen even when release is True if checking out a release tag
     # from the repository
-    if HAVE_CYTHON and (not release or cython_version == 'unknown'):
+    if (_module_state['have_cython'] and
+            (not release or cython_version == 'unknown')):
         return cython_version
     else:
         return False
