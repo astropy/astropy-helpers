@@ -1,3 +1,36 @@
+"""
+This bootstrap module contains code for ensuring that the astropy_helpers
+package will be importable by the time the setup.py script runs.  It also
+includes some workarounds to ensure that a recent-enough version of setuptools
+is being used for the installation.
+
+This module should be the first thing imported in the setup.py of distributions
+that make use of the utilities in astropy_helpers.  If the distribution ships
+with its own copy of astropy_helpers, this module will first attempt to import
+from the shipped copy.  However, it will also check PyPI to see if there are
+any bug-fix releases on top of the current version that may be useful to get
+past platform-specific bugs that have been fixed.  When running setup.py, use
+the ``--offline`` command-line option to disable the auto-upgrade checks.
+
+When this module is imported or otherwise executed it automatically calls a
+main function that attempts to read the project's setup.cfg file, which it
+checks for a configuration section called ``[ah_bootstrap]`` the presences of
+that section, and options therein, determine the next step taken:  If it
+contains an option called ``auto_use`` with a value of ``True``, it will
+automatically call the main function of this module called
+`use_astropy_helpers` (see that function's docstring for full details).
+Otherwise no further action is taken (however,
+``ah_bootstrap.use_astropy_helpers`` may be called manually from within the
+setup.py script).
+
+Additional options in the ``[ah_boostrap]`` section of setup.cfg have the same
+names as the arguments to `use_astropy_helpers`, and can be used to configure
+the bootstrap script when ``auto_use = True``.
+
+See https://github.com/astropy/astropy-helpers for more details, and for the
+latest version of this module.
+"""
+
 import contextlib
 import errno
 import imp
