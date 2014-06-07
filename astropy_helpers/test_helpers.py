@@ -182,7 +182,7 @@ class AstropyTest(Command, object):
         the purposes of testing this avoids creating pyc and __pycache__
         directories inside the build directory
         """
-        self.reinitialize_command('build', inplace=False)
+        self.reinitialize_command('build')
         self.run_command('build')
         build_cmd = self.get_finalized_command('build')
         new_path = os.path.abspath(build_cmd.build_lib)
