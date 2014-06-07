@@ -134,6 +134,12 @@ class AstropyTest(Command, object):
         """
         Run the tests!
         """
+        # Build a testing install of the package
+        self._build_temp_install()
+
+        # Ensure all required packages are installed
+        self._validate_required_deps()
+        
         # Ensure there is a doc path
         if self.docs_path is None:
             if os.path.exists('docs'):
@@ -141,13 +147,6 @@ class AstropyTest(Command, object):
         
         # Run everything in a try: finally: so that the tmp dir gets deleted.
         try:
-            
-            # Ensure all required packages are installed
-            self._validate_required_deps()
-            
-            # Build a testing install of the package
-            self._build_temp_install()
-            
             # Construct this modules testing command
             cmd = self.construct_testing_command()
             
