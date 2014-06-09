@@ -24,14 +24,26 @@ del cmdclass['test']
 setup(
     name=pkg_resources.safe_name(NAME),  # astropy_helpers -> astropy-helpers
     version=VERSION,
-    description='',
+    description='Utilities for building and installing Astropy, Astropy '
+                'affiliated packages, and their respective documentation.',
     author='The Astropy Developers',
     author_email='astropy.team@gmail.com',
     license='BSD',
     url='http://astropy.org',
-    long_description='',
-    download_url='{0}/astropy-{1}.tar.gz'.format(DOWNLOAD_BASE_URL, VERSION),
-    classifiers=[],
+    long_description=open('README.rst').read(),
+    download_url='{0}/astropy-helpers-{1}.tar.gz'.format(DOWNLOAD_BASE_URL,
+                                                         VERSION),
+    classifiers=[
+        'Development Status :: 4 - Beta',
+        'Intended Audience :: Developers',
+        'License :: OSI Approved :: BSD License',
+        'Operating System :: OS Independent',
+        'Programming Language :: Python',
+        'Programming Language :: Python :: 3',
+        'Topic :: Software Development :: Build Tools',
+        'Topic :: Software Development :: Libraries :: Python Modules',
+        'Topic :: System :: Archiving :: Packaging'
+    ],
     cmdclass=cmdclass,
     zip_safe=False,
     **get_package_info(exclude=['astropy_helpers.tests'])
