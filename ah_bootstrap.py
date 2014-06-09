@@ -34,15 +34,16 @@ latest version of this module.
 import contextlib
 import errno
 import imp
+import io
 import os
 import re
 import subprocess as sp
 import sys
 
 try:
-    from ConfigParser import ConfigParser
+    from ConfigParser import ConfigParser, RawConfigParser
 except ImportError:
-    from configparser import ConfigParser
+    from configparser import ConfigParser, RawConfigParser
 
 
 if sys.version_info[0] < 3:
@@ -193,7 +194,7 @@ def use_astropy_helpers(path=None, download_if_needed=None, index_url=None,
     elif not os.path.exists(path) or os.path.isdir(path):
         # Even if the given path does not exist on the filesystem, if it *is* a
         # submodule, `git submodule init` will create it
-        is_submodule = use_git and _check_submodule(path)
+        is_submodule = _check_submodule(path, use_git=use_git)
 
         if is_submodule or os.path.isdir(path):
             log.info(
@@ -366,7 +367,29 @@ def _directory_import(path):
     return dist
 
 
-def _check_submodule(path):
+def _check_submodule(path, use_git=True):
+    """
+    Check if the given path is a git submodule.
+
+    See the docstrings for ``_check_submodule_using_git`` and
+    ``_check_submodule_no_git`` for futher details.
+    """
+
+    if use_git:
+        return _check_submodule_using_git(path)
+    else:
+        return _check_submodule_no_git(path)
+
+
+def _check_submodule_using_git(path):
+    """
+    Check if the given path is a git submodule.  If so, attempt to initialize
+    and/or update the submodule if needed.
+
+    This function makes calls to the ``git`` command in subprocesses.  The
+    ``_check_submodule_no_git`` option uses pure Python to check if the given
+    path looks like a git submodule, but it cannot perform updates.
+    """
     try:
         p = sp.Popen(['git', 'submodule', 'status', '--', path],
                      stdout=sp.PIPE, stderr=sp.PIPE)
@@ -409,6 +432,65 @@ def _check_submodule(path):
                 'Will attempt import from {1!r} regardless.'.format(
                     stdout, path))
             return False
+
+
+def _check_submodule_no_git(path):
+    """
+    Like ``_check_submodule_using_git``, but simply parses the .gitmodules file
+    to determine if the supplied path is a git submodule, and does not exec any
+    subprocesses.
+
+    This can only determine if a path is a submodule--it does not perform
+    updates, etc.  This function may need to be updated if the format of the
+    .gitmodules file is changed between git versions.
+    """
+
+    gitmodules_path = os.path.abspath('.gitmodules')
+
+    if not os.path.isfile(gitmodules_path):
+        return False
+
+    # This is a minimal reader for gitconfig-style files.  It handles a few of
+    # the quirks that make gitconfig files incompatible with ConfigParser-style
+    # files, but does not support the full gitconfig syntaix (just enough
+    # needed to read a .gitmodules file).
+    gitmodules_fileobj = io.StringIO()
+
+    # Must use io.open for cross-Python-compatible behavior wrt unicode
+    with io.open(gitmodules_path) as f:
+        for line in f:
+            # gitconfig files are more flexible with leading whitespace; just
+            # go ahead and remove it
+            line = line.lstrip()
+
+            # comments can start with either # or ;
+            if line and line[0] in (':', ';'):
+                continue
+
+            gitmodules_fileobj.write(line)
+
+    gitmodules_fileobj.seek(0)
+
+    cfg = RawConfigParser()
+
+    try:
+        cfg.readfp(gitmodules_fileobj)
+    except Exception as exc:
+        log.warning('Malformatted .gitmodules file: {0}\n'
+                    '{1} cannot be assumed to be a git submodule.'.format(
+                        exc, path))
+        return False
+
+    for section in cfg.sections():
+        if not cfg.has_option(section, 'path'):
+            continue
+
+        submodule_path = cfg.get(section, 'path').rstrip(os.sep)
+
+        if submodule_path == path.rstrip(os.sep):
+            return True
+
+    return False
 
 
 def _update_submodule(submodule, status):
