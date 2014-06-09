@@ -797,7 +797,7 @@ if _module_state['have_sphinx']:
         def finalize_options(self):
             #Clear out previous sphinx builds, if requested
             if self.clean_docs:
-                dirstorm = ['docs/api']
+                dirstorm = [os.path.join(self.source_dir, 'api')]
                 if self.build_dir is None:
                     dirstorm.append('docs/_build')
                 else:
