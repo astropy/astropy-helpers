@@ -417,10 +417,10 @@ def _update_submodule(submodule, status):
         return
     elif status == b'-':
         cmd = ['update', '--init']
-        log.info('Initializing submodule {0!r}'.format(submodule))
+        log.warn('Initializing submodule {0!r}'.format(submodule))
     elif status == b'+':
         cmd = ['update']
-        log.info('Updating submodule {0!r}'.format(submodule))
+        log.warn('Updating submodule {0!r}'.format(submodule))
     elif status == b'U':
         raise _AHBoostrapSystemExit(
             'Error: Submodule {0} contains unresolved merge conflicts.  '
@@ -505,6 +505,45 @@ class _AHBootstrapSystemExit(SystemExit):
 
         super(_AHBootstrapSystemExit, self).__init__(msg, *args[1:])
 
+
+if sys.version_info[:2] < (2, 7):
+    # In Python 2.6 the distutils log does not log warnings, errors, etc. to
+    # stderr so we have to wrap it to ensure consistency at least in this
+    # module
+    import distutils
+
+    class log(object):
+        def __getattr__(self, attr):
+            return getattr(distutils.log, attr)
+
+        def warn(self, msg, *args):
+            self._log_to_stderr(distutils.log.WARN, msg, *args)
+
+        def error(self, msg):
+            self._log_to_stderr(distutils.log.ERROR, msg, *args)
+
+        def fatal(self, msg):
+            self._log_to_stderr(distutils.log.FATAL, msg, *args)
+
+        def log(self, level, msg, *args):
+            if level in (distutils.log.WARN, distutils.log.ERROR,
+                         distutils.log.FATAL):
+                self._log_to_stderr(level, msg, *args)
+            else:
+                distutils.log.log(level, msg, *args)
+
+        def _log_to_stderr(self, level, msg, *args):
+            # This is the only truly 'public' way to get the current threshold
+            # of the log
+            current_threshold = distutils.log.set_threshold(distutils.log.WARN)
+            distutils.log.set_threshold(current_threshold)
+            if level >= current_threshold:
+                if args:
+                    msg = msg % args
+                sys.stderr.write('%s\n' % msg)
+                sys.stderr.flush()
+
+    log = log()
 
 # Output of `git submodule status` is as follows:
 #
