@@ -648,7 +648,7 @@ _git_submodule_status_re = re.compile(
 # at import-time automatically so long as the correct options are specified in
 # setup.cfg
 _CFG_OPTIONS = [('auto_use', bool), ('path', str),
-                ('download_if_needed', bool), ('index_ur', str),
+                ('download_if_needed', bool), ('index_url', str),
                 ('use_git', bool), ('auto_upgrade', bool)]
 
 def _main():
