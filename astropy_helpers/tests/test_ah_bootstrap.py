@@ -5,6 +5,8 @@ import textwrap
 from setuptools.package_index import PackageIndex
 from setuptools.sandbox import run_setup
 
+import pytest
+
 from . import run_cmd, testpackage
 from ..utils import silence
 
@@ -85,6 +87,54 @@ def test_bootstrap_from_submodule(tmpdir, testpackage, capsys):
         assert path == str(tmpdir.join('clone', '_astropy_helpers_test_',
                                        '_astropy_helpers_test_',
                                        '__init__.py'))
+
+
+def test_check_submodule_no_git(tmpdir, testpackage):
+    """
+    Tests that when importing astropy_helpers from a submodule, it is still
+    recognized as a submodule even when using the --no-git option.
+
+    In particular this ensures that the auto-upgrade feature is not activated.
+    """
+
+    orig_repo = tmpdir.mkdir('orig')
+
+    # Ensure ah_bootstrap is imported from the local directory
+    import ah_bootstrap
+
+    with orig_repo.as_cwd():
+        run_cmd('git', ['init'])
+
+        # Write a test setup.py that uses ah_bootstrap; it also ensures that
+        # any previous reference to astropy_helpers is first wiped from
+        # sys.modules
+        args = 'auto_upgrade=True'
+        orig_repo.join('setup.py').write(TEST_SETUP_PY.format(args=args))
+        run_cmd('git', ['add', 'setup.py'])
+
+        # Add our own clone of the astropy_helpers repo as a submodule named
+        # astropy_helpers
+        run_cmd('git', ['submodule', 'add', str(testpackage),
+                        '_astropy_helpers_test_'])
+
+        run_cmd('git', ['commit', '-m', 'test repository'])
+
+        # Temporarily patch _do_upgrade to fail if called
+        class UpgradeError(Exception):
+            pass
+
+        def _do_upgrade(*args, **kwargs):
+            raise UpgradeError()
+
+        orig_do_upgrade = ah_bootstrap._do_upgrade
+        ah_bootstrap._do_upgrade = _do_upgrade
+        try:
+            run_setup('setup.py', ['--no-git'])
+        except UpgradeError:
+            pytest.fail('Attempted to run auto-upgrade despite importing '
+                        '_astropy_helpers_test_ from a git submodule')
+        finally:
+            ah_bootstrap._do_upgrade = orig_do_upgrade
 
 
 def test_bootstrap_from_directory(tmpdir, testpackage, capsys):
