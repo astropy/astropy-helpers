@@ -5,7 +5,6 @@ import sys, textwrap
 
 from ..docscrape import NumpyDocString, FunctionDoc, ClassDoc
 from ..docscrape_sphinx import SphinxDocString, SphinxClassDoc
-from nose.tools import *
 
 if sys.version_info[0] >= 3:
     sixu = lambda s: s
@@ -135,39 +134,39 @@ def test_extended_summary():
     assert doc['Extended Summary'][0].startswith('The multivariate normal')
 
 def test_parameters():
-    assert_equal(len(doc['Parameters']), 3)
-    assert_equal([n for n,_,_ in doc['Parameters']], ['mean','cov','shape'])
+    assert len(doc['Parameters']) == 3
+    assert [n for n,_,_ in doc['Parameters']] == ['mean','cov','shape']
 
     arg, arg_type, desc = doc['Parameters'][1]
-    assert_equal(arg_type, '(N, N) ndarray')
+    assert arg_type == '(N, N) ndarray'
     assert desc[0].startswith('Covariance matrix')
     assert doc['Parameters'][0][-1][-2] == '   (1+2+3)/3'
 
 def test_other_parameters():
-    assert_equal(len(doc['Other Parameters']), 1)
-    assert_equal([n for n,_,_ in doc['Other Parameters']], ['spam'])
+    assert len(doc['Other Parameters']) == 1
+    assert [n for n,_,_ in doc['Other Parameters']] == ['spam']
     arg, arg_type, desc = doc['Other Parameters'][0]
-    assert_equal(arg_type, 'parrot')
+    assert arg_type == 'parrot'
     assert desc[0].startswith('A parrot off its mortal coil')
 
 def test_returns():
-    assert_equal(len(doc['Returns']), 2)
+    assert len(doc['Returns']) == 2
     arg, arg_type, desc = doc['Returns'][0]
-    assert_equal(arg, 'out')
-    assert_equal(arg_type, 'ndarray')
+    assert arg == 'out'
+    assert arg_type == 'ndarray'
     assert desc[0].startswith('The drawn samples')
     assert desc[-1].endswith('distribution.')
 
     arg, arg_type, desc = doc['Returns'][1]
-    assert_equal(arg, 'list of str')
-    assert_equal(arg_type, '')
+    assert arg == 'list of str'
+    assert arg_type == ''
     assert desc[0].startswith('This is not a real')
     assert desc[-1].endswith('anonymous return values.')
 
 def test_notes():
     assert doc['Notes'][0].startswith('Instead')
     assert doc['Notes'][-1].endswith('definite.')
-    assert_equal(len(doc['Notes']), 17)
+    assert len(doc['Notes']) == 17
 
 def test_references():
     assert doc['References'][0].startswith('..')
@@ -178,9 +177,9 @@ def test_examples():
     assert doc['Examples'][-1].endswith('True]')
 
 def test_index():
-    assert_equal(doc['index']['default'], 'random')
-    assert_equal(len(doc['index']), 2)
-    assert_equal(len(doc['index']['refguide']), 2)
+    assert doc['index']['default'] == 'random'
+    assert len(doc['index']) == 2
+    assert len(doc['index']['refguide']) == 2
 
 def non_blank_line_by_line_compare(a,b):
     a = textwrap.dedent(a)
@@ -439,7 +438,7 @@ doc2 = NumpyDocString("""
         the specified axis""")
 
 def test_parameters_without_extended_description():
-    assert_equal(len(doc2['Parameters']), 2)
+    assert len(doc2['Parameters']) == 2
 
 doc3 = NumpyDocString("""
     my_signature(*params, **kwds)
@@ -449,7 +448,7 @@ doc3 = NumpyDocString("""
 
 def test_escape_stars():
     signature = str(doc3).split('\n')[0]
-    assert_equal(signature, 'my_signature(\*params, \*\*kwds)')
+    signature == 'my_signature(\*params, \*\*kwds)'
 
 doc4 = NumpyDocString(
     """a.conj()
@@ -457,7 +456,7 @@ doc4 = NumpyDocString(
     Return an array with all complex-valued elements conjugated.""")
 
 def test_empty_extended_summary():
-    assert_equal(doc4['Extended Summary'], [])
+    assert doc4['Extended Summary'] == []
 
 doc5 = NumpyDocString(
     """
@@ -475,16 +474,16 @@ doc5 = NumpyDocString(
     """)
 
 def test_raises():
-    assert_equal(len(doc5['Raises']), 1)
+    assert len(doc5['Raises']) == 1
     name,_,desc = doc5['Raises'][0]
-    assert_equal(name,'LinAlgException')
-    assert_equal(desc,['If array is singular.'])
+    assert name == 'LinAlgException'
+    assert desc == ['If array is singular.']
 
 def test_warns():
-    assert_equal(len(doc5['Warns']), 1)
+    assert len(doc5['Warns']) == 1
     name,_,desc = doc5['Warns'][0]
-    assert_equal(name,'SomeWarning')
-    assert_equal(desc,['If needed'])
+    assert name == 'SomeWarning'
+    assert desc == ['If needed']
 
 def test_see_also():
     doc6 = NumpyDocString(
@@ -761,7 +760,3 @@ def test_class_members_doc_sphinx():
     ===  ==========
 
     """)
-
-if __name__ == "__main__":
-    import nose
-    nose.run()
