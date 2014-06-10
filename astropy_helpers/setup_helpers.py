@@ -568,6 +568,8 @@ def generate_build_ext_command(packagename, release):
     attrs['force_rebuild'] = False
     attrs['uses_cython'] = uses_cython
     attrs['package_name'] = packagename
+    attrs['user_options'] = basecls.user_options[:]
+    attrs['boolean_options'] = basecls.boolean_options[:]
 
     return type('build_ext', (basecls, object), attrs)
 
@@ -578,6 +580,8 @@ def _get_platlib_dir(cmd):
 
 
 class AstropyInstall(SetuptoolsInstall):
+    user_options = SetuptoolsInstall.user_options[:]
+    boolean_options = SetuptoolsInstall.boolean_options[:]
 
     def finalize_options(self):
         build_cmd = self.get_finalized_command('build')
@@ -587,6 +591,8 @@ class AstropyInstall(SetuptoolsInstall):
 
 
 class AstropyInstallLib(SetuptoolsInstallLib):
+    user_options = SetuptoolsInstallLib.user_options[:]
+    boolean_options = SetuptoolsInstallLib.boolean_options[:]
 
     def finalize_options(self):
         build_cmd = self.get_finalized_command('build')
@@ -596,6 +602,8 @@ class AstropyInstallLib(SetuptoolsInstallLib):
 
 
 class AstropyBuildPy(SetuptoolsBuildPy):
+    user_options = SetuptoolsBuildPy.user_options[:]
+    boolean_options = SetuptoolsBuildPy.boolean_options[:]
 
     def finalize_options(self):
         # Update build_lib settings from the build command to always put
