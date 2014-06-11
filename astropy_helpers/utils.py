@@ -7,6 +7,7 @@ import imp
 import inspect
 import os
 import sys
+import fnmatch
 import textwrap
 import types
 import warnings
@@ -18,6 +19,7 @@ try:
         import_machinery = None
 except ImportError:
     import_machinery = None
+
 
 
 # Python 3.3's importlib caches filesystem reads for faster imports in the
@@ -843,3 +845,28 @@ class classproperty(property):
         fget.__wrapped__ = orig_fget
 
         return fget
+
+
+def list_data_files(package, pattern, subdir='.'):
+    """
+    Include files matching ``pattern`` inside ``package``.
+
+    Optionally, a sub-directory of ``package``, ``subdir``, can be specified
+    to search only in that particular sub-package. The filenames returned are
+    relative to the ``package`` directory.
+
+    Parameters
+    ----------
+    package : str
+        The pacakge inside which to look for data files
+    pattern : str
+        The pattern to match for the data files (e.g. ``*.dat``)
+    subdir : str, optional
+         An optional sub-directory inside which to search (e.g. ``data``)
+    """
+    matches = []
+    for root, dirs, files in os.walk(os.path.join(package, parent)):
+        for filename in fnmatch.filter(files, pattern):
+            matches.append(os.path.join(os.path.relpath(root, package),
+                                        filename))
+    return matches
