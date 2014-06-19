@@ -1343,7 +1343,7 @@ class DistutilsExtensionArgs(collections.defaultdict):
             self[key].extend(val)
 
 
-def pkg_config(packages, default_libraries):
+def pkg_config(packages, default_libraries, executable='pkg-config'):
     """
     Uses pkg-config to update a set of distutils Extension arguments
     to include the flags necessary to link against the given packages.
@@ -1376,7 +1376,7 @@ def pkg_config(packages, default_libraries):
 
     flag_map = {'-I': 'include_dirs', '-L': 'library_dirs', '-l': 'libraries',
                 '-D': 'define_macros', '-U': 'undef_macros'}
-    command = "pkg-config --libs --cflags {0}".format(' '.join(packages)),
+    command = "{0} --libs --cflags {1}".format(executable, ' '.join(packages)),
 
     result = DistutilsExtensionArgs()
 
@@ -1385,7 +1385,7 @@ def pkg_config(packages, default_libraries):
         output = pipe.communicate()[0].strip()
     except subprocess.CalledProcessError as e:
         lines = [
-            "pkg-config failed.  This may cause the build to fail below.",
+            "{0} failed.  This may cause the build to fail below.".format(executable),
             "  command: {0}".format(e.cmd),
             "  returncode: {0}".format(e.returncode),
             "  output: {0}".format(e.output)
