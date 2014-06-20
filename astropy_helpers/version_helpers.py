@@ -32,6 +32,8 @@ from . import git_helpers
 from .setup_helpers import is_distutils_display_option, get_pkg_version_module
 from .utils import invalidate_caches
 
+PY3 = sys.version_info[0] == 3
+
 
 
 def _version_split(version):
@@ -111,9 +113,19 @@ def _get_version_py_str(packagename, version, release, debug, uses_git=True):
             if line.startswith('# BEGIN'):
                 break
         git_helpers_py = '\n'.join(source_lines[idx + 1:])
+
+        if PY3:
+            verstr = version
+        else:
+            # In Python 2 don't pass in a unicode string; otherwise verstr will
+            # be represented with u'' syntax which breaks on Python 3.x with x
+            # < 3.  This is only an issue when developing on multiple Python
+            # versions at once
+            verstr = version.encode('utf8')
+
         header = _FROZEN_VERSION_PY_WITH_GIT_HEADER.format(
                 git_helpers=git_helpers_py,
-                verstr=version)
+                verstr=verstr)
     else:
         header = 'version = {0!r}'.format(version)
 
