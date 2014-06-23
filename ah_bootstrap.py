@@ -537,6 +537,7 @@ class _DummyFile(object):
     """A noop writeable object."""
 
     errors = ''  # Required for Python 3.x
+    encoding = 'utf-8'
 
     def write(self, s):
         pass
