@@ -265,7 +265,9 @@ def use_astropy_helpers(path=None, download_if_needed=None, index_url=None,
         # Just activate the found distribibution on sys.path--if we did a
         # download this usually happens automatically but do it again just to
         # be sure
-        return dist.activate()
+        # Note: Adding the dist to the global working set also activates it by
+        # default
+        pkg_resources.working_set.add(dist)
 
 
 def _do_download(version='', find_links=None, index_url=None):
@@ -303,6 +305,8 @@ def _do_download(version='', find_links=None, index_url=None):
             with _silence():
                 dist = _Distribution(attrs=attrs)
 
+        # If the setup_requires succeeded it will have added the new dist to
+        # the main working_set
         return pkg_resources.working_set.by_key.get(DIST_NAME)
     except Exception as e:
         if DEBUG:
@@ -348,8 +352,13 @@ def _directory_import(path):
     # Return True on success, False on failure but download is allowed, and
     # otherwise raise SystemExit
     path = os.path.abspath(path)
-    pkg_resources.working_set.add_entry(path)
-    dist = pkg_resources.working_set.by_key.get(DIST_NAME)
+
+    # Use an empty WorkingSet rather than the man pkg_resources.working_set,
+    # since on older versions of setuptools this will invoke a VersionConflict
+    # when trying to install an upgrade
+    ws = pkg_resources.WorkingSet([])
+    ws.add_entry(path)
+    dist = ws.by_key.get(DIST_NAME)
 
     if dist is None:
         # We didn't find an egg-info/dist-info in the given path, but if a
@@ -361,8 +370,7 @@ def _directory_import(path):
 
             for dist in pkg_resources.find_distributions(path, True):
                 # There should be only one...
-                pkg_resources.working_set.add(dist, path, False)
-                break
+                return dist
 
     return dist
 
