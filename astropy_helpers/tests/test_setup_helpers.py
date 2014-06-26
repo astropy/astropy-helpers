@@ -105,6 +105,7 @@ def test_no_cython_buildext(tmpdir):
 
     test_pkg.chdir()
     run_setup('setup.py', ['build_ext', '--inplace'])
+    sys.path.insert(0, str(test_pkg))
     try:
         import _eva_.unit01
         dirname = os.path.abspath(os.path.dirname(_eva_.unit01.__file__))
@@ -115,3 +116,4 @@ def test_no_cython_buildext(tmpdir):
                 del sys.modules[modname]
             except KeyError:
                 pass
+        sys.path.remove(str(test_pkg))
