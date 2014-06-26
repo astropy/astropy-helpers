@@ -7,7 +7,7 @@ from setuptools.sandbox import run_setup
 
 import pytest
 
-from . import run_cmd, testpackage
+from . import *
 from ..utils import silence
 
 
