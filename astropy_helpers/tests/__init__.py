@@ -165,4 +165,8 @@ def testpackage(tmpdir, version='0.1'):
 # Note sure exactly why, but there is some weird interaction between setuptools
 # entry points and the way run_setup messes with sys.modules that causes this
 # module go out out of scope during the tests; importing it here prevents that
-import setuptools.py31compat
+try:
+    import setuptools.py31compat
+except ImportError:
+    # Note all versions of setuptools have this module
+    pass
