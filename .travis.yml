@@ -27,6 +27,7 @@ install:
     - $PIP_WHEEL_COMMAND "Sphinx"
     - $PIP_WHEEL_COMMAND "pytest-cov"
     - $PIP_WHEEL_COMMAND "coveralls"
+    - $PIP_WHEEL_COMMAND "Cython"
 
 before_script:
     # Some of the tests use git commands that require a user to be configured
