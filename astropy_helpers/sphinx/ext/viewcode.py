@@ -30,7 +30,7 @@ def doctree_read(app, doctree):
     def get_full_modname(modname, attribute):
         try:
             __import__(modname)
-        except Exception, error:
+        except Exception as error:
             if not app.quiet:
                 app.info(traceback.format_exc().rstrip())
             app.warn('viewcode can\'t import %s, failed with error "%s"' %
