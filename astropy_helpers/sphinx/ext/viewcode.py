@@ -21,6 +21,10 @@ from sphinx.util.nodes import make_refnode
 import sys
 import traceback
 
+if sys.version < '3':
+    text_type = unicode
+else:
+    text_type = str
 
 def doctree_read(app, doctree):
     env = app.builder.env
@@ -30,7 +34,7 @@ def doctree_read(app, doctree):
     def get_full_modname(modname, attribute):
         try:
             __import__(modname)
-        except Exception, error:
+        except Exception as error:
             if not app.quiet:
                 app.info(traceback.format_exc().rstrip())
             app.warn('viewcode can\'t import %s, failed with error "%s"' %
@@ -61,7 +65,7 @@ def doctree_read(app, doctree):
                 env._viewcode_modules[modname] = False
                 return
             analyzer.find_tags()
-            if not isinstance(analyzer.code, unicode):
+            if not isinstance(analyzer.code, text_type):
                 code = analyzer.code.decode(analyzer.encoding)
             else:
                 code = analyzer.code
