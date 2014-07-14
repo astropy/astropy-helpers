@@ -60,7 +60,7 @@ try:
     import pkg_resources
     _setuptools_req = pkg_resources.Requirement.parse('setuptools>=0.7')
     # This may raise a DistributionNotFound in which case no version of
-    # setuptools or distribute is properly instlaled
+    # setuptools or distribute is properly installed
     _setuptools = pkg_resources.get_distribution('setuptools')
     if _setuptools not in _setuptools_req:
         # Older version of setuptools; check if we have distribute; again if
