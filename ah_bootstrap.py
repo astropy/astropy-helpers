@@ -421,7 +421,7 @@ def _check_submodule_using_git(path):
 
     if p.returncode != 0 or stderr:
         # Unfortunately the return code alone cannot be relied on, as
-        # earler versions of git returned 0 even if the requested submodule
+        # earlier versions of git returned 0 even if the requested submodule
         # does not exist
         log.debug('git submodule command failed '
                   'unexpectedly:\n{0}'.format(stderr))
@@ -436,7 +436,7 @@ def _check_submodule_using_git(path):
             return True
         else:
             log.warn(
-                'Unexected output from `git submodule status`:\n{0}\n'
+                'Unexpected output from `git submodule status`:\n{0}\n'
                 'Will attempt import from {1!r} regardless.'.format(
                     stdout, path))
             return False
