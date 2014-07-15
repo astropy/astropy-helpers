@@ -84,9 +84,11 @@ def test_bootstrap_from_submodule(tmpdir, testpackage, capsys):
 
         # Ensure that the astropy_helpers used by the setup.py is the one that
         # was imported from git submodule
-        assert path == str(tmpdir.join('clone', '_astropy_helpers_test_',
-                                       '_astropy_helpers_test_',
-                                       '__init__.py'))
+        a = os.path.normcase(path)
+        b = os.path.normcase(str(tmpdir.join('clone', '_astropy_helpers_test_',
+                                             '_astropy_helpers_test_',
+                                             '__init__.py')))
+        assert a == b
 
 
 def test_check_submodule_no_git(tmpdir, testpackage):
@@ -161,9 +163,11 @@ def test_bootstrap_from_directory(tmpdir, testpackage, capsys):
 
         # Ensure that the astropy_helpers used by the setup.py is the one that
         # was imported from git submodule
-        assert path == str(source.join('_astropy_helpers_test_',
-                                       '_astropy_helpers_test_',
-                                       '__init__.py'))
+        a = os.path.normcase(path)
+        b = os.path.normcase(str(source.join('_astropy_helpers_test_',
+                                             '_astropy_helpers_test_',
+                                             '__init__.py')))
+        assert a == b
 
 
 def test_bootstrap_from_archive(tmpdir, testpackage, capsys):
@@ -205,8 +209,11 @@ def test_bootstrap_from_archive(tmpdir, testpackage, capsys):
         egg = orig_repo.join(eggs[0])
         assert os.path.isdir(str(egg))
 
-        assert path == str(egg.join('_astropy_helpers_test_',
-                                    '__init__.py'))
+        a = os.path.normcase(path)
+        b = os.path.normcase(str(egg.join('_astropy_helpers_test_',
+                                          '__init__.py')))
+
+        assert a == b
 
 
 def test_download_if_needed(tmpdir, testpackage, capsys):
@@ -257,8 +264,10 @@ def test_download_if_needed(tmpdir, testpackage, capsys):
         egg = source.join(eggs[0])
         assert os.path.isdir(str(egg))
 
-        assert path == str(egg.join('_astropy_helpers_test_',
-                                    '__init__.py'))
+        a = os.path.normcase(path)
+        b = os.path.normcase(str(egg.join('_astropy_helpers_test_',
+                                          '__init__.py')))
+        assert a == b
 
 
 def test_upgrade(tmpdir, capsys):
@@ -329,8 +338,10 @@ def test_upgrade(tmpdir, capsys):
 
             egg = source.join(eggs[0])
             assert os.path.isdir(str(egg))
-            assert path == str(egg.join('_astropy_helpers_test_',
-                                        '__init__.py'))
+            a = os.path.normcase(path)
+            b = os.path.normcase(str(egg.join('_astropy_helpers_test_',
+                                              '__init__.py')))
+            assert a == b
             assert 'astropy_helpers_test-0.1.1-' in str(egg)
     finally:
         ah_bootstrap.PackageIndex = PackageIndex
