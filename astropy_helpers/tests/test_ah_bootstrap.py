@@ -91,6 +91,21 @@ def test_bootstrap_from_submodule(tmpdir, testpackage, capsys):
         assert a == b
 
 
+def test_bootstrap_from_submodule_no_locale(tmpdir, testpackage, capsys,
+                                            monkeypatch):
+    """
+    Regression test for https://github.com/astropy/astropy/issues/2749
+
+    Runs test_bootstrap_from_submodule but with missing locale/langauge
+    settings.
+    """
+
+    for varname in ('LC_ALL', 'LC_CTYPE', 'LANG', 'LANGUAGE'):
+        monkeypatch.delenv(varname, raising=False)
+
+    test_bootstrap_from_submodule(tmpdir, testpackage, capsys)
+
+
 def test_check_submodule_no_git(tmpdir, testpackage):
     """
     Tests that when importing astropy_helpers from a submodule, it is still

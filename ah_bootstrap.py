@@ -429,7 +429,10 @@ def _check_submodule_using_git(path):
                 '`git submodule status` command:\n{0}'.format(str(e)))
 
 
-    stdio_encoding = locale.getdefaultlocale()[1]
+    # Can fail of the default locale is not configured properly.  See
+    # https://github.com/astropy/astropy/issues/2749.  For the purposes under
+    # consideration 'latin1' is an acceptable fallback.
+    stdio_encoding = locale.getdefaultlocale()[1] or 'latin1'
 
     if p.returncode != 0 or stderr:
         stderr = stderr.decode(stdio_encoding)
