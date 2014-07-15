@@ -1,4 +1,4 @@
-0.4 (unreleased)
+0.4 (2014-07-15)
 ----------------
 
 - Initial release of astropy-helpers.  See `APE4
