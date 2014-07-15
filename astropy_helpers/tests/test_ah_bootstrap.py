@@ -1,6 +1,7 @@
 import glob
 import os
 import textwrap
+import sys
 
 from setuptools.package_index import PackageIndex
 from setuptools.sandbox import run_setup
@@ -26,12 +27,14 @@ import ah_bootstrap
 ah_bootstrap.DIST_NAME = 'astropy-helpers-test'
 ah_bootstrap.PACKAGE_NAME = '_astropy_helpers_test_'
 ah_bootstrap.AUTO_UPGRADE = False
+ah_bootstrap.DOWNLOAD_IF_NEEDED = False
 try:
     ah_bootstrap.use_astropy_helpers({args})
 finally:
     ah_bootstrap.DIST_NAME = 'astropy-helpers'
     ah_bootstrap.PACKAGE_NAME = 'astropy_helpers'
     ah_bootstrap.AUTO_UPGRADE = True
+    ah_bootstrap.DOWNLOAD_IF_NEEDED = True
 
 import _astropy_helpers_test_
 filename = os.path.abspath(_astropy_helpers_test_.__file__)
@@ -102,6 +105,22 @@ def test_bootstrap_from_submodule_no_locale(tmpdir, testpackage, capsys,
 
     for varname in ('LC_ALL', 'LC_CTYPE', 'LANG', 'LANGUAGE'):
         monkeypatch.delenv(varname, raising=False)
+
+    test_bootstrap_from_submodule(tmpdir, testpackage, capsys)
+
+
+def test_bootstrap_from_submodule_bad_locale(tmpdir, testpackage, capsys,
+                                             monkeypatch):
+    """
+    Additional regression test for
+    https://github.com/astropy/astropy/issues/2749
+    """
+
+    for varname in ('LC_ALL', 'LC_CTYPE', 'LANG', 'LANGUAGE'):
+        monkeypatch.delenv(varname, raising=False)
+
+    # Test also with bad LC_CTYPE a la http://bugs.python.org/issue18378
+    monkeypatch.setenv('LC_CTYPE', 'UTF-8')
 
     test_bootstrap_from_submodule(tmpdir, testpackage, capsys)
 
@@ -257,7 +276,8 @@ def test_download_if_needed(tmpdir, testpackage, capsys):
     dist_dir = testpackage.join('dist')
 
     with source.as_cwd():
-        source.join('setup.py').write(TEST_SETUP_PY.format(args=''))
+        source.join('setup.py').write(TEST_SETUP_PY.format(
+            args='download_if_needed=True'))
         source.join('setup.cfg').write(textwrap.dedent("""\
             [easy_install]
             find_links = {find_links}
