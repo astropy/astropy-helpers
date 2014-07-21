@@ -16,8 +16,11 @@ ISSUE_PATTERN = re.compile('#[0-9]+')
 
 def process_changelog_links(app, doctree, docname):
 
-    if 'changelog' not in docname or app.config.github_issues_url is None:
+    if (('changelog' not in docname and 'whatsnew/' not in docname) or
+       app.config.github_issues_url is None):
         return
+
+    app.info('[changelog_links] Adding changelog links to "{0}"'.format(docname))
 
     for item in doctree.traverse():
 
