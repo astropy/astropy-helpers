@@ -7,7 +7,8 @@
 0.4.1 (unreleased)
 ------------------
 
-- Nothing changed yet.
+- Fixed crash that could result from users with missing/misconfigured
+  locale settings.  [#58]
 
 
 0.4 (2014-07-15)
