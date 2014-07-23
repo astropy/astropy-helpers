@@ -54,6 +54,17 @@ try:
     import sphinx
     from sphinx.setup_command import BuildDoc as SphinxBuildDoc
     _module_state['have_sphinx'] = True
+except ValueError as e:
+    # This can occur deep in the bowels of Sphinx's imports by way of docutils
+    # and an occurence of this bug: http://bugs.python.org/issue18378
+    # In this case sphinx is effectively unusable
+    if 'unknown locale' in e.args[0]:
+        log.warn(
+            "Possible misconfiguration of one of the environment variables "
+            "LC_ALL, LC_CTYPES, LANG, or LANGUAGE.  For an example of how to "
+            "configure your system's language environment on OSX see "
+            "http://blog.remibergsma.com/2012/07/10/"
+            "setting-locales-correctly-on-mac-osx-terminal-application/")
 except ImportError:
     pass
 except SyntaxError:
