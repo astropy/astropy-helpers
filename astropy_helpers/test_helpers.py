@@ -6,7 +6,7 @@ import subprocess
 import sys
 import tempfile
 
-from distutils.core import Command
+from setuptools import Command
 
 from .compat import _fix_user_options
 
@@ -85,7 +85,7 @@ class AstropyTest(Command, object):
         """
         Build a Python script to run the tests.
         """
-        
+
         cmd_pre = ''  # Commands to run before the test function
         cmd_post = ''  # Commands to run after the test function
 
@@ -117,7 +117,7 @@ class AstropyTest(Command, object):
                '{cmd_post}'
                'sys.exit(result)')
         return cmd.format(set_flag, self, cmd_pre=cmd_pre, cmd_post=cmd_post)
-    
+
     def _validate_required_deps(self):
         """
         This method checks that any required modules are installed before
@@ -139,21 +139,21 @@ class AstropyTest(Command, object):
 
         # Ensure all required packages are installed
         self._validate_required_deps()
-        
+
         # Ensure there is a doc path
         if self.docs_path is None:
             if os.path.exists('docs'):
                 self.docs_path = os.path.abspath('docs')
-        
+
         # Run everything in a try: finally: so that the tmp dir gets deleted.
         try:
             # Construct this modules testing command
             cmd = self.construct_testing_command()
-            
+
             # Run the tests in a subprocess--this is necessary since
             # new extension modules may have appeared, and this is the
             # easiest way to set up a new environment
-    
+
             # On Python 3.x prior to 3.3, the creation of .pyc files
             # is not atomic.  py.test jumps through some hoops to make
             # this work by parsing import statements and carefully
@@ -182,7 +182,7 @@ class AstropyTest(Command, object):
         the purposes of testing this avoids creating pyc and __pycache__
         directories inside the build directory
         """
-        self.reinitialize_command('build')
+        self.reinitialize_command('build', inplace=True)
         self.run_command('build')
         build_cmd = self.get_finalized_command('build')
         new_path = os.path.abspath(build_cmd.build_lib)
@@ -240,5 +240,5 @@ class AstropyTest(Command, object):
             'from astropy.tests.helper import _save_coverage; '
             '_save_coverage(cov, result, "{0}", "{1}");'.format(
                 os.path.abspath('.'), self.testing_path))
-        
+
         return cmd_pre, cmd_post
