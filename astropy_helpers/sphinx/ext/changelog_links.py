@@ -15,9 +15,11 @@ ISSUE_PATTERN = re.compile('#[0-9]+')
 
 
 def process_changelog_links(app, doctree, docname):
-
-    if (('changelog' not in docname and 'whatsnew/' not in docname) or
-       app.config.github_issues_url is None):
+    for rex in app.changelog_links_rexes:
+        if rex.match(docname):
+            break
+    else:
+        # if the doc doesn't match any of the changelog regexes, don't process
         return
 
     app.info('[changelog_links] Adding changelog links to "{0}"'.format(docname))
@@ -64,6 +66,13 @@ def process_changelog_links(app, doctree, docname):
         item.parent.replace(item, children)
 
 
+def setup_patterns_rexes(app):
+    app.changelog_links_rexes = [re.compile(pat) for pat in
+                                 app.config.changelog_links_docpattern]
+
+
 def setup(app):
     app.connect('doctree-resolved', process_changelog_links)
+    app.connect('builder-inited', setup_patterns_rexes)
     app.add_config_value('github_issues_url', None, True)
+    app.add_config_value('changelog_links_docpattern', ['.*changelog.*'], True)
