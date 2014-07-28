@@ -4,6 +4,10 @@
 - Fixed crash that could result from users with missing/misconfigured
   locale settings.  [#58]
 
+- The font used for code examples in the docs is now the
+  system-defined ``monospace`` font, rather than ``Minaco``, which is
+  not available on all platforms.  [#50]
+
 
 0.4 (2014-07-15)
 ----------------
