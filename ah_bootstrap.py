@@ -558,9 +558,12 @@ def _update_submodule(submodule, status):
 
     err_msg = None
 
+    cmd = ['git', 'submodule'] + cmd + ['--', submodule]
+    log.warn('Updating {0} submodule with: `{1}`'.format(
+        submodule, ' '.join(cmd)))
+
     try:
-        p = sp.Popen(['git', 'submodule'] + cmd + ['--', submodule],
-                     stdout=sp.PIPE, stderr=sp.PIPE)
+        p = sp.Popen(cmd, stdout=sp.PIPE, stderr=sp.PIPE)
         stdout, stderr = p.communicate()
     except OSError as e:
         err_msg = str(e)
