@@ -81,7 +81,7 @@ class AstropyTest(Command, object):
         # run_tests
         pass
 
-    def construct_testing_command(self):
+    def generate_testing_command(self):
         """
         Build a Python script to run the tests.
         """
@@ -148,7 +148,7 @@ class AstropyTest(Command, object):
         # Run everything in a try: finally: so that the tmp dir gets deleted.
         try:
             # Construct this modules testing command
-            cmd = self.construct_testing_command()
+            cmd = self.generate_testing_command()
 
             # Run the tests in a subprocess--this is necessary since
             # new extension modules may have appeared, and this is the
