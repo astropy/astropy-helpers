@@ -539,10 +539,10 @@ def _update_submodule(submodule, status):
         return
     elif status == '-':
         cmd = ['update', '--init']
-        log.warn('Initializing submodule {0!r}'.format(submodule))
+        action = 'Initializing'
     elif status == '+':
         cmd = ['update']
-        log.warn('Updating submodule {0!r}'.format(submodule))
+        action = 'Updating'
     elif status == 'U':
         raise _AHBoostrapSystemExit(
             'Error: Submodule {0} contains unresolved merge conflicts.  '
@@ -559,8 +559,8 @@ def _update_submodule(submodule, status):
     err_msg = None
 
     cmd = ['git', 'submodule'] + cmd + ['--', submodule]
-    log.warn('Updating {0} submodule with: `{1}`'.format(
-        submodule, ' '.join(cmd)))
+    log.warn('{0} {1} submodule with: `{2}`'.format(
+        action, submodule, ' '.join(cmd)))
 
     try:
         p = sp.Popen(cmd, stdout=sp.PIPE, stderr=sp.PIPE)
