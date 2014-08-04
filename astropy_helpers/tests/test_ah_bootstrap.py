@@ -162,15 +162,15 @@ def test_check_submodule_no_git(tmpdir, testpackage):
         def _do_upgrade(*args, **kwargs):
             raise UpgradeError()
 
-        orig_do_upgrade = ah_bootstrap._do_upgrade
-        ah_bootstrap._do_upgrade = _do_upgrade
+        orig_do_upgrade = ah_bootstrap._Bootstrapper._do_upgrade
+        ah_bootstrap._Bootstrapper._do_upgrade = _do_upgrade
         try:
             run_setup('setup.py', ['--no-git'])
         except UpgradeError:
             pytest.fail('Attempted to run auto-upgrade despite importing '
                         '_astropy_helpers_test_ from a git submodule')
         finally:
-            ah_bootstrap._do_upgrade = orig_do_upgrade
+            ah_bootstrap._Bootstrapper._do_upgrade = orig_do_upgrade
 
 
 def test_bootstrap_from_directory(tmpdir, testpackage, capsys):
