@@ -162,7 +162,10 @@ def use_astropy_helpers(path=None, download_if_needed=None, index_url=None,
     if '--offline' in sys.argv:
         download_if_needed = False
         auto_upgrade = False
+        offline = True
         sys.argv.remove('--offline')
+    else:
+        offline = False
 
     if '--no-git' in sys.argv:
         use_git = False
@@ -199,7 +202,8 @@ def use_astropy_helpers(path=None, download_if_needed=None, index_url=None,
     elif not os.path.exists(path) or os.path.isdir(path):
         # Even if the given path does not exist on the filesystem, if it *is* a
         # submodule, `git submodule init` will create it
-        is_submodule = _check_submodule(path, use_git=use_git)
+        is_submodule = _check_submodule(path, use_git=use_git,
+                                        offline=offline)
 
         if is_submodule or os.path.isdir(path):
             log.info(
@@ -380,7 +384,7 @@ def _directory_import(path):
     return dist
 
 
-def _check_submodule(path, use_git=True):
+def _check_submodule(path, use_git=True, offline=False):
     """
     Check if the given path is a git submodule.
 
@@ -389,12 +393,12 @@ def _check_submodule(path, use_git=True):
     """
 
     if use_git:
-        return _check_submodule_using_git(path)
+        return _check_submodule_using_git(path, offline)
     else:
         return _check_submodule_no_git(path)
 
 
-def _check_submodule_using_git(path):
+def _check_submodule_using_git(path, offline):
     """
     Check if the given path is a git submodule.  If so, attempt to initialize
     and/or update the submodule if needed.
@@ -464,7 +468,7 @@ def _check_submodule_using_git(path):
     m = _git_submodule_status_re.match(stdout)
     if m:
         # Yes, the path *is* a git submodule
-        _update_submodule(m.group('submodule'), m.group('status'))
+        _update_submodule(m.group('submodule'), m.group('status'), offline)
         return True
     else:
         log.warn(
@@ -533,16 +537,23 @@ def _check_submodule_no_git(path):
     return False
 
 
-def _update_submodule(submodule, status):
+def _update_submodule(submodule, status, offline):
     if status == ' ':
         # The submodule is up to date; no action necessary
         return
     elif status == '-':
+        if offline:
+            raise _AHBootstrapSystemExit(
+                "Cannot initialize the {0} submodule in --offline mode; this "
+                "requires being able to clone the submodule from an online "
+                "repository.".format(submodule))
         cmd = ['update', '--init']
         action = 'Initializing'
     elif status == '+':
         cmd = ['update']
         action = 'Updating'
+        if offline:
+            cmd.append('--no-fetch')
     elif status == 'U':
         raise _AHBoostrapSystemExit(
             'Error: Submodule {0} contains unresolved merge conflicts.  '
