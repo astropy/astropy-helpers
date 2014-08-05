@@ -104,7 +104,7 @@ def get_git_devstr(sha=False, show_warning=True, path=None):
     elif p.returncode != 0:
         if show_warning:
             warnings.warn('Git failed while determining revision '
-                          'count: ' + stderr)
+                          'count: {0}'.format(stderr))
         return ''
 
     if sha:
