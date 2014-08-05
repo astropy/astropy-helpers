@@ -23,7 +23,7 @@ before_install:
     - pip install wheel
 
 install:
-    - $PIP_WHEEL_COMMAND "pytest"
+    - $PIP_WHEEL_COMMAND "pytest<2.6"
     - $PIP_WHEEL_COMMAND "Sphinx"
     - $PIP_WHEEL_COMMAND "pytest-cov"
     - $PIP_WHEEL_COMMAND "coveralls"
