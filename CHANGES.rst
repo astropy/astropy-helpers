@@ -10,12 +10,17 @@
 - The ``--offline`` flag to ``setup.py`` understood by ``ah_bootstrap.py``
   now also prevents git from going online to fetch submodule updates. [#67]
 
+- The Sphinx extension for converting issue numbers to links in the changelog
+  now supports working on arbitrary pages via a new ``conf.py`` setting:
+  ``changelog_links_docpattern``.  By default it affects the ``changelog``
+  and ``whatsnew`` pages in one's Sphinx docs. [#61]
+
 - Fixed crash that could result from users with missing/misconfigured
-  locale settings.  [#58]
+  locale settings. [#58]
 
 - The font used for code examples in the docs is now the
   system-defined ``monospace`` font, rather than ``Minaco``, which is
-  not available on all platforms.  [#50]
+  not available on all platforms. [#50]
 
 
 0.4 (2014-07-15)
