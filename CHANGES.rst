@@ -1,4 +1,4 @@
-0.4.1 (unreleased)
+0.4.1 (2014-08-06)
 ------------------
 
 - Fixed git revision count on systems with git versions older than v1.7.2.
