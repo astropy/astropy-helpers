@@ -7,6 +7,9 @@
 0.4.1 (unreleased)
 ------------------
 
+- The ``--offline`` flag to ``setup.py`` understood by ``ah_bootstrap.py``
+  now also prevents git from going online to fetch submodule updates. [#67]
+
 - Fixed crash that could result from users with missing/misconfigured
   locale settings.  [#58]
 
