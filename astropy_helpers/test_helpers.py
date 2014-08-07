@@ -53,7 +53,9 @@ class AstropyTest(Command, object):
          'the current directory contains a directory called "docs", that '
          'will be used.'),
         ('skip-docs', None,
-         "Don't test the documentation .rst files.")
+         "Don't test the documentation .rst files."),
+        ('kselect=', 'k',
+         'Selection to be passed into py.test via the "-k" argument.')
     ]
 
     user_options = _fix_user_options(user_options)
@@ -75,6 +77,7 @@ class AstropyTest(Command, object):
         self.parallel = 0
         self.docs_path = None
         self.skip_docs = False
+        self.kselect = None
 
     def finalize_options(self):
         # Normally we would validate the options here, but that's handled in
@@ -176,7 +179,8 @@ class AstropyTest(Command, object):
                    'open_files={1.open_files!r}, '
                    'parallel={1.parallel!r}, '
                    'docs_path={1.docs_path!r}, '
-                   'skip_docs={1.skip_docs!r})); '
+                   'skip_docs={1.skip_docs!r}, '
+                   'kselect={1.kselect!r})); '
                    '{cmd_post}'
                    'sys.exit(result)')
             cmd = cmd.format(set_flag, self, cmd_pre=cmd_pre, cmd_post=cmd_post)
