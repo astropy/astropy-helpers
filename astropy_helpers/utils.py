@@ -16,7 +16,6 @@ else:
     invalidate_caches = lambda: None
 
 
-
 class _DummyFile(object):
     """A noop writeable object."""
 
