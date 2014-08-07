@@ -80,7 +80,7 @@ def package_template(tmpdir, request):
     tmp_package = tmpdir.join('package_template')
 
     # TODO: update URL once package-template changes are merged
-    run_cmd('git', ['clone', 'http://github.com/astropy/package-template',
+    run_cmd('git', ['clone', 'https://github.com/astropy/package-template',
                     str(tmp_package)])
 
     old_cwd = os.getcwd()
