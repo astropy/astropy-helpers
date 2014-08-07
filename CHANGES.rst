@@ -1,6 +1,12 @@
 0.4.1 (unreleased)
 ------------------
 
+- Fixed git revision count on systems with git versions older than v1.7.2.
+  [#70]
+
+- Fixed display of warning text when running a git command fails (previously
+  the output of stderr was not being decoded properly). [#70]
+
 - The ``--offline`` flag to ``setup.py`` understood by ``ah_bootstrap.py``
   now also prevents git from going online to fetch submodule updates. [#67]
 
