@@ -16,6 +16,21 @@ import subprocess
 import warnings
 
 
+def _decode_stdio(stream):
+    try:
+        stdio_encoding = locale.getdefaultlocale()[1] or 'utf-8'
+    except ValueError:
+        stdio_encoding = 'utf-8'
+
+    try:
+        text = stream.decode(stdio_encoding)
+    except UnicodeDecodeError:
+        # Final fallback
+        text = stream.decode('latin1')
+
+    return text
+
+
 def update_git_devstr(version, path=None):
     """
     Updates the git revision string if and only if the path is being imported
@@ -105,20 +120,9 @@ def get_git_devstr(sha=False, show_warning=True, path=None):
                               'default dev version.'.format(path))
             return (p.returncode, '', '')
         elif p.returncode != 0:
-            try:
-                stderr_encoding = locale.getdefaultlocale()[1] or 'utf-8'
-            except ValueError:
-                stderr_encoding = 'utf-8'
-
-            try:
-                stderr_text = stderr.decode(stderr_encoding)
-            except UnicodeDecodeError:
-                # Final fallback
-                stderr_text = stderr.decode('latin1')
-
             if show_warning:
                 warnings.warn('Git failed while determining revision '
-                              'count: {0}'.format(stderr_text))
+                              'count: {0}'.format(_decode_stdio(stderr)))
             return (p.returncode, stdout, stderr)
 
         return p.returncode, stdout, stderr
@@ -140,6 +144,6 @@ def get_git_devstr(sha=False, show_warning=True, path=None):
         else:
             return ''
     elif sha:
-        return stdout.decode('utf-8')[:40]
+        return _decode_stdio(stdout)[:40]
     else:
-        return stdout.decode('utf-8').strip()
+        return _decode_stdio(stdout).strip()
