@@ -1,10 +1,20 @@
+astropy-helpers Changelog
+=========================
+
+
 0.5 (unreleased)
 ----------------
 
 - Nothing changed yet.
 
 
-0.4.1 (unreleased)
+0.4.2 (unreleased)
+------------------
+
+- Nothing changed yet.
+
+
+0.4.1 (2014-08-08)
 ------------------
 
 - Fixed git revision count on systems with git versions older than v1.7.2.
