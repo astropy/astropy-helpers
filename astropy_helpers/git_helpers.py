@@ -119,6 +119,12 @@ def get_git_devstr(sha=False, show_warning=True, path=None):
                 warnings.warn('No git repository present at {0!r}! Using '
                               'default dev version.'.format(path))
             return (p.returncode, '', '')
+        if p.returncode == 129:
+            if show_warning:
+                warnings.warn('Your git looks old (does it support {0}?); ' 
+                              'consider upgrading to v1.7.2 or '
+                              'later.'.format(cmd[0]))
+            return (p.returncode, stdout, stderr)
         elif p.returncode != 0:
             if show_warning:
                 warnings.warn('Git failed while determining revision '
