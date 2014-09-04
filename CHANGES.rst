@@ -11,7 +11,7 @@ astropy-helpers Changelog
 0.4.2 (unreleased)
 ------------------
 
-- Nothing changed yet.
+- Fixed automodsumm to work with new versions of Sphinx (>= 1.2.2). [#80]
 
 
 0.4.1 (2014-08-08)
