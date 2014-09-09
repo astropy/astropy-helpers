@@ -4,6 +4,8 @@ astropy-helpers Changelog
 0.4.2 (unreleased)
 ------------------
 
+- Fixed some CSS issues in generated API docs. [#69]
+
 - Fixed the warning message that could be displayed when generating a
   version number with some older versions of git. [#77]
 
