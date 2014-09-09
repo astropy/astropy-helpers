@@ -1,7 +1,7 @@
 astropy-helpers Changelog
 =========================
 
-0.4.2 (unreleased)
+0.4.2 (2014-08-09)
 ------------------
 
 - Fixed some CSS issues in generated API docs. [#69]
