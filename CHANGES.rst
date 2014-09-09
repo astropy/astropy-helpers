@@ -4,6 +4,9 @@ astropy-helpers Changelog
 0.4.2 (unreleased)
 ------------------
 
+- Fixed the warning message that could be displayed when generating a
+  version number with some older versions of git. [#77]
+
 - Fixed automodsumm to work with new versions of Sphinx (>= 1.2.2). [#80]
 
 
