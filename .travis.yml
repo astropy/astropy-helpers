@@ -9,7 +9,7 @@ python:
 
 env:
     global:
-        - PIP_WHEEL_COMMAND="pip install --find-links http://wheels.astropy.org/ --use-wheel"
+        - PIP_WHEEL_COMMAND="pip install --use-wheel"
 
 before_install:
 
@@ -24,6 +24,7 @@ before_install:
 
 install:
     - $PIP_WHEEL_COMMAND "pytest<2.6"
+    - $PIP_WHEEL_COMMAND "--upgrade" "py"
     - $PIP_WHEEL_COMMAND "Jinja2<2.7"
     - $PIP_WHEEL_COMMAND "Sphinx"
     - $PIP_WHEEL_COMMAND "pytest-cov"
