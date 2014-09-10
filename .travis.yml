@@ -9,7 +9,7 @@ python:
 
 env:
     global:
-        - PIP_WHEEL_COMMAND="pip install --find-links http://wheels.astropy.org/ --use-wheel"
+        - PIP_WHEEL_COMMAND="pip install --use-wheel"
 
 before_install:
 
