@@ -2,8 +2,6 @@ import os
 import subprocess as sp
 import sys
 
-from setuptools.sandbox import run_setup
-
 import pytest
 
 PACKAGE_DIR = os.path.dirname(__file__)
