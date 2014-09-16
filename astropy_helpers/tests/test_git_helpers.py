@@ -52,25 +52,12 @@ def version_test_package(tmpdir, request, version='42.42.dev'):
         run_cmd('git', ['add', '--all'])
         run_cmd('git', ['commit', '-m', 'test package'])
 
-    old_astropy_helpers = {}
-    if 'astropy_helpers' in sys.modules:
-        # Delete the astropy_helpers that was imported by running the tests so
-        # as to not confuse the astropy_helpers that will be used in testing
-        # the package
-        for k, v in sys.modules.items():
-            if k.startswith('astropy_helpers'):
-                old_astropy_helpers[k] = v
-        cleanup_import('astropy_helpers')
-
     if '' in sys.path:
         sys.path.remove('')
 
     sys.path.insert(0, '')
 
-    def finalize(old_astropy_helpers=old_astropy_helpers):
-        if old_astropy_helpers:
-            sys.modules.update(old_astropy_helpers)
-
+    def finalize():
         cleanup_import('_eva_')
 
     request.addfinalizer(finalize)
