@@ -1,11 +1,22 @@
+import glob
 import imp
 import os
+import pkgutil
 import re
 import sys
+import tarfile
 
 from setuptools.sandbox import run_setup
 
 from . import *
+
+
+PY3 = sys.version_info[0] == 3
+
+if PY3:
+    _text_type = str
+else:
+    _text_type = unicode
 
 
 _DEV_VERSION_RE = re.compile(r'\d+\.\d+(?:\.\d+)?\.dev(\d+)')
@@ -114,3 +125,54 @@ def test_update_git_devstr(version_test_package, capsys):
     assert newversion == _eva_.version.version
 
 
+def test_installed_git_version(version_test_package, tmpdir, capsys):
+    """
+    Test for https://github.com/astropy/astropy-helpers/issues/87
+
+    Ensures that packages installed with astropy_helpers have a correct copy
+    of the git hash of the installed commit.
+    """
+
+    # To test this, it should suffice to build a source dist, unpack it
+    # somewhere outside the git repository, and then do a build and import
+    # from the build directory--no need to "install" as such
+
+    with version_test_package.as_cwd():
+        run_setup('setup.py', ['build'])
+
+        try:
+            import _eva_
+            githash = _eva_.__githash__
+            assert githash and isinstance(githash, _text_type)
+        finally:
+            cleanup_import('_eva_')
+
+        run_setup('setup.py', ['sdist', '--dist-dir=dist', '--formats=gztar'])
+
+        tgzs = glob.glob(os.path.join('dist', '*.tar.gz'))
+        assert len(tgzs) == 1
+
+        tgz = version_test_package.join(tgzs[0])
+
+    build_dir = tmpdir.mkdir('build_dir')
+    tf = tarfile.open(str(tgz), mode='r:gz')
+    tf.extractall(str(build_dir))
+
+    with build_dir.as_cwd():
+        pkg_dir = glob.glob('_eva_-*')[0]
+        os.chdir(pkg_dir)
+        run_setup('setup.py', ['build'])
+
+        try:
+            import _eva_
+            loader = pkgutil.get_loader('_eva_')
+            # Ensure we are importing the 'packagename' that was just unpacked
+            # into the build_dir
+            if sys.version_info[:2] != (3, 3):
+                # Skip this test on Python 3.3 wherein the SourceFileLoader
+                # has a bug where get_filename() does not return an absolute
+                # path
+                assert loader.get_filename().startswith(str(build_dir))
+            assert _eva_.__githash__ == githash
+        finally:
+            cleanup_import('_eva_')
