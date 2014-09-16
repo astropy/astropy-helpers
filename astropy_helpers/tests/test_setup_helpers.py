@@ -111,9 +111,5 @@ def test_no_cython_buildext(tmpdir):
         dirname = os.path.abspath(os.path.dirname(_eva_.unit01.__file__))
         assert dirname == str(test_pkg.join('_eva_'))
     finally:
-        for modname in ['_eva_', '_eva_.unit01']:
-            try:
-                del sys.modules[modname]
-            except KeyError:
-                pass
+        cleanup_import('_eva_')
         sys.path.remove(str(test_pkg))

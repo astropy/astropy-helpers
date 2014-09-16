@@ -68,59 +68,6 @@ def reset_distutils_log():
     log.set_threshold(log.WARN)
 
 
-@pytest.fixture
-def package_template(tmpdir, request):
-    """Create a copy of the package_template repository (containing the package
-    template) in a tempdir and change directories to that temporary copy.
-
-    Also ensures that any previous imports of the test package are unloaded
-    from `sys.modules`.
-    """
-
-    tmp_package = tmpdir.join('package_template')
-
-    # TODO: update URL once package-template changes are merged
-    run_cmd('git', ['clone', 'https://github.com/astropy/package-template',
-                    str(tmp_package)])
-
-    old_cwd = os.getcwd()
-
-    # Before changing directores import the local ah_boostrap module so that it
-    # is tested, and *not* the copy that happens to be included in the test
-    # package
-
-    import ah_bootstrap
-
-    # This is required to prevent the multiprocessing atexit bug
-    import multiprocessing
-
-    os.chdir(str(tmp_package))
-
-    if 'packagename' in sys.modules:
-        del sys.modules['packagename']
-
-    old_astropy_helpers = None
-    if 'astropy_helpers' in sys.modules:
-        # Delete the astropy_helpers that was imported by running the tests so
-        # as to not confuse the astropy_helpers that will be used in testing
-        # the package
-        old_astropy_helpers = sys.modules['astropy_helpers']
-        del sys.modules['astropy_helpers']
-
-    if '' in sys.path:
-        sys.path.remove('')
-
-    sys.path.insert(0, '')
-
-    def finalize(old_cwd=old_cwd, old_astropy_helpers=old_astropy_helpers):
-        os.chdir(old_cwd)
-        sys.modules['astropy_helpers'] = old_astropy_helpers
-
-    request.addfinalizer(finalize)
-
-    return tmp_package
-
-
 TEST_PACKAGE_SETUP_PY = """\
 #!/usr/bin/env python
 
@@ -159,6 +106,21 @@ def testpackage(tmpdir, version='0.1'):
         run_cmd('git', ['commit', '-m', 'test package'])
 
     return source
+
+
+def cleanup_import(package_name):
+    """Remove all references to package_name from sys.modules"""
+
+    for k in list(sys.modules):
+        if not isinstance(k, str):
+            # Some things will actually do this =_=
+            continue
+        elif k.startswith('astropy_helpers.tests'):
+            # Don't delete imported test modules or else the tests will break,
+            # badly
+            continue
+        if k == package_name or k.startswith(package_name + '.'):
+            del sys.modules[k]
 
 
 # Ugly workaround
