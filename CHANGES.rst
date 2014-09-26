@@ -4,11 +4,14 @@ astropy-helpers Changelog
 0.4.3 (unreleased)
 ------------------
 
-- Nothing yet.
-
 - Fixed a bug where optional arguments to the ``doctest-skip`` Sphinx
   directive were sometimes being left in the generated documentation output.
   [#90]
+
+- The generated ``version.py`` file now preserves the git hash of installed
+  copies of the package as well as when building a source distribution.  That
+  is, the git hash of the changeset that was installed/released is preserved.
+  [#87]
 
 
 0.4.2 (2014-08-09)
