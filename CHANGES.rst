@@ -11,7 +11,10 @@ astropy-helpers Changelog
 0.4.3 (unreleased)
 ------------------
 
-- Nothing changed yet.
+- The generated ``version.py`` file now preserves the git hash of installed
+  copies of the package as well as when building a source distribution.  That
+  is, the git hash of the changeset that was installed/released is preserved.
+  [#87]
 
 
 0.4.2 (2014-08-09)

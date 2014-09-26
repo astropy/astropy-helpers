@@ -84,13 +84,16 @@ _FROZEN_VERSION_PY_WITH_GIT_HEADER = """
 {git_helpers}
 
 _last_generated_version = {verstr!r}
+_last_githash = {githash!r}
 
 version = update_git_devstr(_last_generated_version)
-githash = get_git_devstr(sha=True, show_warning=False)
+githash = get_git_devstr(sha=True, show_warning=False,
+                         path=__file__) or _last_githash
 """[1:]
 
 
-def _get_version_py_str(packagename, version, release, debug, uses_git=True):
+def _get_version_py_str(packagename, version, githash, release, debug,
+                        uses_git=True):
     timestamp = str(datetime.datetime.now())
     major, minor, bugfix = _version_split(version)
 
@@ -123,9 +126,14 @@ def _get_version_py_str(packagename, version, release, debug, uses_git=True):
             # versions at once
             verstr = version.encode('utf8')
 
+        new_githash = git_helpers.get_git_devstr(sha=True, show_warning=False)
+
+        if new_githash:
+            githash = new_githash
+
         header = _FROZEN_VERSION_PY_WITH_GIT_HEADER.format(
                 git_helpers=git_helpers_py,
-                verstr=verstr)
+                verstr=verstr, githash=githash)
     else:
         header = 'version = {0!r}'.format(version)
 
@@ -150,11 +158,17 @@ def generate_version_py(packagename, version, release=None, debug=None,
         except AttributeError:
             last_generated_version = version_module.version
 
+        try:
+            last_githash = version_module._last_githash
+        except AttributeError:
+            last_githash = ''
+
         current_release = version_module.release
         current_debug = version_module.debug
     except ImportError:
         version_module = None
         last_generated_version = None
+        last_githash = None
         current_release = None
         current_debug = None
 
@@ -182,8 +196,8 @@ def generate_version_py(packagename, version, release=None, debug=None,
 
         with open(version_py, 'w') as f:
             # This overwrites the actual version.py
-            f.write(_get_version_py_str(packagename, version, release, debug,
-                                        uses_git=uses_git))
+            f.write(_get_version_py_str(packagename, version, last_githash,
+                                        release, debug, uses_git=uses_git))
 
         invalidate_caches()
 
