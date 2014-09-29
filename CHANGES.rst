@@ -16,6 +16,10 @@ astropy-helpers Changelog
   is, the git hash of the changeset that was installed/released is preserved.
   [#87]
 
+- In smart resolver add resolution for class links when they exist in the
+  intersphinx inventory, but not the mapping of the current package
+  (e.g. when an affiliated package uses an astropy core class of which
+  "actual" and "documented" location differs) [#88]
 
 0.4.2 (2014-08-09)
 ------------------
