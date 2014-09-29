@@ -119,14 +119,3 @@ def cleanup_import(package_name):
             continue
         if k == package_name or k.startswith(package_name + '.'):
             del sys.modules[k]
-
-
-# Ugly workaround
-# Note sure exactly why, but there is some weird interaction between setuptools
-# entry points and the way run_setup messes with sys.modules that causes this
-# module go out out of scope during the tests; importing it here prevents that
-try:
-    import setuptools.py31compat
-except ImportError:
-    # Note all versions of setuptools have this module
-    pass
