@@ -95,6 +95,16 @@ from setuptools import Distribution
 from setuptools.package_index import PackageIndex
 from setuptools.sandbox import run_setup
 
+# Note: The following import is required as a workaround to
+# https://github.com/astropy/astropy-helpers/issues/89; if we don't import this
+# module now, it will get cleaned up after `run_setup` is called, but that will
+# later cause the TemporaryDirectory class defined in it to stop working when
+# used later on by setuptools
+try:
+    import setuptools.py31compat
+except ImportError:
+    pass
+
 # TODO: Maybe enable checking for a specific version of astropy_helpers?
 DIST_NAME = 'astropy-helpers'
 PACKAGE_NAME = 'astropy_helpers'

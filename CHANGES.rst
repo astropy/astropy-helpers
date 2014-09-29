@@ -21,6 +21,11 @@ astropy-helpers Changelog
   (e.g. when an affiliated package uses an astropy core class of which
   "actual" and "documented" location differs) [#88]
 
+- Fixed a bug that could occur when running ``setup.py`` for the first time
+  in a repository that uses astropy-helpers as a submodule:
+  ``AttributeError: 'NoneType' object has no attribute 'mkdtemp'`` [#89]
+
+
 0.4.2 (2014-08-09)
 ------------------
 
