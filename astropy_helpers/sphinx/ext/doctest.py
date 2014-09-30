@@ -9,6 +9,7 @@ which actually does something.  For astropy, all of the testing is
 centrally managed from py.test and Sphinx is not used for running
 tests.
 """
+import re
 from docutils.nodes import literal_block
 from sphinx.util.compat import Directive
 
@@ -17,6 +18,10 @@ class DoctestSkipDirective(Directive):
     has_content = True
 
     def run(self):
+        # Check if there is any valid argument, and skip it. Currently only
+        # 'win32' is supported in astropy.tests.pytest_plugins.
+        if re.match('win32', self.content[0]):
+            self.content = self.content[2:]
         code = '\n'.join(self.content)
         return [literal_block(code, code)]
 
