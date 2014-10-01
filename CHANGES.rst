@@ -25,6 +25,10 @@ astropy-helpers Changelog
   in a repository that uses astropy-helpers as a submodule:
   ``AttributeError: 'NoneType' object has no attribute 'mkdtemp'`` [#89]
 
+- Fixed a bug where optional arguments to the ``doctest-skip`` Sphinx
+  directive were sometimes being left in the generated documentation output.
+  [#90]
+
 
 0.4.2 (2014-08-09)
 ------------------
