@@ -6,6 +6,10 @@ astropy-helpers Changelog
 
 - Nothing yet.
 
+- Fixed a bug where optional arguments to the ``doctest-skip`` Sphinx
+  directive were sometimes being left in the generated documentation output.
+  [#90]
+
 
 0.4.2 (2014-08-09)
 ------------------
