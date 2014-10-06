@@ -153,6 +153,12 @@ class _Bootstrapper(object):
         self.auto_upgrade = (auto_upgrade
                              if auto_upgrade is not None else AUTO_UPGRADE)
 
+        # If this is a release then the .git directory will not exist so we
+        # should not use git.
+        git_dir_exists = os.path.exists(os.path.join(os.path.dirname(__file__), '.git'))
+        if use_git is None and not git_dir_exists:
+            use_git = False
+
         self.use_git = use_git if use_git is not None else USE_GIT
         # Declared as False by default--later we check if astropy-helpers can be
         # upgraded from PyPI, but only if not using a source distribution (as in
