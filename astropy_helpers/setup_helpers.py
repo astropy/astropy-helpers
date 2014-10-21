@@ -919,7 +919,7 @@ if _module_state['have_sphinx']:
                                         stdin=subprocess.PIPE,
                                         stdout=subprocess.PIPE,
                                         stderr=subprocess.STDOUT)
-                stdo, stde = proc.communicate(subproccode.encode('ascii'))
+                stdo, stde = proc.communicate(subproccode.encode('utf-8'))
 
                 print(stdo)
 
