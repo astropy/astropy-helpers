@@ -162,5 +162,9 @@ def import_file(filename):
         return imp.load_module(name, fd, filename, ('.py', 'U', 1))
 
 
-def iteritems(dictionary):  # 2/3 compatibility function
-    return iter(dictionary.items())
+if sys.version_info[0] >= 3:
+    def iteritems(dictionary):
+        return dictionary.items()
+else:
+    def iteritems(dictionary):
+        return dictionary.iteritems()
