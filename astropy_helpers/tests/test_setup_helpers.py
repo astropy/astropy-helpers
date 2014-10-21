@@ -172,7 +172,8 @@ def test_build_sphinx(tmpdir, capture_warnings):
 
     test_pkg.chdir()
 
-    os.symlink(ah_path, 'astropy_helpers', target_is_directory=True)
+    import shutil
+    shutil.copytree(ah_path, 'astropy_helpers')
 
     if capture_warnings:
         run_setup('setup.py', ['build_sphinx', '-w'])
