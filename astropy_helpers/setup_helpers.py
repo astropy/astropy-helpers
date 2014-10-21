@@ -919,13 +919,13 @@ if _module_state['have_sphinx']:
                                         stdin=subprocess.PIPE,
                                         stdout=subprocess.PIPE,
                                         stderr=subprocess.STDOUT)
-                stdo, stde = proc.communicate(subproccode)
+                stdo, stde = proc.communicate(subproccode.encode('ascii'))
 
                 print(stdo)
 
-                stdolines = stdo.split('\n')
+                stdolines = stdo.split(b'\n')
 
-                if stdolines[-2] == 'build succeeded.':
+                if stdolines[-2] == b'build succeeded.':
                     retcode = 0
                 else:
                     retcode = 1
