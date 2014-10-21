@@ -29,6 +29,8 @@ astropy-helpers Changelog
   directive were sometimes being left in the generated documentation output.
   [#90]
 
+- Improved support for building the documentation using Python 3.x. [#96]
+
 
 0.4.2 (2014-08-09)
 ------------------
