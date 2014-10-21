@@ -4,10 +4,6 @@ astropy-helpers Changelog
 0.4.3 (unreleased)
 ------------------
 
-- Fixed a bug where optional arguments to the ``doctest-skip`` Sphinx
-  directive were sometimes being left in the generated documentation output.
-  [#90]
-
 - The generated ``version.py`` file now preserves the git hash of installed
   copies of the package as well as when building a source distribution.  That
   is, the git hash of the changeset that was installed/released is preserved.
@@ -21,6 +17,12 @@ astropy-helpers Changelog
 - Fixed a bug that could occur when running ``setup.py`` for the first time
   in a repository that uses astropy-helpers as a submodule:
   ``AttributeError: 'NoneType' object has no attribute 'mkdtemp'`` [#89]
+
+- Fixed a bug where optional arguments to the ``doctest-skip`` Sphinx
+  directive were sometimes being left in the generated documentation output.
+  [#90]
+
+- Improved support for building the documentation using Python 3.x. [#96]
 
 
 0.4.2 (2014-08-09)

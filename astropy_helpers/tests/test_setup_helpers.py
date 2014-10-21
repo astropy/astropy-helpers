@@ -113,3 +113,72 @@ def test_no_cython_buildext(tmpdir):
     finally:
         cleanup_import('_eva_')
         sys.path.remove(str(test_pkg))
+
+
+@pytest.mark.parametrize('capture_warnings', [False, True])
+def test_build_sphinx(tmpdir, capture_warnings):
+    """
+    Test for build_sphinx
+    """
+
+    ah_path = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
+    test_pkg = tmpdir.mkdir('test_pkg')
+
+    test_pkg.mkdir('mypackage')
+
+    test_pkg.join('mypackage').join('__init__.py').write(dedent("""\
+        def test_function():
+            pass
+    """))
+
+    docs = test_pkg.mkdir('docs')
+
+    autosummary = docs.mkdir('_templates').mkdir('autosummary')
+
+    autosummary.join('base.rst').write('{% extends "autosummary_core/base.rst" %}')
+    autosummary.join('class.rst').write('{% extends "autosummary_core/class.rst" %}')
+    autosummary.join('module.rst').write('{% extends "autosummary_core/module.rst" %}')
+
+    test_pkg.join('docs').join('conf.py').write(dedent("""\
+        import sys
+        sys.path.append("../")
+        import warnings
+        with warnings.catch_warnings():  # ignore matplotlib warning
+            warnings.simplefilter("ignore")
+            from astropy_helpers.sphinx.conf import *
+        exclude_patterns.append('_templates')
+    """))
+
+    test_pkg.join('docs').join('index.rst').write(dedent("""\
+        .. automodapi:: mypackage
+    """))
+
+    test_pkg.join('setup.py').write(dedent("""\
+        from os.path import join
+        from setuptools import setup, Extension
+        from astropy_helpers.setup_helpers import register_commands, get_package_info
+
+        NAME = 'mypackage'
+        VERSION = 0.1
+        RELEASE = True
+
+        cmdclassd = register_commands(NAME, VERSION, RELEASE)
+
+        setup(
+            name=NAME,
+            version=VERSION,
+            cmdclass=cmdclassd,
+            **get_package_info()
+        )
+    """))
+
+    test_pkg.chdir()
+
+    import shutil
+    shutil.copytree(ah_path, 'astropy_helpers')
+
+    if capture_warnings:
+        run_setup('setup.py', ['build_sphinx', '-w'])
+    else:
+        run_setup('setup.py', ['build_sphinx'])

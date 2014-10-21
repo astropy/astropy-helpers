@@ -18,7 +18,6 @@ from sphinx.locale import _
 from sphinx.pycode import ModuleAnalyzer
 from sphinx.util.nodes import make_refnode
 
-import six
 import sys
 import traceback
 
@@ -27,11 +26,14 @@ if sys.version < '3':
 else:
     text_type = str
 
+from ...utils import iteritems
+
+
 def doctree_read(app, doctree):
     env = app.builder.env
     if not hasattr(env, '_viewcode_modules'):
         env._viewcode_modules = {}
- 
+
     def get_full_modname(modname, attribute):
         try:
             __import__(modname)
@@ -130,7 +132,7 @@ def collect_pages(app):
     app.builder.info(' (%d module code pages)' %
                      len(env._viewcode_modules), nonl=1)
 
-    for modname, entry in six.iteritems(env._viewcode_modules):
+    for modname, entry in iteritems(env._viewcode_modules):
         if not entry:
             continue
         code, tags, used, refname = entry
@@ -148,7 +150,7 @@ def collect_pages(app):
         # the collected tags (HACK: this only works if the tag boundaries are
         # properly nested!)
         maxindex = len(lines) - 1
-        for name, docname in six.iteritems(used):
+        for name, docname in iteritems(used):
             type, start, end = tags[name]
             backlink = urito(pagename, docname) + '#' + refname + '.' + name
             lines[start] = (
