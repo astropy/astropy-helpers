@@ -160,3 +160,7 @@ def import_file(filename):
         name = '_'.join(
             os.path.relpath(os.path.splitext(filename)[0]).split(os.sep)[1:])
         return imp.load_module(name, fd, filename, ('.py', 'U', 1))
+
+
+def iteritems(dictionary):  # 2/3 compatibility function
+    return iter(dictionary.items())
