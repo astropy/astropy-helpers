@@ -7,29 +7,22 @@ python:
     - 3.3
     - 3.4
 
-env:
-    global:
-        - PIP_WHEEL_COMMAND="pip install --use-wheel"
-
 before_install:
 
     # Use utf8 encoding. Should be default, but this is insurance against
     # future changes
     - export PYTHONIOENCODING=UTF8
 
-    # Install the pip that supports wheel
-    - pip install setuptools --upgrade
-    - pip install pip --upgrade
-    - pip install wheel
+    # Install conda
+    - wget http://repo.continuum.io/miniconda/Miniconda-latest-Linux-x86_64.sh -O miniconda.sh
+    - chmod +x miniconda.sh
+    - ./miniconda.sh -b
+    - export PATH=/home/travis/miniconda/bin:$PATH
+    - conda update --yes conda
 
 install:
-    - $PIP_WHEEL_COMMAND "pytest<2.6"
-    - $PIP_WHEEL_COMMAND "--upgrade" "py"
-    - $PIP_WHEEL_COMMAND "Jinja2<2.7"
-    - $PIP_WHEEL_COMMAND "Sphinx"
-    - $PIP_WHEEL_COMMAND "pytest-cov"
-    - $PIP_WHEEL_COMMAND "coveralls"
-    - $PIP_WHEEL_COMMAND "Cython"
+    - conda install --yes pip "pytest<2.6" sphinx cython numpy
+    - pip install coveralls pytest-cov
 
 before_script:
     # Some of the tests use git commands that require a user to be configured
