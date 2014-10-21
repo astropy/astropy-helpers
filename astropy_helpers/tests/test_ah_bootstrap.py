@@ -1,8 +1,13 @@
+# -*- coding: utf-8 -*-
+
 import glob
 import os
 import textwrap
 import sys
 
+from distutils.version import StrictVersion
+
+import setuptools
 from setuptools.package_index import PackageIndex
 from setuptools.sandbox import run_setup
 
@@ -41,6 +46,15 @@ filename = os.path.abspath(_astropy_helpers_test_.__file__)
 filename = filename.replace('.pyc', '.py')  # More consistent this way
 print(filename)
 """
+
+
+# The behavior checked in some of the tests depends on the version of
+# setuptools
+try:
+    SETUPTOOLS_VERSION = StrictVersion(setuptools.__version__).version
+except:
+    # Broken setuptools? ¯\_(ツ)_/¯
+    SETUPTOOLS_VERSION = (0, 0, 0)
 
 
 def test_bootstrap_from_submodule(tmpdir, testpackage, capsys):
@@ -238,7 +252,7 @@ def test_bootstrap_from_archive(tmpdir, testpackage, capsys):
 
         # Installation from the .tar.gz should have resulted in a .egg
         # directory that the _astropy_helpers_test_ package was imported from
-        eggs = glob.glob('*.egg')
+        eggs = _get_local_eggs()
         assert eggs
         egg = orig_repo.join(eggs[0])
         assert os.path.isdir(str(egg))
@@ -294,7 +308,7 @@ def test_download_if_needed(tmpdir, testpackage, capsys):
 
         # easy_install should have worked by 'installing' astropy_helpers as a
         # .egg in the current directory
-        eggs = glob.glob('*.egg')
+        eggs = _get_local_eggs()
         assert eggs
         egg = source.join(eggs[0])
         assert os.path.isdir(str(egg))
@@ -368,7 +382,7 @@ def test_upgrade(tmpdir, capsys):
 
             stdout, stderr = capsys.readouterr()
             path = stdout.splitlines()[-1].strip()
-            eggs = glob.glob('*.egg')
+            eggs = _get_local_eggs()
             assert eggs
 
             egg = source.join(eggs[0])
@@ -380,3 +394,17 @@ def test_upgrade(tmpdir, capsys):
             assert 'astropy_helpers_test-0.1.1-' in str(egg)
     finally:
         ah_bootstrap.PackageIndex = PackageIndex
+
+
+def _get_local_eggs(path='.'):
+    """
+    Helper utility used by some tests to get the list of egg archive files
+    in a local directory.
+    """
+
+    if SETUPTOOLS_VERSION[0] >= 7:
+        eggs = glob.glob(os.path.join(path, '.eggs', '*.egg'))
+    else:
+        eggs = glob.glob('*.egg')
+
+    return eggs
