@@ -42,7 +42,7 @@ intersphinx_mapping = {
     'python3': ('http://docs.python.org/3/', path.abspath(path.join(path.dirname(__file__), 'local/python3links.inv'))),
     'numpy': ('http://docs.scipy.org/doc/numpy/', None),
     'scipy': ('http://docs.scipy.org/doc/scipy/reference/', None),
-    'matplotlib': ('http://matplotlib.sourceforge.net/', None),
+    'matplotlib': ('http://matplotlib.org/', None),
     'astropy': ('http://docs.astropy.org/en/stable/', None),
     'h5py': ('http://docs.h5py.org/en/latest/', None)
     }

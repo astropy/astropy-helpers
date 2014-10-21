@@ -160,3 +160,11 @@ def import_file(filename):
         name = '_'.join(
             os.path.relpath(os.path.splitext(filename)[0]).split(os.sep)[1:])
         return imp.load_module(name, fd, filename, ('.py', 'U', 1))
+
+
+if sys.version_info[0] >= 3:
+    def iteritems(dictionary):
+        return dictionary.items()
+else:
+    def iteritems(dictionary):
+        return dictionary.iteritems()
