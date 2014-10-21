@@ -143,7 +143,10 @@ def test_build_sphinx(tmpdir, capture_warnings):
     test_pkg.join('docs').join('conf.py').write(dedent("""\
         import sys
         sys.path.append("../")
-        from astropy_helpers.sphinx.conf import *
+        import warnings
+        with warnings.catch_warnings():  # ignore matplotlib warning
+            warnings.simplefilter("ignore")
+            from astropy_helpers.sphinx.conf import *
         exclude_patterns.append('_templates')
     """))
 
