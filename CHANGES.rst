@@ -1,7 +1,7 @@
 astropy-helpers Changelog
 =========================
 
-0.4.3 (unreleased)
+0.4.3 (2014-10-22)
 ------------------
 
 - The generated ``version.py`` file now preserves the git hash of installed

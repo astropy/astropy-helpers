@@ -8,7 +8,7 @@ from astropy_helpers.setup_helpers import register_commands, get_package_info
 from astropy_helpers.version_helpers import generate_version_py
 
 NAME = 'astropy_helpers'
-VERSION = '0.4.3.dev'
+VERSION = '0.4.3'
 RELEASE = 'dev' not in VERSION
 DOWNLOAD_BASE_URL = 'http://pypi.python.org/packages/source/a/astropy-helpers'
 
