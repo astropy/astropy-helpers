@@ -4,7 +4,7 @@ astropy-helpers Changelog
 0.4.4 (unreleased)
 ------------------
 
-- Nothing changed yet.
+- Fix order in which we check for .git repo in ah_bootstrap.py.
 
 0.4.3 (2014-10-22)
 ------------------
