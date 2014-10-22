@@ -31,6 +31,8 @@ astropy-helpers Changelog
 
 - Improved support for building the documentation using Python 3.x. [#96]
 
+- Avoid error message if .git directory is not present. [#91]
+
 
 0.4.2 (2014-08-09)
 ------------------
