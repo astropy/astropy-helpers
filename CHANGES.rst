@@ -38,7 +38,7 @@ astropy-helpers Changelog
 - Fixed automodsumm to work with new versions of Sphinx (>= 1.2.2). [#80]
 
 
-0.4.1 (2014-08-06)
+0.4.1 (2014-08-08)
 ------------------
 
 - Fixed git revision count on systems with git versions older than v1.7.2.
