@@ -187,4 +187,7 @@ def test_build_sphinx(tmpdir, mode):
     elif mode == 'direct':  # to check coverage
         docs_dir.chdir()
         from sphinx import main
-        assert main(['-b html', '-d _build/doctrees', '.', '_build/html']) == 0
+        try:
+            main(['-b html', '-d _build/doctrees', '.', '_build/html'])
+        except SystemExit as exc:
+            assert exc.code == 0
