@@ -115,8 +115,8 @@ def test_no_cython_buildext(tmpdir):
         sys.path.remove(str(test_pkg))
 
 
-@pytest.mark.parametrize('capture_warnings', [False, True])
-def test_build_sphinx(tmpdir, capture_warnings):
+@pytest.mark.parametrize('mode', ['cli', 'cli-w', 'direct'])
+def test_build_sphinx(tmpdir, mode):
     """
     Test for build_sphinx
     """
@@ -140,7 +140,9 @@ def test_build_sphinx(tmpdir, capture_warnings):
     autosummary.join('class.rst').write('{% extends "autosummary_core/class.rst" %}')
     autosummary.join('module.rst').write('{% extends "autosummary_core/module.rst" %}')
 
-    test_pkg.join('docs').join('conf.py').write(dedent("""\
+    docs_dir = test_pkg.join('docs')
+
+    docs_dir.join('conf.py').write(dedent("""\
         import sys
         sys.path.append("../")
         import warnings
@@ -150,7 +152,7 @@ def test_build_sphinx(tmpdir, capture_warnings):
         exclude_patterns.append('_templates')
     """))
 
-    test_pkg.join('docs').join('index.rst').write(dedent("""\
+    docs_dir.join('index.rst').write(dedent("""\
         .. automodapi:: mypackage
     """))
 
@@ -178,7 +180,11 @@ def test_build_sphinx(tmpdir, capture_warnings):
     import shutil
     shutil.copytree(ah_path, 'astropy_helpers')
 
-    if capture_warnings:
-        run_setup('setup.py', ['build_sphinx', '-w'])
-    else:
+    if mode == 'cli':
         run_setup('setup.py', ['build_sphinx'])
+    elif mode == 'cli-w':
+        run_setup('setup.py', ['build_sphinx', '-w'])
+    elif mode == 'direct':  # to check coverage
+        docs_dir.chdir()
+        from sphinx import main
+        assert main(['-b html', '-d _build/doctrees', '.', '_build/html']) == 0
