@@ -20,6 +20,9 @@ before_install:
     - export PATH=/home/travis/miniconda/bin:$PATH
     - conda update --yes conda
 
+    # Install dot
+    - sudo apt-get install graphviz
+
 install:
     - conda install --yes pip "pytest<2.6" sphinx cython numpy
     - pip install coveralls pytest-cov
