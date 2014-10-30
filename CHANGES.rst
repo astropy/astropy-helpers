@@ -4,7 +4,8 @@ astropy-helpers Changelog
 0.4.4 (unreleased)
 ------------------
 
-- No changes yet
+- More improvements for building the documentation using Python 3.x. [#100]
+
 
 0.4.3 (2014-10-22)
 ------------------
