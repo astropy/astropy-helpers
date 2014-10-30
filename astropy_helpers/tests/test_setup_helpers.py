@@ -130,6 +130,12 @@ def test_build_sphinx(tmpdir, mode):
     test_pkg.join('mypackage').join('__init__.py').write(dedent("""\
         def test_function():
             pass
+
+        class A():
+            pass
+
+        class B(A):
+            pass
     """))
 
     docs = test_pkg.mkdir('docs')
