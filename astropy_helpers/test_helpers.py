@@ -53,7 +53,10 @@ class AstropyTest(Command, object):
          'the current directory contains a directory called "docs", that '
          'will be used.'),
         ('skip-docs', None,
-         "Don't test the documentation .rst files.")
+         "Don't test the documentation .rst files."),
+        ('repeat=', None,
+         'How many times to repeat each test (can be used to check for '
+         'sporadic failures).')
     ]
 
     user_options = _fix_user_options(user_options)
@@ -75,6 +78,7 @@ class AstropyTest(Command, object):
         self.parallel = 0
         self.docs_path = None
         self.skip_docs = False
+        self.repeat = None
 
     def finalize_options(self):
         # Normally we would validate the options here, but that's handled in
@@ -176,9 +180,11 @@ class AstropyTest(Command, object):
                    'open_files={1.open_files!r}, '
                    'parallel={1.parallel!r}, '
                    'docs_path={1.docs_path!r}, '
-                   'skip_docs={1.skip_docs!r})); '
+                   'skip_docs={1.skip_docs!r}, '
+                   'repeat={1.repeat!r}));'
                    '{cmd_post}'
                    'sys.exit(result)')
+
             cmd = cmd.format(set_flag, self, cmd_pre=cmd_pre, cmd_post=cmd_post)
 
             # Run the tests in a subprocess--this is necessary since
