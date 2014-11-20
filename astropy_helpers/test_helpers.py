@@ -43,7 +43,8 @@ class AstropyTest(Command, object):
          'Start the interactive Python debugger on errors.'),
         ('coverage', 'c',
          'Create a coverage report. Requires the coverage package.'),
-        ('open-files', 'o', 'Fail if any tests leave files open.'),
+        ('open-files', 'o', 'Fail if any tests leave files open.  Requires the '
+         'psutil package.'),
         ('parallel=', 'j',
          'Run the tests in parallel on the specified number of '
          'CPUs.  If negative, all the cores on the machine will be '
