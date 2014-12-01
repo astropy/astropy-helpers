@@ -138,7 +138,7 @@ class _Bootstrapper(object):
 
         self.path = path
 
-        # Set other option attirbutes, using defaults where necessary
+        # Set other option attributes, using defaults where necessary
         self.index_url = index_url if index_url is not None else INDEX_URL
         self.offline = offline if offline is not None else OFFLINE
 
@@ -399,7 +399,7 @@ class _Bootstrapper(object):
 
         # Annoyingly, setuptools will not handle other arguments to
         # Distribution (such as options) before handling setup_requires, so it
-        # is not straightfoward to programmatically augment the arguments which
+        # is not straightforward to programmatically augment the arguments which
         # are passed to easy_install
         class _Distribution(Distribution):
             def get_option_dict(self, command_name):
@@ -466,7 +466,7 @@ class _Bootstrapper(object):
         Check if the given path is a git submodule.
 
         See the docstrings for ``_check_submodule_using_git`` and
-        ``_check_submodule_no_git`` for futher details.
+        ``_check_submodule_no_git`` for further details.
         """
 
         if (self.path is None or
@@ -572,7 +572,7 @@ class _Bootstrapper(object):
 
         # This is a minimal reader for gitconfig-style files.  It handles a few of
         # the quirks that make gitconfig files incompatible with ConfigParser-style
-        # files, but does not support the full gitconfig syntaix (just enough
+        # files, but does not support the full gitconfig syntax (just enough
         # needed to read a .gitmodules file).
         gitmodules_fileobj = io.StringIO()
 
