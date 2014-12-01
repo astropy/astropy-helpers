@@ -81,7 +81,7 @@ def get_git_devstr(sha=False, show_warning=True, path=None):
     Returns
     -------
     devversion : str
-        Either a string with the revsion number (if `sha` is False), the
+        Either a string with the revision number (if `sha` is False), the
         SHA1 hash of the current commit (if `sha` is True), or an empty string
         if git version info could not be identified.
 
@@ -137,7 +137,7 @@ def get_git_devstr(sha=False, show_warning=True, path=None):
 
     if not sha and returncode == 129:
         # git returns 129 if a command option failed to parse; in
-        # particualr this could happen in git versions older than 1.7.2
+        # particular this could happen in git versions older than 1.7.2
         # where the --count option is not supported
         # Also use --abbrev-commit and --abbrev=0 to display the minimum
         # number of characters needed per-commit (rather than the full hash)
