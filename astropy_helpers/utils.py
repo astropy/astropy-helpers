@@ -847,7 +847,7 @@ class classproperty(property):
         return fget
 
 
-def list_data_files(package, pattern, subdir='.'):
+def find_data_files(package, pattern, subdir='.'):
     """
     Include files matching ``pattern`` inside ``package``.
 
@@ -865,7 +865,7 @@ def list_data_files(package, pattern, subdir='.'):
          An optional sub-directory inside which to search (e.g. ``data``)
     """
     matches = []
-    for root, dirs, files in os.walk(os.path.join(package, parent)):
+    for root, dirs, files in os.walk(os.path.join(package, subdir)):
         for filename in fnmatch.filter(files, pattern):
             matches.append(os.path.join(os.path.relpath(root, package),
                                         filename))
