@@ -159,6 +159,7 @@ def test_build_sphinx(tmpdir, mode):
             warnings.simplefilter("ignore")
             from astropy_helpers.sphinx.conf import *
         exclude_patterns.append('_templates')
+        require_docstring_on_public_objects = True
     """))
 
     docs_dir.join('index.rst').write(dedent("""\
