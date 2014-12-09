@@ -1,3 +1,4 @@
+import shutil
 import sys
 
 from textwrap import dedent
@@ -121,7 +122,8 @@ def test_build_sphinx(tmpdir, mode):
     Test for build_sphinx
     """
 
-    ah_path = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+    import astropy_helpers
+    ah_path = os.path.dirname(astropy_helpers.__file__)
 
     test_pkg = tmpdir.mkdir('test_pkg')
 
@@ -181,19 +183,17 @@ def test_build_sphinx(tmpdir, mode):
         )
     """))
 
-    test_pkg.chdir()
+    with test_pkg.as_cwd():
+        shutil.copytree(ah_path, 'astropy_helpers')
 
-    import shutil
-    shutil.copytree(ah_path, 'astropy_helpers')
-
-    if mode == 'cli':
-        run_setup('setup.py', ['build_sphinx'])
-    elif mode == 'cli-w':
-        run_setup('setup.py', ['build_sphinx', '-w'])
-    elif mode == 'direct':  # to check coverage
-        docs_dir.chdir()
-        from sphinx import main
-        try:
-            main(['-b html', '-d _build/doctrees', '.', '_build/html'])
-        except SystemExit as exc:
-            assert exc.code == 0
+        if mode == 'cli':
+            run_setup('setup.py', ['build_sphinx'])
+        elif mode == 'cli-w':
+            run_setup('setup.py', ['build_sphinx', '-w'])
+        elif mode == 'direct':  # to check coverage
+            with docs_dir.as_cwd():
+                from sphinx import main
+                try:
+                    main(['-b html', '-d _build/doctrees', '.', '_build/html'])
+                except SystemExit as exc:
+                    assert exc.code == 0
