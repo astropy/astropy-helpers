@@ -226,3 +226,35 @@ if sys.version_info[0] >= 3:
 else:
     def iteritems(dictionary):
         return dictionary.iteritems()
+
+
+def extends_doc(extended_func):
+    """
+    A function decorator for use when wrapping an existing function but adding
+    additional functionality.  This copies the docstring from the original
+    function, and appends to it (along with a newline) the docstring of the
+    wrapper function.
+
+    Example
+    -------
+
+        >>> def foo():
+        ...     '''Hello.'''
+        ...
+        >>> @extends_doc(foo)
+        ... def bar():
+        ...     '''Goodbye.'''
+        ...
+        >>> print(bar.__doc__)
+        Hello.
+
+        Goodbye.
+
+    """
+
+    def decorator(func):
+        func.__doc__ = '\n\n'.join([extended_func.__doc__.rstrip('\n'),
+                                    func.__doc__.lstrip('\n')])
+        return func
+
+    return decorator

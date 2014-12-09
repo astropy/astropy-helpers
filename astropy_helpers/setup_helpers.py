@@ -22,12 +22,12 @@ from distutils.core import Extension
 from distutils.core import Command
 from distutils.command.sdist import sdist as DistutilsSdist
 
-from setuptools import find_packages
+from setuptools import find_packages as _find_packages
 
 from .distutils_helpers import *
 from .version_helpers import get_pkg_version_module
 from .test_helpers import AstropyTest
-from .utils import walk_skip_hidden, import_file
+from .utils import silence, walk_skip_hidden, import_file, extends_doc
 
 
 from .commands.build_ext import generate_build_ext_command
@@ -355,6 +355,9 @@ def get_package_info(srcdir='.', exclude=()):
       a list of libraries that can optionally be built using external
       dependencies.
 
+    - ``get_entry_points()`` returns a dict formatted as required by
+      the ``entry_points`` argument to ``setup()``.
+
     - ``requires_2to3()`` should return `True` when the source code
       requires `2to3` processing to run on Python 3.x.  If
       ``requires_2to3()`` is missing, it is assumed to return `True`.
@@ -662,6 +665,25 @@ def use_system_library(library):
     return (
         get_distutils_build_or_install_option('use_system_{0}'.format(library))
         or get_distutils_build_or_install_option('use_system_libraries'))
+
+
+_package_cache = None
+@extends_doc(_find_packages)
+def find_packages(where='.', exclude=(), invalidate_cache=False):
+    """
+    This version of ``find_packages`` caches previous results to speed up
+    subsequent calls.  Use ``invalide_cache=True`` to ignore cached results
+    from previous ``find_packages`` calls, and repeat the package search.
+    """
+
+    global _package_cache
+
+    if not invalidate_cache and _package_cache is not None:
+        return _package_cache
+
+    _package_cache = _find_packages(where=where, exclude=exclude)
+
+    return _package_cache
 
 
 def filter_packages(packagenames):
