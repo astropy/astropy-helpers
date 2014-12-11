@@ -7,11 +7,7 @@ setup/build/packaging that are useful to astropy as a whole.
 from __future__ import absolute_import, print_function
 
 import collections
-import errno
-import imp
-import inspect
 import os
-import pkgutil
 import re
 import shlex
 import shutil
@@ -20,22 +16,20 @@ import sys
 import textwrap
 
 from distutils import log, ccompiler, sysconfig
-from distutils.cmd import DistutilsOptionError
 from distutils.dist import Distribution
-from distutils.errors import DistutilsError, DistutilsFileError
 from distutils.core import Extension
 from distutils.core import Command
 from distutils.command.sdist import sdist as DistutilsSdist
-from setuptools.command.build_ext import build_ext as SetuptoolsBuildExt
-from setuptools.command.build_py import build_py as SetuptoolsBuildPy
-from setuptools.command.install import install as SetuptoolsInstall
-from setuptools.command.install_lib import install_lib as SetuptoolsInstallLib
 
-from setuptools.command.register import register as SetuptoolsRegister
 from setuptools import find_packages
 
+from .distutils_helpers import (
+        get_dummy_distribution, get_distutils_build_option,
+        get_distutils_build_or_install_option, get_compiler_option,
+        add_command_option)
+from .version_helpers import get_pkg_version_module
 from .test_helpers import AstropyTest
-from .utils import silence, invalidate_caches, walk_skip_hidden
+from .utils import invalidate_caches, walk_skip_hidden, import_file
 
 _module_state = {
     'adjusted_compiler': False,
@@ -52,7 +46,6 @@ except ImportError:
 
 try:
     import sphinx
-    from sphinx.setup_command import BuildDoc as SphinxBuildDoc
     _module_state['have_sphinx'] = True
 except ValueError as e:
     # This can occur deep in the bowels of Sphinx's imports by way of docutils
@@ -205,135 +198,6 @@ def get_compiler_version(compiler):
     return version
 
 
-def get_dummy_distribution():
-    """Returns a distutils Distribution object used to instrument the setup
-    environment before calling the actual setup() function.
-    """
-
-    if _module_state['registered_commands'] is None:
-        raise RuntimeError(
-            'astropy_helpers.setup_helpers.register_commands() must be '
-            'called before using '
-            'astropy_helpers.setup_helpers.get_dummy_distribution()')
-
-    # Pre-parse the Distutils command-line options and config files to if
-    # the option is set.
-    dist = Distribution({'script_name': os.path.basename(sys.argv[0]),
-                         'script_args': sys.argv[1:]})
-    dist.cmdclass.update(_module_state['registered_commands'])
-
-    with silence():
-        try:
-            dist.parse_config_files()
-            dist.parse_command_line()
-        except (DistutilsError, AttributeError, SystemExit):
-            # Let distutils handle DistutilsErrors itself AttributeErrors can
-            # get raise for ./setup.py --help SystemExit can be raised if a
-            # display option was used, for example
-            pass
-
-    return dist
-
-
-def get_distutils_option(option, commands):
-    """ Returns the value of the given distutils option.
-
-    Parameters
-    ----------
-    option : str
-        The name of the option
-
-    commands : list of str
-        The list of commands on which this option is available
-
-    Returns
-    -------
-    val : str or None
-        the value of the given distutils option. If the option is not set,
-        returns None.
-    """
-
-    dist = get_dummy_distribution()
-
-    for cmd in commands:
-        cmd_opts = dist.command_options.get(cmd)
-        if cmd_opts is not None and option in cmd_opts:
-            return cmd_opts[option][1]
-    else:
-        return None
-
-
-def get_distutils_build_option(option):
-    """ Returns the value of the given distutils build option.
-
-    Parameters
-    ----------
-    option : str
-        The name of the option
-
-    Returns
-    -------
-    val : str or None
-        The value of the given distutils build option. If the option
-        is not set, returns None.
-    """
-    return get_distutils_option(option, ['build', 'build_ext', 'build_clib'])
-
-
-def get_distutils_install_option(option):
-    """ Returns the value of the given distutils install option.
-
-    Parameters
-    ----------
-    option : str
-        The name of the option
-
-    Returns
-    -------
-    val : str or None
-        The value of the given distutils build option. If the option
-        is not set, returns None.
-    """
-    return get_distutils_option(option, ['install'])
-
-
-def get_distutils_build_or_install_option(option):
-    """ Returns the value of the given distutils build or install option.
-
-    Parameters
-    ----------
-    option : str
-        The name of the option
-
-    Returns
-    -------
-    val : str or None
-        The value of the given distutils build or install option. If the
-        option is not set, returns None.
-    """
-    return get_distutils_option(option, ['build', 'build_ext', 'build_clib',
-                                         'install'])
-
-
-def get_compiler_option():
-    """ Determines the compiler that will be used to build extension modules.
-
-    Returns
-    -------
-    compiler : str
-        The compiler option specificied for the build, build_ext, or build_clib
-        command; or the default compiler for the platform if none was
-        specified.
-
-    """
-
-    compiler = get_distutils_build_option('compiler')
-    if compiler is None:
-        return ccompiler.get_default_compiler()
-
-    return compiler
-
-
 def get_debug_option(packagename):
     """ Determines if the build is in debug mode.
 
@@ -366,34 +230,20 @@ def get_debug_option(packagename):
     return debug
 
 
-# TODO: Move this into astropy_helpers.version_helpers once the dependency of
-# version_helpers on *this* module has been resolved (IOW, once these modules
-# have been refactored to reduce their interdependency)
-def get_pkg_version_module(packagename, fromlist=None):
-    """Returns the package's .version module generated by
-    `astropy_helpers.version_helpers.generate_version_py`.  Raises an
-    ImportError if the version module is not found.
-
-    If ``fromlist`` is an iterable, return a tuple of the members of the
-    version module corresponding to the member names given in ``fromlist``.
-    Raises an `AttributeError` if any of these module members are not found.
-    """
-
-    if not fromlist:
-        # Due to a historical quirk of Python's import implementation,
-        # __import__ will not return submodules of a package if 'fromlist' is
-        # empty.
-        # TODO: For Python 3.1 and up it may be preferable to use importlib
-        # instead of the __import__ builtin
-        return __import__(packagename + '.version', fromlist=[''])
-    else:
-        mod = __import__(packagename + '.version', fromlist=fromlist)
-        return tuple(getattr(mod, member) for member in fromlist)
-
-
 def register_commands(package, version, release):
     if _module_state['registered_commands'] is not None:
         return _module_state['registered_commands']
+
+    from .commands.build_ext import generate_build_ext_command
+    from .commands.build_py import AstropyBuildPy
+    from .commands.install import AstropyInstall
+    from .commands.install_lib import AstropyInstallLib
+    from .commands.register import AstropyRegister
+
+    if _module_state['have_sphinx']:
+        from .commands.build_sphinx import AstropyBuildSphinx
+    else:
+        AstropyBuildSphinx = FakeBuildSphinx
 
     _module_state['registered_commands'] = registered_commands = {
         'test': generate_test_command(package),
@@ -416,14 +266,9 @@ def register_commands(package, version, release):
         'install': AstropyInstall,
         'install_lib': AstropyInstallLib,
 
-        'register': AstropyRegister
+        'register': AstropyRegister,
+        'build_sphinx': AstropyBuildSphinx
     }
-
-
-    if _module_state['have_sphinx']:
-        registered_commands['build_sphinx'] = AstropyBuildSphinx
-    else:
-        registered_commands['build_sphinx'] = FakeBuildSphinx
 
     # Need to override the __name__ here so that the commandline options are
     # presented as being related to the "build" command, for example; normally
@@ -453,560 +298,6 @@ def generate_test_command(package_name):
 
     return type(package_name.title() + 'Test', (AstropyTest,),
                 {'package_name': package_name})
-
-
-def generate_build_ext_command(packagename, release):
-    """
-    Creates a custom 'build_ext' command that allows for manipulating some of
-    the C extension options at build time.  We use a function to build the
-    class since the base class for build_ext may be different depending on
-    certain build-time parameters (for example, we may use Cython's build_ext
-    instead of the default version in distutils).
-
-    Uses the default distutils.command.build_ext by default.
-    """
-
-    uses_cython = should_build_with_cython(packagename, release)
-
-    if uses_cython:
-        from Cython.Distutils import build_ext as basecls
-    else:
-        basecls = SetuptoolsBuildExt
-
-    attrs = dict(basecls.__dict__)
-    orig_run = getattr(basecls, 'run', None)
-    orig_finalize = getattr(basecls, 'finalize_options', None)
-
-    def finalize_options(self):
-        # Add a copy of the _compiler.so module as well, but only if there are
-        # in fact C modules to compile (otherwise there's no reason to include
-        # a record of the compiler used)
-        if self.extensions:
-            src_path = os.path.relpath(
-                os.path.join(os.path.dirname(__file__), 'src'))
-            shutil.copy2(os.path.join(src_path, 'compiler.c'),
-                         os.path.join(self.package_name, '_compiler.c'))
-            ext = Extension(self.package_name + '._compiler',
-                            [os.path.join(self.package_name, '_compiler.c')])
-            self.extensions.insert(0, ext)
-
-        if orig_finalize is not None:
-            orig_finalize(self)
-
-        # Generate
-        if self.uses_cython:
-            try:
-                from Cython import __version__ as cython_version
-            except ImportError:
-                # This shouldn't happen if we made it this far
-                cython_version = None
-
-            if (cython_version is not None and
-                    cython_version != self.uses_cython):
-                self.force_rebuild = True
-                # Update the used cython version
-                self.uses_cython = cython_version
-
-        # Regardless of the value of the '--force' option, force a rebuild if
-        # the debug flag changed from the last build
-        if self.force_rebuild:
-            self.force = True
-
-    def run(self):
-        # For extensions that require 'numpy' in their include dirs, replace
-        # 'numpy' with the actual paths
-        np_include = get_numpy_include_path()
-        for extension in self.extensions:
-            if 'numpy' in extension.include_dirs:
-                idx = extension.include_dirs.index('numpy')
-                extension.include_dirs.insert(idx, np_include)
-                extension.include_dirs.remove('numpy')
-
-            # Replace .pyx with C-equivalents, unless c files are missing
-            for jdx, src in enumerate(extension.sources):
-                if src.endswith('.pyx'):
-                    pyxfn = src
-                    cfn = src[:-4] + '.c'
-                elif src.endswith('.c'):
-                    pyxfn = src[:-2] + '.pyx'
-                    cfn = src
-
-                if not os.path.isfile(pyxfn):
-                    continue
-
-                if self.uses_cython:
-                    extension.sources[jdx] = pyxfn
-                else:
-                    if os.path.isfile(cfn):
-                        extension.sources[jdx] = cfn
-                    else:
-                        msg = (
-                            'Could not find C file {0} for Cython file {1} '
-                            'when building extension {2}. Cython must be '
-                            'installed to build from a git checkout.'.format(
-                                cfn, pyxfn, extension.name))
-                        raise IOError(errno.ENOENT, msg, cfn)
-
-        if orig_run is not None:
-            # This should always be the case for a correctly implemented
-            # distutils command.
-            orig_run(self)
-
-        # Update cython_version.py if building with Cython
-        try:
-            cython_version = get_pkg_version_module(
-                    packagename, fromlist=['cython_version'])[0]
-        except (AttributeError, ImportError):
-            cython_version = 'unknown'
-        if self.uses_cython and self.uses_cython != cython_version:
-            package_dir = os.path.relpath(packagename)
-            cython_py = os.path.join(package_dir, 'cython_version.py')
-            with open(cython_py, 'w') as f:
-                f.write('# Generated file; do not modify\n')
-                f.write('cython_version = {0!r}\n'.format(self.uses_cython))
-
-            if os.path.isdir(self.build_lib):
-                # The build/lib directory may not exist if the build_py command
-                # was not previously run, which may sometimes be the case
-                self.copy_file(cython_py,
-                               os.path.join(self.build_lib, cython_py),
-                               preserve_mode=False)
-
-            invalidate_caches()
-
-    attrs['run'] = run
-    attrs['finalize_options'] = finalize_options
-    attrs['force_rebuild'] = False
-    attrs['uses_cython'] = uses_cython
-    attrs['package_name'] = packagename
-    attrs['user_options'] = basecls.user_options[:]
-    attrs['boolean_options'] = basecls.boolean_options[:]
-
-    return type('build_ext', (basecls, object), attrs)
-
-
-def _get_platlib_dir(cmd):
-    plat_specifier = '.{0}-{1}'.format(cmd.plat_name, sys.version[0:3])
-    return os.path.join(cmd.build_base, 'lib' + plat_specifier)
-
-
-class AstropyInstall(SetuptoolsInstall):
-    user_options = SetuptoolsInstall.user_options[:]
-    boolean_options = SetuptoolsInstall.boolean_options[:]
-
-    def finalize_options(self):
-        build_cmd = self.get_finalized_command('build')
-        platlib_dir = _get_platlib_dir(build_cmd)
-        self.build_lib = platlib_dir
-        SetuptoolsInstall.finalize_options(self)
-
-
-class AstropyInstallLib(SetuptoolsInstallLib):
-    user_options = SetuptoolsInstallLib.user_options[:]
-    boolean_options = SetuptoolsInstallLib.boolean_options[:]
-
-    def finalize_options(self):
-        build_cmd = self.get_finalized_command('build')
-        platlib_dir = _get_platlib_dir(build_cmd)
-        self.build_dir = platlib_dir
-        SetuptoolsInstallLib.finalize_options(self)
-
-
-class AstropyBuildPy(SetuptoolsBuildPy):
-    user_options = SetuptoolsBuildPy.user_options[:]
-    boolean_options = SetuptoolsBuildPy.boolean_options[:]
-
-    def finalize_options(self):
-        # Update build_lib settings from the build command to always put
-        # build files in platform-specific subdirectories of build/, even
-        # for projects with only pure-Python source (this is desirable
-        # specifically for support of multiple Python version).
-        build_cmd = self.get_finalized_command('build')
-        platlib_dir = _get_platlib_dir(build_cmd)
-
-        build_cmd.build_purelib = platlib_dir
-        build_cmd.build_lib = platlib_dir
-        self.build_lib = platlib_dir
-
-        SetuptoolsBuildPy.finalize_options(self)
-
-    def run_2to3(self, files, doctests=False):
-        # Filter the files to exclude things that shouldn't be 2to3'd
-        skip_2to3 = self.distribution.skip_2to3
-        filtered_files = []
-        for file in files:
-            for package in skip_2to3:
-                if file[len(self.build_lib) + 1:].startswith(package):
-                    break
-            else:
-                filtered_files.append(file)
-
-        SetuptoolsBuildPy.run_2to3(self, filtered_files, doctests)
-
-    def run(self):
-        # first run the normal build_py
-        SetuptoolsBuildPy.run(self)
-
-
-def add_command_option(command, name, doc, is_bool=False):
-    """
-    Add a custom option to a setup command.
-
-    Issues a warning if the option already exists on that command.
-
-    Parameters
-    ----------
-    command : str
-        The name of the command as given on the command line
-
-    name : str
-        The name of the build option
-
-    doc : str
-        A short description of the option, for the `--help` message
-
-    is_bool : bool, optional
-        When `True`, the option is a boolean option and doesn't
-        require an associated value.
-    """
-
-    dist = get_dummy_distribution()
-    cmdcls = dist.get_command_class(command)
-
-    if (hasattr(cmdcls, '_astropy_helpers_options') and
-            name in cmdcls._astropy_helpers_options):
-        return
-
-    attr = name.replace('-', '_')
-
-    if hasattr(cmdcls, attr):
-        raise RuntimeError(
-            '{0!r} already has a {1!r} class attribute, barring {2!r} from '
-            'being usable as a custom option name.'.format(cmdcls, attr, name))
-
-    for idx, cmd in enumerate(cmdcls.user_options):
-        if cmd[0] == name:
-            log.warn('Overriding existing {0!r} option '
-                     '{1!r}'.format(command, name))
-            del cmdcls.user_options[idx]
-            if name in cmdcls.boolean_options:
-                cmdcls.boolean_options.remove(name)
-            break
-
-    cmdcls.user_options.append((name, None, doc))
-
-    if is_bool:
-        cmdcls.boolean_options.append(name)
-
-    # Distutils' command parsing requires that a command object have an
-    # attribute with the same name as the option (with '-' replaced with '_')
-    # in order for that option to be recognized as valid
-    setattr(cmdcls, attr, None)
-
-    # This caches the options added through add_command_option so that if it is
-    # run multiple times in the same interpreter repeated adds are ignored
-    # (this way we can still raise a RuntimeError if a custom option overrides
-    # a built-in option)
-    if not hasattr(cmdcls, '_astropy_helpers_options'):
-        cmdcls._astropy_helpers_options = set([name])
-    else:
-        cmdcls._astropy_helpers_options.add(name)
-
-
-class AstropyRegister(SetuptoolsRegister):
-    """Extends the built in 'register' command to support a ``--hidden`` option
-    to make the registered version hidden on PyPI by default.
-
-    The result of this is that when a version is registered as "hidden" it can
-    still be downloaded from PyPI, but it does not show up in the list of
-    actively supported versions under http://pypi.python.org/pypi/astropy, and
-    is not set as the most recent version.
-
-    Although this can always be set through the web interface it may be more
-    convenient to be able to specify via the 'register' command.  Hidden may
-    also be considered a safer default when running the 'register' command,
-    though this command uses distutils' normal behavior if the ``--hidden``
-    option is omitted.
-    """
-
-    user_options = SetuptoolsRegister.user_options + [
-        ('hidden', None, 'mark this release as hidden on PyPI by default')
-    ]
-    boolean_options = SetuptoolsRegister.boolean_options + ['hidden']
-
-    def initialize_options(self):
-        SetuptoolsRegister.initialize_options(self)
-        self.hidden = False
-
-    def build_post_data(self, action):
-        data = SetuptoolsRegister.build_post_data(self, action)
-        if action == 'submit' and self.hidden:
-            data['_pypi_hidden'] = '1'
-        return data
-
-    def _set_config(self):
-        # The original register command is buggy--if you use .pypirc with a
-        # server-login section *at all* the repository you specify with the -r
-        # option will be overwritten with either the repository in .pypirc or
-        # with the default,
-        # If you do not have a .pypirc using the -r option will just crash.
-        # Way to go distutils
-
-        # If we don't set self.repository back to a default value _set_config
-        # can crash if there was a user-supplied value for this option; don't
-        # worry, we'll get the real value back afterwards
-        self.repository = 'pypi'
-        SetuptoolsRegister._set_config(self)
-        options = self.distribution.get_option_dict('register')
-        if 'repository' in options:
-            source, value = options['repository']
-            # Really anything that came from setup.cfg or the command line
-            # should override whatever was in .pypirc
-            self.repository = value
-
-
-if _module_state['have_sphinx']:
-    class AstropyBuildSphinx(SphinxBuildDoc):
-        """ A version of the ``build_sphinx`` command that uses the
-        version of Astropy that is built by the setup ``build`` command,
-        rather than whatever is installed on the system - to build docs
-        against the installed version, run ``make html`` in the
-        ``astropy/docs`` directory.
-
-        This also automatically creates the docs/_static directories -
-        this is needed because github won't create the _static dir
-        because it has no tracked files.
-        """
-
-        description = 'Build Sphinx documentation for Astropy environment'
-        user_options = SphinxBuildDoc.user_options[:]
-        user_options.append(('warnings-returncode', 'w',
-                             'Parses the sphinx output and sets the return '
-                             'code to 1 if there are any warnings. Note that '
-                             'this will cause the sphinx log to only update '
-                             'when it completes, rather than continuously as '
-                             'is normally the case.'))
-        user_options.append(('clean-docs', 'l',
-                             'Completely clean previous builds, including '
-                             'automodapi-generated files before building new '
-                             'ones'))
-        user_options.append(('no-intersphinx', 'n',
-                             'Skip intersphinx, even if conf.py says to use '
-                             'it'))
-        user_options.append(('open-docs-in-browser', 'o',
-                             'Open the docs in a browser (using the '
-                             'webbrowser module) if the build finishes '
-                             'successfully.'))
-
-        boolean_options = SphinxBuildDoc.boolean_options[:]
-        boolean_options.append('warnings-returncode')
-        boolean_options.append('clean-docs')
-        boolean_options.append('no-intersphinx')
-        boolean_options.append('open-docs-in-browser')
-
-        _self_iden_rex = re.compile(r"self\.([^\d\W][\w]+)", re.UNICODE)
-
-        def initialize_options(self):
-            SphinxBuildDoc.initialize_options(self)
-            self.clean_docs = False
-            self.no_intersphinx = False
-            self.open_docs_in_browser = False
-            self.warnings_returncode = False
-
-        def finalize_options(self):
-            #Clear out previous sphinx builds, if requested
-            if self.clean_docs:
-                dirstorm = [os.path.join(self.source_dir, 'api')]
-                if self.build_dir is None:
-                    dirstorm.append('docs/_build')
-                else:
-                    dirstorm.append(self.build_dir)
-
-                for d in dirstorm:
-                    if os.path.isdir(d):
-                        log.info('Cleaning directory ' + d)
-                        shutil.rmtree(d)
-                    else:
-                        log.info('Not cleaning directory ' + d + ' because '
-                                 'not present or not a directory')
-
-            SphinxBuildDoc.finalize_options(self)
-
-        def run(self):
-            # TODO: Break this method up into a few more subroutines and
-            # document them better
-            import webbrowser
-
-            if PY3:
-                from urllib.request import pathname2url
-            else:
-                from urllib import pathname2url
-
-            # This is used at the very end of `run` to decide if sys.exit should
-            # be called. If it's None, it won't be.
-            retcode = None
-
-            # If possible, create the _static dir
-            if self.build_dir is not None:
-                # the _static dir should be in the same place as the _build dir
-                # for Astropy
-                basedir, subdir = os.path.split(self.build_dir)
-                if subdir == '':  # the path has a trailing /...
-                    basedir, subdir = os.path.split(basedir)
-                staticdir = os.path.join(basedir, '_static')
-                if os.path.isfile(staticdir):
-                    raise DistutilsOptionError(
-                        'Attempted to build_sphinx in a location where' +
-                        staticdir + 'is a file.  Must be a directory.')
-                self.mkpath(staticdir)
-
-            #Now make sure Astropy is built and determine where it was built
-            build_cmd = self.reinitialize_command('build')
-            build_cmd.inplace = 0
-            self.run_command('build')
-            build_cmd = self.get_finalized_command('build')
-            build_cmd_path = os.path.abspath(build_cmd.build_lib)
-
-            ah_importer = pkgutil.get_importer('astropy_helpers')
-            ah_path = os.path.abspath(ah_importer.path)
-
-            #Now generate the source for and spawn a new process that runs the
-            #command.  This is needed to get the correct imports for the built
-            #version
-            runlines, runlineno = inspect.getsourcelines(SphinxBuildDoc.run)
-            subproccode = textwrap.dedent("""
-                from sphinx.setup_command import *
-
-                os.chdir({srcdir!r})
-                sys.path.insert(0, {build_cmd_path!r})
-                sys.path.insert(0, {ah_path!r})
-
-            """).format(build_cmd_path=build_cmd_path, ah_path=ah_path,
-                        srcdir=self.source_dir)
-            #runlines[1:] removes 'def run(self)' on the first line
-            subproccode += textwrap.dedent(''.join(runlines[1:]))
-
-            # All "self.foo" in the subprocess code needs to be replaced by the
-            # values taken from the current self in *this* process
-            subproccode = AstropyBuildSphinx._self_iden_rex.split(subproccode)
-            for i in range(1, len(subproccode), 2):
-                iden = subproccode[i]
-                val = getattr(self, iden)
-                if iden.endswith('_dir'):
-                    #Directories should be absolute, because the `chdir` call
-                    #in the new process moves to a different directory
-                    subproccode[i] = repr(os.path.abspath(val))
-                else:
-                    subproccode[i] = repr(val)
-            subproccode = ''.join(subproccode)
-
-            if self.no_intersphinx:
-                #the confoverrides variable in sphinx.setup_command.BuildDoc can
-                #be used to override the conf.py ... but this could well break
-                #if future versions of sphinx change the internals of BuildDoc,
-                #so remain vigilant!
-                subproccode = subproccode.replace('confoverrides = {}',
-                    'confoverrides = {\'intersphinx_mapping\':{}}')
-
-            log.debug('Starting subprocess of {0} with python code:\n{1}\n'
-                      '[CODE END])'.format(sys.executable, subproccode))
-
-            # To return the number of warnings, we need to capture stdout. This
-            # prevents a continuous updating at the terminal, but there's no
-            # apparent way around this.
-            if self.warnings_returncode:
-                proc = subprocess.Popen([sys.executable],
-                                        stdin=subprocess.PIPE,
-                                        stdout=subprocess.PIPE,
-                                        stderr=subprocess.STDOUT)
-                stdo, stde = proc.communicate(subproccode.encode('utf-8'))
-
-                print(stdo)
-
-                stdolines = stdo.split(b'\n')
-
-                if b'build succeeded.' in stdolines:
-                    retcode = 0
-                else:
-                    retcode = 1
-
-                if retcode != 0:
-                    if os.environ.get('TRAVIS', None) == 'true':
-                        #this means we are in the travis build, so customize
-                        #the message appropriately.
-                        msg = ('The build_sphinx travis build FAILED '
-                               'because sphinx issued documentation '
-                               'warnings (scroll up to see the warnings).')
-                    else:  # standard failure message
-                        msg = ('build_sphinx returning a non-zero exit '
-                               'code because sphinx issued documentation '
-                               'warnings.')
-                    log.warn(msg)
-
-            else:
-                proc = subprocess.Popen([sys.executable], stdin=subprocess.PIPE)
-                proc.communicate(subproccode.encode('utf-8'))
-
-            if proc.returncode == 0:
-                if self.open_docs_in_browser:
-                    if self.builder == 'html':
-                        absdir = os.path.abspath(self.builder_target_dir)
-                        index_path = os.path.join(absdir, 'index.html')
-                        fileurl = 'file://' + pathname2url(index_path)
-                        webbrowser.open(fileurl)
-                    else:
-                        log.warn('open-docs-in-browser option was given, but '
-                                 'the builder is not html! Ignogring.')
-            else:
-                log.warn('Sphinx Documentation subprocess failed with return '
-                         'code ' + str(proc.returncode))
-
-            if retcode is not None:
-                # this is potentially dangerous in that there might be something
-                # after the call to `setup` in `setup.py`, and exiting here will
-                # prevent that from running.  But there's no other apparent way
-                # to signal what the return code should be.
-                sys.exit(retcode)
-
-
-def get_distutils_display_options():
-    """ Returns a set of all the distutils display options in their long and
-    short forms.  These are the setup.py arguments such as --name or --version
-    which print the project's metadata and then exit.
-
-    Returns
-    -------
-    opts : set
-        The long and short form display option arguments, including the - or --
-    """
-
-    short_display_opts = set('-' + o[1] for o in Distribution.display_options
-                             if o[1])
-    long_display_opts = set('--' + o[0] for o in Distribution.display_options)
-
-    # Include -h and --help which are not explicitly listed in
-    # Distribution.display_options (as they are handled by optparse)
-    short_display_opts.add('-h')
-    long_display_opts.add('--help')
-
-    # This isn't the greatest approach to hardcode these commands.
-    # However, there doesn't seem to be a good way to determine
-    # whether build *will be* run as part of the command at this
-    # phase.
-    display_commands = set([
-        'clean', 'register', 'setopt', 'saveopts', 'egg_info',
-        'alias'])
-
-    return short_display_opts.union(long_display_opts.union(display_commands))
-
-
-def is_distutils_display_option():
-    """ Returns True if sys.argv contains any of the distutils display options
-    such as --version or --name.
-    """
-
-    display_options = get_distutils_display_options()
-    return bool(set(sys.argv[1:]).intersection(display_options))
 
 
 def update_package_files(srcdir, extensions, package_data, packagenames,
@@ -1177,42 +468,6 @@ def iter_pyx_files(package_dir, package_name):
         break  # Don't recurse into subdirectories
 
 
-def should_build_with_cython(package, release=None):
-    """Returns the previously used Cython version (or 'unknown' if not
-    previously built) if Cython should be used to build extension modules from
-    pyx files.  If the ``release`` parameter is not specified an attempt is
-    made to determine the release flag from `astropy.version`.
-    """
-
-    try:
-        version_module = __import__(package + '.cython_version',
-                                    fromlist=['release', 'cython_version'])
-    except ImportError:
-        version_module = None
-
-    if release is None and version_module is not None:
-        try:
-            release = version_module.release
-        except AttributeError:
-            pass
-
-    try:
-        cython_version = version_module.cython_version
-    except AttributeError:
-        cython_version = 'unknown'
-
-    # Only build with Cython if, of course, Cython is installed, we're in a
-    # development version (i.e. not release) or the Cython-generated source
-    # files haven't been created yet (cython_version == 'unknown'). The latter
-    # case can happen even when release is True if checking out a release tag
-    # from the repository
-    if (_module_state['have_cython'] and
-            (not release or cython_version == 'unknown')):
-        return cython_version
-    else:
-        return False
-
-
 def get_cython_extensions(srcdir, packages, prevextensions=tuple(),
                           extincludedirs=None):
     """
@@ -1261,77 +516,6 @@ def get_cython_extensions(srcdir, packages, prevextensions=tuple(),
                                              include_dirs=extincludedirs))
 
     return ext_modules
-
-
-def write_if_different(filename, data):
-    """ Write `data` to `filename`, if the content of the file is different.
-
-    Parameters
-    ----------
-    filename : str
-        The file name to be written to.
-    data : bytes
-        The data to be written to `filename`.
-    """
-    assert isinstance(data, bytes)
-
-    if os.path.exists(filename):
-        with open(filename, 'rb') as fd:
-            original_data = fd.read()
-    else:
-        original_data = None
-
-    if original_data != data:
-        with open(filename, 'wb') as fd:
-            fd.write(data)
-
-
-def get_numpy_include_path():
-    """
-    Gets the path to the numpy headers.
-    """
-    # We need to go through this nonsense in case setuptools
-    # downloaded and installed Numpy for us as part of the build or
-    # install, since Numpy may still think it's in "setup mode", when
-    # in fact we're ready to use it to build astropy now.
-
-    if sys.version_info[0] >= 3:
-        import builtins
-        if hasattr(builtins, '__NUMPY_SETUP__'):
-            del builtins.__NUMPY_SETUP__
-        import imp
-        import numpy
-        imp.reload(numpy)
-    else:
-        import __builtin__
-        if hasattr(__builtin__, '__NUMPY_SETUP__'):
-            del __builtin__.__NUMPY_SETUP__
-        import numpy
-        reload(numpy)
-
-    try:
-        numpy_include = numpy.get_include()
-    except AttributeError:
-        numpy_include = numpy.get_numpy_include()
-    return numpy_include
-
-
-def import_file(filename):
-    """
-    Imports a module from a single file as if it doesn't belong to a
-    particular package.
-    """
-    # Specifying a traditional dot-separated fully qualified name here
-    # results in a number of "Parent module 'astropy' not found while
-    # handling absolute import" warnings.  Using the same name, the
-    # namespaces of the modules get merged together.  So, this
-    # generates an underscore-separated name which is more likely to
-    # be unique, and it doesn't really matter because the name isn't
-    # used directly here anyway.
-    with open(filename, 'U') as fd:
-        name = '_'.join(
-            os.path.relpath(os.path.splitext(filename)[0]).split(os.sep)[1:])
-        return imp.load_module(name, fd, filename, ('.py', 'U', 1))
 
 
 class DistutilsExtensionArgs(collections.defaultdict):
@@ -1515,8 +699,6 @@ class FakeBuildSphinx(Command):
     user_options.append(('clean-docs', 'l', ''))
     user_options.append(('no-intersphinx', 'n', ''))
     user_options.append(('open-docs-in-browser', 'o',''))
-
-
 
     def initialize_options(self):
         try:

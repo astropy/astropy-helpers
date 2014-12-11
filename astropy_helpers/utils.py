@@ -16,6 +16,64 @@ else:
     invalidate_caches = lambda: None
 
 
+def _get_platlib_dir(cmd):
+    """
+    Given a build command, return the name of the appropriate platform-specific
+    build subdirectory directory (e.g. build/lib.linux-x86_64-2.7)
+    """
+
+    plat_specifier = '.{0}-{1}'.format(cmd.plat_name, sys.version[0:3])
+    return os.path.join(cmd.build_base, 'lib' + plat_specifier)
+
+
+def get_numpy_include_path():
+    """
+    Gets the path to the numpy headers.
+    """
+    # We need to go through this nonsense in case setuptools
+    # downloaded and installed Numpy for us as part of the build or
+    # install, since Numpy may still think it's in "setup mode", when
+    # in fact we're ready to use it to build astropy now.
+
+    if sys.version_info[0] >= 3:
+        import builtins
+        if hasattr(builtins, '__NUMPY_SETUP__'):
+            del builtins.__NUMPY_SETUP__
+        import imp
+        import numpy
+        imp.reload(numpy)
+    else:
+        import __builtin__
+        if hasattr(__builtin__, '__NUMPY_SETUP__'):
+            del __builtin__.__NUMPY_SETUP__
+        import numpy
+        reload(numpy)
+
+    try:
+        numpy_include = numpy.get_include()
+    except AttributeError:
+        numpy_include = numpy.get_numpy_include()
+    return numpy_include
+
+
+def import_file(filename):
+    """
+    Imports a module from a single file as if it doesn't belong to a
+    particular package.
+    """
+    # Specifying a traditional dot-separated fully qualified name here
+    # results in a number of "Parent module 'astropy' not found while
+    # handling absolute import" warnings.  Using the same name, the
+    # namespaces of the modules get merged together.  So, this
+    # generates an underscore-separated name which is more likely to
+    # be unique, and it doesn't really matter because the name isn't
+    # used directly here anyway.
+    with open(filename, 'U') as fd:
+        name = '_'.join(
+            os.path.relpath(os.path.splitext(filename)[0]).split(os.sep)[1:])
+        return imp.load_module(name, fd, filename, ('.py', 'U', 1))
+
+
 class _DummyFile(object):
     """A noop writeable object."""
 
@@ -118,30 +176,6 @@ def walk_skip_hidden(top, onerror=None, followlinks=False):
         dirs[:] = [d for d in dirs if not is_path_hidden(d)]
         files[:] = [f for f in files if not is_path_hidden(f)]
         yield root, dirs, files
-
-
-def write_if_different(filename, data):
-    """Write `data` to `filename`, if the content of the file is different.
-
-    Parameters
-    ----------
-    filename : str
-        The file name to be written to.
-    data : bytes
-        The data to be written to `filename`.
-    """
-
-    assert isinstance(data, bytes)
-
-    if os.path.exists(filename):
-        with open(filename, 'rb') as fd:
-            original_data = fd.read()
-    else:
-        original_data = None
-
-    if original_data != data:
-        with open(filename, 'wb') as fd:
-            fd.write(data)
 
 
 def import_file(filename):
