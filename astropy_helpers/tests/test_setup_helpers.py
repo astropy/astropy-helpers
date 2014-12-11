@@ -104,8 +104,9 @@ def test_no_cython_buildext(tmpdir):
         )
     """))
 
-    test_pkg.chdir()
-    run_setup('setup.py', ['build_ext', '--inplace'])
+    with test_pkg.as_cwd():
+        run_setup('setup.py', ['build_ext', '--inplace'])
+
     sys.path.insert(0, str(test_pkg))
     try:
         import _eva_.unit01
