@@ -202,10 +202,13 @@ def write_if_different(filename, data):
             fd.write(data)
 
 
-def import_file(filename):
+def import_file(filename, name=None):
     """
     Imports a module from a single file as if it doesn't belong to a
     particular package.
+
+    The returned module will have the optional ``name`` if given, or else
+    a name generated from the filename.
     """
     # Specifying a traditional dot-separated fully qualified name here
     # results in a number of "Parent module 'astropy' not found while
@@ -215,9 +218,42 @@ def import_file(filename):
     # be unique, and it doesn't really matter because the name isn't
     # used directly here anyway.
     with open(filename, 'U') as fd:
-        name = '_'.join(
-            os.path.relpath(os.path.splitext(filename)[0]).split(os.sep)[1:])
+        if name is None:
+            basename = os.path.splitext(filename)[0]
+            name = '_'.join(os.path.relpath(basename).split(os.sep)[1:])
         return imp.load_module(name, fd, filename, ('.py', 'U', 1))
+
+
+def resolve_name(name):
+    """Resolve a name like ``module.object`` to an object and return it.
+
+    Raise `ImportError` if the module or name is not found.
+    """
+
+    parts = name.split('.')
+    cursor = len(parts) - 1
+    module_name = parts[:cursor]
+    attr_name = parts[-1]
+
+    while cursor > 0:
+        try:
+            ret = __import__('.'.join(module_name), fromlist=[attr_name])
+            break
+        except ImportError:
+            if cursor == 0:
+                raise
+            cursor -= 1
+            module_name = parts[:cursor]
+            attr_name = parts[cursor]
+            ret = ''
+
+    for part in parts[cursor:]:
+        try:
+            ret = getattr(ret, part)
+        except AttributeError:
+            raise ImportError(name)
+
+    return ret
 
 
 if sys.version_info[0] >= 3:
