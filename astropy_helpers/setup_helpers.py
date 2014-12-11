@@ -46,7 +46,8 @@ _module_state = {
     'adjusted_compiler': False,
     'registered_commands': None,
     'have_cython': False,
-    'have_sphinx': False
+    'have_sphinx': False,
+    'package_cache': None
 }
 
 try:
@@ -667,7 +668,6 @@ def use_system_library(library):
         or get_distutils_build_or_install_option('use_system_libraries'))
 
 
-_package_cache = None
 @extends_doc(_find_packages)
 def find_packages(where='.', exclude=(), invalidate_cache=False):
     """
@@ -676,14 +676,13 @@ def find_packages(where='.', exclude=(), invalidate_cache=False):
     from previous ``find_packages`` calls, and repeat the package search.
     """
 
-    global _package_cache
+    if not invalidate_cache and _module_state['package_cache'] is not None:
+        return _module_state['package_cache']
 
-    if not invalidate_cache and _package_cache is not None:
-        return _package_cache
+    packages = _find_packages(where=where, exclude=exclude)
+    _module_state['package_cache'] = packages
 
-    _package_cache = _find_packages(where=where, exclude=exclude)
-
-    return _package_cache
+    return packages
 
 
 def filter_packages(packagenames):
