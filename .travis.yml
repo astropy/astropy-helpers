@@ -20,6 +20,9 @@ before_install:
     - export PATH=/home/travis/miniconda/bin:$PATH
     - conda update --yes conda
 
+    # Update apt-get listings
+    - sudo apt-get update
+
     # Install dot
     - sudo apt-get install graphviz
 
