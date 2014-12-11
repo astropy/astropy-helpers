@@ -925,7 +925,7 @@ if _module_state['have_sphinx']:
 
                 stdolines = stdo.split(b'\n')
 
-                if stdolines[-2] == b'build succeeded.':
+                if b'build succeeded.' in stdolines:
                     retcode = 0
                 else:
                     retcode = 1
