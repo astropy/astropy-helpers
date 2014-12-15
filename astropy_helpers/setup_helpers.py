@@ -24,18 +24,23 @@ from distutils.command.sdist import sdist as DistutilsSdist
 
 from setuptools import find_packages
 
-from .distutils_helpers import (
-        get_dummy_distribution, get_distutils_build_option,
-        get_distutils_build_or_install_option, get_compiler_option,
-        add_command_option)
+from .distutils_helpers import *
 from .version_helpers import get_pkg_version_module
 from .test_helpers import AstropyTest
 from .utils import walk_skip_hidden, import_file
 
+
+from .commands.build_ext import generate_build_ext_command
+from .commands.build_py import AstropyBuildPy
+from .commands.install import AstropyInstall
+from .commands.install_lib import AstropyInstallLib
+from .commands.register import AstropyRegister
+
 # This import is not used in this module, but it is included for backwards
 # compat with version 0.4, which included this function in the public API
-# for this mudle
-from .utils import write_if_different
+# for this module
+from .utils import get_numpy_include_path, write_if_different
+from .commands.build_ext import should_build_with_cython
 
 _module_state = {
     'adjusted_compiler': False,
@@ -239,12 +244,6 @@ def get_debug_option(packagename):
 def register_commands(package, version, release):
     if _module_state['registered_commands'] is not None:
         return _module_state['registered_commands']
-
-    from .commands.build_ext import generate_build_ext_command
-    from .commands.build_py import AstropyBuildPy
-    from .commands.install import AstropyInstall
-    from .commands.install_lib import AstropyInstallLib
-    from .commands.register import AstropyRegister
 
     if _module_state['have_sphinx']:
         from .commands.build_sphinx import AstropyBuildSphinx

@@ -5,7 +5,37 @@ astropy-helpers Changelog
 0.5 (unreleased)
 ----------------
 
-- Nothing changed yet.
+- The following objects in the ``astropy_helpers.setup_helpers`` module have
+  been relocated:
+
+  - ``get_dummy_distribution``, ``get_distutils_*``, ``get_compiler_option``,
+    ``add_command_option``, ``is_distutils_display_option`` ->
+    ``astropy_helpers.distutils_helpers``
+
+  - ``should_build_with_cython``, ``generate_build_ext_command`` ->
+    ``astropy_helpers.commands.build_ext``
+
+  - ``AstropyBuildPy`` -> ``astropy_helpers.commands.build_py``
+
+  - ``AstropyBuildSphinx`` -> ``astropy_helpers.commands.build_sphinx``
+
+  - ``AstropyInstall`` -> ``astropy_helpers.commands.install``
+
+  - ``AstropyInstallLib`` -> ``astropy_helpers.commands.install_lib``
+
+  - ``AstropyRegister`` -> ``astropy_helpers.commands.register``
+
+  - ``get_pkg_version_module`` -> ``astropy_helpers.version_helpers``
+
+  - ``write_if_different``, ``import_file``, ``get_numpy_include_path`` ->
+    ``astropy_helpers.utils``
+
+  All of these are "soft" deprecations in the sense that they are still
+  importable from ``astropy_helpers.setup_helpers`` for now, and there is
+  no (easy) way to produce deprecation warnings when importing these objects
+  from ``setup_helpers`` rather than directly from the modules they are
+  defined in.  But please consider updating any imports to these objects.
+  [#110]
 
 
 0.4.4 (unreleased)
