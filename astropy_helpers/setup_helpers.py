@@ -31,6 +31,11 @@ from .version_helpers import get_pkg_version_module
 from .test_helpers import AstropyTest
 from .utils import invalidate_caches, walk_skip_hidden, import_file
 
+# This import is not used in this module, but it is included for backwards
+# compat with version 0.4, which included this function in the public API
+# for this mudle
+from .utils import write_if_different
+
 _module_state = {
     'adjusted_compiler': False,
     'registered_commands': None,
