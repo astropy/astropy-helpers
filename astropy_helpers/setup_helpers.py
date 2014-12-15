@@ -28,7 +28,8 @@ from setuptools import find_packages as _find_packages
 from .distutils_helpers import *
 from .version_helpers import get_pkg_version_module
 from .test_helpers import AstropyTest
-from .utils import silence, walk_skip_hidden, import_file, extends_doc
+from .utils import (silence, walk_skip_hidden, import_file, extends_doc,
+                    resolve_name)
 
 
 from .commands.build_ext import generate_build_ext_command
