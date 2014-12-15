@@ -1,10 +1,11 @@
 import errno
 import os
+import shutil
 
 from distutils.core import Extension
 from setuptools.command.build_ext import build_ext as SetuptoolsBuildExt
 
-from ..utils import get_numpy_include_path
+from ..utils import get_numpy_include_path, invalidate_caches
 from ..version_helpers import get_pkg_version_module
 
 

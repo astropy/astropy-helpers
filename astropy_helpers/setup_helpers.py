@@ -14,6 +14,7 @@ import shutil
 import subprocess
 import sys
 import textwrap
+import traceback
 
 from distutils import log, ccompiler, sysconfig
 from distutils.dist import Distribution
@@ -29,7 +30,7 @@ from .distutils_helpers import (
         add_command_option)
 from .version_helpers import get_pkg_version_module
 from .test_helpers import AstropyTest
-from .utils import invalidate_caches, walk_skip_hidden, import_file
+from .utils import walk_skip_hidden, import_file
 
 # This import is not used in this module, but it is included for backwards
 # compat with version 0.4, which included this function in the public API
