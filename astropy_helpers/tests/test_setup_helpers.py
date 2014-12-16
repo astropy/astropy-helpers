@@ -27,7 +27,7 @@ def test_cython_autoextensions(tmpdir):
         """def testfunc(): pass""")
 
     # Required, currently, for get_package_info to work
-    register_commands('yoda', '0.0', False)
+    register_commands('yoda', '0.0', False, srcdir=str(test_pkg))
     package_info = get_package_info(str(test_pkg))
 
     assert len(package_info['ext_modules']) == 1
@@ -104,8 +104,9 @@ def test_no_cython_buildext(tmpdir):
         )
     """))
 
-    test_pkg.chdir()
-    run_setup('setup.py', ['build_ext', '--inplace'])
+    with test_pkg.as_cwd():
+        run_setup('setup.py', ['build_ext', '--inplace'])
+
     sys.path.insert(0, str(test_pkg))
     try:
         import _eva_.unit01
@@ -197,3 +198,58 @@ def test_build_sphinx(tmpdir, mode):
                     main(['-b html', '-d _build/doctrees', '.', '_build/html'])
                 except SystemExit as exc:
                     assert exc.code == 0
+
+
+def test_command_hooks(tmpdir, capsys):
+    """A basic test for pre- and post-command hooks."""
+
+    test_pkg = tmpdir.mkdir('test_pkg')
+    test_pkg.mkdir('_welltall_')
+    test_pkg.join('_welltall_', '__init__.py').ensure()
+
+    # Create a setup_package module with a couple of command hooks in it
+    test_pkg.join('_welltall_', 'setup_package.py').write(dedent("""\
+        def pre_build_hook(cmd_obj):
+            print('Hello build!')
+
+        def post_build_hook(cmd_obj):
+            print('Goodbye build!')
+
+    """))
+
+    # A simple setup.py for the test package--running register_commands should
+    # discover and enable the command hooks
+    test_pkg.join('setup.py').write(dedent("""\
+        from os.path import join
+        from setuptools import setup, Extension
+        from astropy_helpers.setup_helpers import register_commands, get_package_info
+
+        NAME = '_welltall_'
+        VERSION = 0.1
+        RELEASE = True
+
+        cmdclassd = register_commands(NAME, VERSION, RELEASE)
+
+        setup(
+            name=NAME,
+            version=VERSION,
+            cmdclass=cmdclassd
+        )
+    """))
+
+    with test_pkg.as_cwd():
+        try:
+            run_setup('setup.py', ['build'])
+        finally:
+            cleanup_import('_welltall_')
+
+    stdout, stderr = capsys.readouterr()
+    want = dedent("""\
+        running build
+        running pre_hook from _welltall_.setup_package for build command
+        Hello build!
+        running post_hook from _welltall_.setup_package for build command
+        Goodbye build!
+    """).strip()
+
+    assert want in stdout

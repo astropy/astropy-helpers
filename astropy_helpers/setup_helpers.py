@@ -18,16 +18,18 @@ import traceback
 
 from distutils import log, ccompiler, sysconfig
 from distutils.dist import Distribution
+from distutils.errors import DistutilsOptionError, DistutilsModuleError
 from distutils.core import Extension
 from distutils.core import Command
 from distutils.command.sdist import sdist as DistutilsSdist
 
-from setuptools import find_packages
+from setuptools import find_packages as _find_packages
 
 from .distutils_helpers import *
 from .version_helpers import get_pkg_version_module
 from .test_helpers import AstropyTest
-from .utils import walk_skip_hidden, import_file
+from .utils import (silence, walk_skip_hidden, import_file, extends_doc,
+                    resolve_name)
 
 
 from .commands.build_ext import generate_build_ext_command
@@ -46,7 +48,8 @@ _module_state = {
     'adjusted_compiler': False,
     'registered_commands': None,
     'have_cython': False,
-    'have_sphinx': False
+    'have_sphinx': False,
+    'package_cache': None
 }
 
 try:
@@ -241,7 +244,7 @@ def get_debug_option(packagename):
     return debug
 
 
-def register_commands(package, version, release):
+def register_commands(package, version, release, srcdir='.'):
     if _module_state['registered_commands'] is not None:
         return _module_state['registered_commands']
 
@@ -291,7 +294,113 @@ def register_commands(package, version, release):
         add_command_option('build', *option)
         add_command_option('install', *option)
 
+    add_command_hooks(registered_commands, srcdir=srcdir)
+
     return registered_commands
+
+
+def add_command_hooks(commands, srcdir='.'):
+    """
+    Look through setup_package.py modules for functions with names like
+    ``pre_<command_name>_hook`` and ``post_<command_name>_hook`` where
+    ``<command_name>`` is the name of a ``setup.py`` command (e.g. build_ext).
+
+    If either hook is present this adds a wrapped version of that command to
+    the passed in ``commands`` `dict`.  ``commands`` may be pre-populated with
+    other custom distutils command classes that should be wrapped if there are
+    hooks for them (e.g. `AstropyBuildPy`).
+    """
+
+    hook_re = re.compile(r'^(pre|post)_(.+)_hook$')
+
+    # Distutils commands have a method of the same name, but it is not a
+    # *classmethod* (which probably didn't exist when distutils was first
+    # written)
+    def get_command_name(cmdcls):
+        if hasattr(cmdcls, 'command_name'):
+            return cmdcls.command_name
+        else:
+            return cmdcls.__name__
+
+    packages = filter_packages(find_packages(srcdir))
+    dist = get_dummy_distribution()
+
+    hooks = collections.defaultdict(dict)
+
+    for setuppkg in iter_setup_packages(srcdir, packages):
+        for name, obj in vars(setuppkg).items():
+            match = hook_re.match(name)
+            if not match:
+                continue
+
+            hook_type = match.group(1)
+            cmd_name = match.group(2)
+
+            cmd_cls = dist.get_command_class(cmd_name)
+
+            if hook_type not in hooks[cmd_name]:
+                hooks[cmd_name][hook_type] = []
+
+            hooks[cmd_name][hook_type].append((setuppkg.__name__, obj))
+
+    for cmd_name, cmd_hooks in hooks.items():
+        commands[cmd_name] = generate_hooked_command(
+                cmd_name, dist.get_command_class(cmd_name), cmd_hooks)
+
+
+def generate_hooked_command(cmd_name, cmd_cls, hooks):
+    """
+    Returns a generated subclass of ``cmd_cls`` that runs the pre- and
+    post-command hooks for that command before and after the ``cmd_cls.run``
+    method.
+    """
+
+    def run(self, orig_run=cmd_cls.run):
+        self.run_command_hooks('pre_hooks')
+        orig_run(self)
+        self.run_command_hooks('post_hooks')
+
+    return type(cmd_name, (cmd_cls, object),
+                {'run': run, 'run_command_hooks': run_command_hooks,
+                 'pre_hooks': hooks.get('pre', []),
+                 'post_hooks': hooks.get('post', [])})
+
+
+def run_command_hooks(cmd_obj, hook_kind):
+    """Run hooks registered for that command and phase.
+
+    *cmd_obj* is a finalized command object; *hook_kind* is either
+    'pre_hook' or 'post_hook'.
+    """
+
+    hooks = getattr(cmd_obj, hook_kind, None)
+
+    if not hooks:
+        return
+
+    for modname, hook in hooks:
+        if isinstance(hook, str):
+            try:
+                hook_obj = resolve_name(hook)
+            except ImportError as exc:
+                raise DistutilsModuleError(
+                        'cannot find hook {0}: {1}'.format(hook, err))
+        else:
+            hook_obj = hook
+
+        if not callable(hook_obj):
+            raise DistutilsOptionError('hook {0!r} is not callable' % hook)
+
+        log.info('running {0} from {1} for {2} command'.format(
+                 hook_kind.rstrip('s'), modname, cmd_obj.get_command_name()))
+
+        try :
+            hook_obj(cmd_obj)
+        except Exception as exc:
+            log.error('{0} command hook {1} raised an exception: %s\n'.format(
+                hook_obj.__name__, cmd_obj.get_command_name()))
+            log.error(traceback.format_exc())
+            sys.exit(1)
 
 
 def generate_test_command(package_name):
@@ -354,6 +463,9 @@ def get_package_info(srcdir='.', exclude=()):
     - ``get_external_libraries()`` returns
       a list of libraries that can optionally be built using external
       dependencies.
+
+    - ``get_entry_points()`` returns a dict formatted as required by
+      the ``entry_points`` argument to ``setup()``.
 
     - ``requires_2to3()`` should return `True` when the source code
       requires `2to3` processing to run on Python 3.x.  If
@@ -445,7 +557,8 @@ def iter_setup_packages(srcdir, packages):
             os.path.join(package_path, 'setup_package.py'))
 
         if os.path.isfile(setup_package):
-            module = import_file(setup_package)
+            module = import_file(setup_package,
+                                 name=packagename + '.setup_package')
             yield module
 
 
@@ -662,6 +775,23 @@ def use_system_library(library):
     return (
         get_distutils_build_or_install_option('use_system_{0}'.format(library))
         or get_distutils_build_or_install_option('use_system_libraries'))
+
+
+@extends_doc(_find_packages)
+def find_packages(where='.', exclude=(), invalidate_cache=False):
+    """
+    This version of ``find_packages`` caches previous results to speed up
+    subsequent calls.  Use ``invalide_cache=True`` to ignore cached results
+    from previous ``find_packages`` calls, and repeat the package search.
+    """
+
+    if not invalidate_cache and _module_state['package_cache'] is not None:
+        return _module_state['package_cache']
+
+    packages = _find_packages(where=where, exclude=exclude)
+    _module_state['package_cache'] = packages
+
+    return packages
 
 
 def filter_packages(packagenames):
