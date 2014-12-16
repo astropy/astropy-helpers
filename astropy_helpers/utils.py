@@ -56,24 +56,6 @@ def get_numpy_include_path():
     return numpy_include
 
 
-def import_file(filename):
-    """
-    Imports a module from a single file as if it doesn't belong to a
-    particular package.
-    """
-    # Specifying a traditional dot-separated fully qualified name here
-    # results in a number of "Parent module 'astropy' not found while
-    # handling absolute import" warnings.  Using the same name, the
-    # namespaces of the modules get merged together.  So, this
-    # generates an underscore-separated name which is more likely to
-    # be unique, and it doesn't really matter because the name isn't
-    # used directly here anyway.
-    with open(filename, 'U') as fd:
-        name = '_'.join(
-            os.path.relpath(os.path.splitext(filename)[0]).split(os.sep)[1:])
-        return imp.load_module(name, fd, filename, ('.py', 'U', 1))
-
-
 class _DummyFile(object):
     """A noop writeable object."""
 
