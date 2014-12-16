@@ -5,6 +5,13 @@ astropy-helpers Changelog
 0.5 (unreleased)
 ----------------
 
+- Added new pre-/post-command hook points for ``setup.py`` commands.  Now any
+  package can define code to run before and/or after any ``setup.py`` command
+  without having to manually subclass that command by adding
+  ``pre_<command_name>_hook`` and ``post_<command_name>_hook`` callables to
+  the package's ``setup_package.py`` module.  See the PR for more details.
+  [#112]
+
 - The following objects in the ``astropy_helpers.setup_helpers`` module have
   been relocated:
 
