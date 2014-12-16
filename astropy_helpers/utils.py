@@ -5,6 +5,11 @@ import imp
 import os
 import sys
 
+try:
+    from importlib import machinery as import_machinery
+except ImportError:
+    import_machinery = None
+
 
 # Python 3.3's importlib caches filesystem reads for faster imports in the
 # general case. But sometimes it's necessary to manually invalidate those
@@ -156,10 +161,20 @@ def import_file(filename):
     # generates an underscore-separated name which is more likely to
     # be unique, and it doesn't really matter because the name isn't
     # used directly here anyway.
-    with open(filename, 'U') as fd:
-        name = '_'.join(
-            os.path.relpath(os.path.splitext(filename)[0]).split(os.sep)[1:])
-        return imp.load_module(name, fd, filename, ('.py', 'U', 1))
+    mode = 'U' if sys.version_info[0] < 3 else 'r'
+
+    if name is None:
+        basename = os.path.splitext(filename)[0]
+        name = '_'.join(os.path.relpath(basename).split(os.sep)[1:])
+
+    if import_machinery:
+        loader = import_machinery.SourceFileLoader(name, filename)
+        mod = loader.load_module()
+    else:
+        with open(filename, mode) as fd:
+            mod = imp.load_module(name, fd, filename, ('.py', mode, 1))
+
+    return mod
 
 
 if sys.version_info[0] >= 3:
