@@ -35,11 +35,11 @@ install:
     - "python --version"
 
     # Install specified version of numpy and dependencies
-    - "conda install -q --yes numpy Cython sphinx"
+    - "conda install -q --yes numpy Cython sphinx pytest"
 
 # Not a .NET project, we build SunPy in the install step instead
 build: false
 
 test_script:
-  - "%CMD_IN_ENV% python setup.py test"
+  - "%CMD_IN_ENV% py.test"
 
