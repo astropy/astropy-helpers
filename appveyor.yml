@@ -41,6 +41,9 @@ install:
     - git config --global user.name "A U Thor"
     - git config --global user.email "author@example.com"
 
+    # Install graphviz
+    - cinst graphviz.portable
+
 # Not a .NET project, we build SunPy in the install step instead
 build: false
 
