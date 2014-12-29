@@ -169,7 +169,7 @@ class AstropyBuildSphinx(SphinxBuildDoc):
 
             print(stdo)
 
-            stdolines = stdo.split(b'\n')
+            stdolines = stdo.splitlines()
 
             if b'build succeeded.' in stdolines:
                 retcode = 0
