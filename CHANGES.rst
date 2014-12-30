@@ -5,6 +5,8 @@ astropy-helpers Changelog
 ------------------
 
 - More improvements for building the documentation using Python 3.x. [#100]
+- Additional minor fixes to Python 3 support. [#115]
+- Updates to support new test features in Astropy [#92, #106]
 
 
 0.4.3 (2014-10-22)
