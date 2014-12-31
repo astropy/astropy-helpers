@@ -24,7 +24,7 @@ before_install:
     - sudo apt-get install graphviz
 
 install:
-    - conda install --yes pip "pytest<2.6" sphinx cython numpy
+    - conda install --yes pip "pytest<2.6" "sphinx<1.3b1" cython numpy
     - pip install coveralls pytest-cov
 
 before_script:

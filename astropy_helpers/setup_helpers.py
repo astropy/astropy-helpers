@@ -26,6 +26,7 @@ from distutils.errors import DistutilsError, DistutilsFileError
 from distutils.core import Extension
 from distutils.core import Command
 from distutils.command.sdist import sdist as DistutilsSdist
+from distutils.version import StrictVersion
 from setuptools.command.build_ext import build_ext as SetuptoolsBuildExt
 from setuptools.command.build_py import build_py as SetuptoolsBuildPy
 from setuptools.command.install import install as SetuptoolsInstall
@@ -873,8 +874,19 @@ if _module_state['have_sphinx']:
             #Now generate the source for and spawn a new process that runs the
             #command.  This is needed to get the correct imports for the built
             #version
+
+            # Note: As of Sphinx 1.3b1 SphinxBuildDoc.run requires
+            # print_function support
+            subproccode = ''
+            try:
+                if StrictVersion(sphinx.__version__) >= StrictVersion('1.3b1'):
+                    subproccode = 'from __future__ import print_function\n\n'
+            except:
+                # Could not determine Sphinx version; YMMV
+                pass
+
             runlines, runlineno = inspect.getsourcelines(SphinxBuildDoc.run)
-            subproccode = textwrap.dedent("""
+            subproccode += textwrap.dedent("""
                 from sphinx.setup_command import *
 
                 os.chdir({srcdir!r})
