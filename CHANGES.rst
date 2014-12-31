@@ -45,15 +45,23 @@ astropy-helpers Changelog
   [#110]
 
 
-0.4.4 (unreleased)
+0.4.5 (unreleased)
+------------------
+
+- Nothing changed yet.
+
+
+0.4.4 (2014-12-31)
 ------------------
 
 - More improvements for building the documentation using Python 3.x. [#100]
+
 - Additional minor fixes to Python 3 support. [#115]
+
 - Updates to support new test features in Astropy [#92, #106]
 
 
-0.4.3 (unreleased)
+0.4.3 (2014-10-22)
 ------------------
 
 - The generated ``version.py`` file now preserves the git hash of installed
