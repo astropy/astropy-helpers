@@ -1,5 +1,6 @@
 from __future__ import (absolute_import, division, print_function,
                         unicode_literals)
+import inspect
 import os
 import shutil
 import subprocess
@@ -162,31 +163,23 @@ class AstropyTest(Command, object):
                     '_save_coverage(cov, result, "{0}", "{1}");'.format(
                         os.path.abspath('.'), testing_path))
 
+            test_args = filter(lambda arg: hasattr(self, arg),
+                               self._get_test_runner_args())
+
+            test_args = ', '.join('{0}={1!r}'.format(arg, getattr(self, arg))
+                                  for arg in test_args)
+
             if PY3:
                 set_flag = "import builtins; builtins._ASTROPY_TEST_ = True"
             else:
                 set_flag = "import __builtin__; __builtin__._ASTROPY_TEST_ = True"
 
-            cmd = ('{cmd_pre}{0}; import {1.package_name}, sys; result = ('
-                   '{1.package_name}.test('
-                   'package={1.package!r}, '
-                   'test_path={1.test_path!r}, '
-                   'args={1.args!r}, '
-                   'plugins={1.plugins!r}, '
-                   'verbose={1.verbose_results!r}, '
-                   'pastebin={1.pastebin!r}, '
-                   'remote_data={1.remote_data!r}, '
-                   'pep8={1.pep8!r}, '
-                   'pdb={1.pdb!r}, '
-                   'open_files={1.open_files!r}, '
-                   'parallel={1.parallel!r}, '
-                   'docs_path={1.docs_path!r}, '
-                   'skip_docs={1.skip_docs!r}, '
-                   'repeat={1.repeat!r}));'
-                   '{cmd_post}'
+            cmd = ('{cmd_pre}{0}; import {1.package_name}, sys; result = '
+                   '{1.package_name}.test({test_args}); {cmd_post}'
                    'sys.exit(result)')
 
-            cmd = cmd.format(set_flag, self, cmd_pre=cmd_pre, cmd_post=cmd_post)
+            cmd = cmd.format(set_flag, self, cmd_pre=cmd_pre,
+                             cmd_post=cmd_post, test_args=test_args)
 
             # Run the tests in a subprocess--this is necessary since
             # new extension modules may have appeared, and this is the
@@ -212,3 +205,33 @@ class AstropyTest(Command, object):
             shutil.rmtree(tmp_dir)
 
         raise SystemExit(retcode)
+
+    def _get_test_runner_args(self):
+        """
+        A hack to determine what arguments are supported by the package's
+        test() function.  In the future there should be a more straightforward
+        API to determine this (really it should be determined by the
+        ``TestRunner`` class for whatever version of Astropy is in use).
+        """
+
+        if PY3:
+            import builtins
+            builtins._ASTROPY_TEST_ = True
+        else:
+            import __builtin__
+            __builtin__._ASTROPY_TEST_ = True
+
+        try:
+            pkg = __import__(self.package_name)
+            if not hasattr(pkg, 'test'):
+                raise ImportError(
+                    'package {0} does not have a {0}.test() function as '
+                    'required by the Astropy test runner'.format(package_name))
+
+            argspec = inspect.getargspec(pkg.test)
+            return argspec.args
+        finally:
+            if PY3:
+                del builtins._ASTROPY_TEST_
+            else:
+                del __builtin__._ASTROPY_TEST_
