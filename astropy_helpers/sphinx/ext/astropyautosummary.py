@@ -74,7 +74,10 @@ class AstropyAutosummary(Autosummary):
 
             # -- Grab the summary
 
-            doc = list(documenter.process_doc(documenter.get_doc()))
+            raw_doc = documenter.get_doc()
+            if env.config.require_docstring_on_public_objects and len(raw_doc) == 0:
+                self.warn('[astropyautosummary] public object {0} does not have a docstring'.format(display_name))
+            doc = list(documenter.process_doc(raw_doc))
 
             while doc and not doc[0].strip():
                 doc.pop(0)
@@ -96,3 +99,4 @@ def setup(app):
     app.setup_extension('sphinx.ext.autosummary')
     # this replaces the default autosummary with the astropy one
     app.add_directive('autosummary', AstropyAutosummary)
+    app.add_config_value('require_docstring_on_public_objects', False, True)

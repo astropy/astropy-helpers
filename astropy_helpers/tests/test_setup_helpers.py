@@ -132,12 +132,15 @@ def test_build_sphinx(tmpdir, mode):
 
     test_pkg.join('mypackage').join('__init__.py').write(dedent("""\
         def test_function():
+            "Test function"
             pass
 
         class A():
+            "Test class A"
             pass
 
         class B(A):
+            "Test class B"
             pass
     """))
 
@@ -159,6 +162,7 @@ def test_build_sphinx(tmpdir, mode):
             warnings.simplefilter("ignore")
             from astropy_helpers.sphinx.conf import *
         exclude_patterns.append('_templates')
+        require_docstring_on_public_objects = True
     """))
 
     docs_dir.join('index.rst').write(dedent("""\
