@@ -2,6 +2,8 @@ import os
 import subprocess as sp
 import sys
 
+from setuptools import sandbox
+
 import pytest
 
 PACKAGE_DIR = os.path.dirname(__file__)
@@ -64,6 +66,23 @@ def reset_distutils_log():
 
     from distutils import log
     log.set_threshold(log.WARN)
+
+
+@pytest.fixture(scope='module', autouse=True)
+def fix_hide_setuptools():
+    """
+    Workaround for https://github.com/astropy/astropy-helpers/issues/124
+
+    In setuptools 10.0 run_setup was changed in such a way that it sweeps
+    away the existing setuptools import before running the setup script.  In
+    principle this is nice, but in the practice of testing astropy_helpers
+    this is problematic since we're trying to test code that has already been
+    imported during the testing process, and which relies on the setuptools
+    module that was already in use.
+    """
+
+    if hasattr(sandbox, 'hide_setuptools'):
+        sandbox.hide_setuptools = lambda: None
 
 
 TEST_PACKAGE_SETUP_PY = """\
