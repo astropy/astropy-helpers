@@ -48,7 +48,8 @@ astropy-helpers Changelog
 0.4.5 (unreleased)
 ------------------
 
-- Nothing changed yet.
+- Added some additional object reference link corrections for Python 3
+  when building docs. [#123]
 
 
 0.4.4 (2014-12-31)
