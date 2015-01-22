@@ -1,11 +1,16 @@
-language: python
+language: c
 
-python:
-    - 2.6
-    - 2.7
-    - 3.2
-    - 3.3
-    - 3.4
+os:
+    - linux
+    - osx
+
+env:
+  matrix:
+    - PYTHON_VERSION=2.6
+    - PYTHON_VERSION=2.7
+    - PYTHON_VERSION=3.2
+    - PYTHON_VERSION=3.3
+    - PYTHON_VERSION=3.4
 
 env:
     global:
@@ -36,6 +41,8 @@ before_install:
     - sudo apt-get install graphviz
 
 install:
+    - conda create --yes -n test python=$PYTHON_VERSION
+    - source activate test
     - conda install --yes pip "pytest<2.6" sphinx cython numpy mercurial mock
     - pip install coveralls pytest-cov
     # We cannot install the developer version of setuptools using pip because
