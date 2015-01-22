@@ -4,6 +4,13 @@
 # The remainder of this file should be compressed using zlib.
 bytes py:function -1 library/functions.html#bytes -
 TimeoutError py:exception -1 library/exceptions.html#TimeoutError -
+builtins.object py:class -1 library/functions.html#object -
+builtins.list py:class -1 library/functions.html#list -
+builtins.type py:class -1 library/functions.html#type -
+builtins.classmethod py:class -1 library/functions.html#classmethod -
+builtins.SyntaxWarning py:exception -1 library/exceptions.html#SyntaxWarning -
+builtins.RuntimeWarning py:exception -1 library/exceptions.html#RuntimeWarning -
+builtins.ValueError py:exception -1 library/exceptions.html#ValueError -
 object py:function -1 library/functions.html#object -
 object py:class -1 library/functions.html#object -
 urllib.request.urlopen py:function -1 library/urllib.request.html#urllib.request.urlopen -
