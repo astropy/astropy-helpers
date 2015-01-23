@@ -10,6 +10,19 @@ from ..setup_helpers import get_package_info, register_commands
 from . import *
 
 
+def run_setup_patched(*args, **kwargs):
+    """
+    In Python 3, on MacOS X, the import cache has to be invalidated otherwise
+    new extensions built with ``run_setup`` do not always get picked up.
+    """
+    try:
+        return run_setup(*args, **kwargs)
+    finally:
+        if sys.version_info[0] >= 3:
+            import importlib
+            importlib.invalidate_caches()
+
+
 def test_cython_autoextensions(tmpdir):
     """
     Regression test for https://github.com/astropy/astropy-helpers/pull/19
@@ -105,9 +118,10 @@ def test_no_cython_buildext(tmpdir):
     """))
 
     with test_pkg.as_cwd():
-        run_setup('setup.py', ['build_ext', '--inplace'])
+        run_setup_patched('setup.py', ['build_ext', '--inplace'])
 
     sys.path.insert(0, str(test_pkg))
+
     try:
         import _eva_.unit01
         dirname = os.path.abspath(os.path.dirname(_eva_.unit01.__file__))
@@ -188,9 +202,9 @@ def test_build_sphinx(tmpdir, mode):
         shutil.copytree(ah_path, 'astropy_helpers')
 
         if mode == 'cli':
-            run_setup('setup.py', ['build_sphinx'])
+            run_setup_patched('setup.py', ['build_sphinx'])
         elif mode == 'cli-w':
-            run_setup('setup.py', ['build_sphinx', '-w'])
+            run_setup_patched('setup.py', ['build_sphinx', '-w'])
         elif mode == 'direct':  # to check coverage
             with docs_dir.as_cwd():
                 from sphinx import main
@@ -239,7 +253,7 @@ def test_command_hooks(tmpdir, capsys):
 
     with test_pkg.as_cwd():
         try:
-            run_setup('setup.py', ['build'])
+            run_setup_patched('setup.py', ['build'])
         finally:
             cleanup_import('_welltall_')
 
