@@ -34,11 +34,9 @@ before_install:
     - export PATH=/home/travis/miniconda/bin:$PATH
     - conda update --yes conda
 
-    # Update apt-get listings
-    - sudo apt-get update
-
-    # Install dot
-    - sudo apt-get install graphviz
+    # Update apt-get listings and install graphviz
+    - if [[ $TRAVIS_OS_NAME == linux ]]; then sudo apt-get update; sudo apt-get install graphviz; fi
+    - if [[ $TRAVIS_OS_NAME == osx ]]; then sudo brew update; sudo brew install graphviz; fi
 
 install:
     - conda create --yes -n test python=$PYTHON_VERSION
