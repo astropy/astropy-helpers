@@ -4,8 +4,8 @@
 language: c
 
 os:
-    - linux
     - osx
+    - linux
 
 env:
   matrix:
@@ -19,7 +19,7 @@ env:
 matrix:
     include:
         - os: linux
-          env: SETUPTOOLS_VERSION=dev
+          env: PYTHON_VERSION=2.7 SETUPTOOLS_VERSION=dev
 
 before_install:
 
@@ -28,25 +28,21 @@ before_install:
     - export PYTHONIOENCODING=UTF8
 
     # Install conda
-    - wget http://repo.continuum.io/miniconda/Miniconda-latest-Linux-x86_64.sh -O miniconda.sh
-    - chmod +x miniconda.sh
-    - ./miniconda.sh -b
-    - export PATH=/home/travis/miniconda/bin:$PATH
-    - conda update --yes conda
+    - source continuous-integration/travis/install_conda_$TRAVIS_OS_NAME.sh
 
-    # Update apt-get listings and install graphviz
-    - if [[ $TRAVIS_OS_NAME == linux ]]; then sudo apt-get update; sudo apt-get install graphviz; fi
-    - if [[ $TRAVIS_OS_NAME == osx ]]; then sudo brew update; sudo brew install graphviz; fi
+    # Install graphviz
+    - source continuous-integration/travis/install_graphviz_$TRAVIS_OS_NAME.sh
 
 install:
     - conda create --yes -n test python=$PYTHON_VERSION
     - source activate test
-    - conda install --yes pip "pytest<2.6" sphinx cython numpy mercurial mock
+    - conda install --yes pip "pytest<2.6" sphinx cython numpy
     - pip install coveralls pytest-cov
     # We cannot install the developer version of setuptools using pip because
     # pip tries to remove the previous version of setuptools before the
     # installation is complete, which causes issues. Instead, we just install
     # setuptools manually.
+    - if [[ $SETUPTOOLS_VERSION == dev ]]; then conda install --yes mercurial mock; fi
     - if [[ $SETUPTOOLS_VERSION == dev ]]; then hg clone https://bitbucket.org/pypa/setuptools; cd setuptools; python setup.py install; cd ..; fi
 
 before_script:
