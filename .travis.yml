@@ -7,6 +7,15 @@ python:
     - 3.3
     - 3.4
 
+env:
+    global:
+        - SETUPTOOLS_VERSION=stable
+
+matrix:
+    include:
+        - python: 2.7
+          env: SETUPTOOLS_VERSION=dev
+
 before_install:
 
     # Use utf8 encoding. Should be default, but this is insurance against
@@ -27,8 +36,13 @@ before_install:
     - sudo apt-get install graphviz
 
 install:
-    - conda install --yes pip "pytest<2.6" sphinx cython numpy
+    - conda install --yes pip "pytest<2.6" sphinx cython numpy mercurial mock
     - pip install coveralls pytest-cov
+    # We cannot install the developer version of setuptools using pip because
+    # pip tries to remove the previous version of setuptools before the
+    # installation is complete, which causes issues. Instead, we just install
+    # setuptools manually.
+    - if [[ $SETUPTOOLS_VERSION == dev ]]; then hg clone https://bitbucket.org/pypa/setuptools; cd setuptools; python setup.py install; cd ..; fi
 
 before_script:
     # Some of the tests use git commands that require a user to be configured
@@ -36,7 +50,7 @@ before_script:
     - git config --global user.email "author@example.com"
 
 script:
-    - py.test --cov astropy_helpers
+    - py.test --cov astropy_helpers astropy_helpers
 
 after_success:
     - coveralls
