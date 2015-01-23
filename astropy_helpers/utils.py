@@ -1,9 +1,15 @@
 # Licensed under a 3-clause BSD style license - see LICENSE.rst
+from __future__ import absolute_import, unicode_literals
 
 import contextlib
+import functools
 import imp
+import inspect
 import os
 import sys
+import textwrap
+import types
+import warnings
 
 try:
     from importlib import machinery as import_machinery
@@ -19,6 +25,29 @@ if sys.version_info[:2] >= (3, 3):
     from importlib import invalidate_caches
 else:
     invalidate_caches = lambda: None
+
+
+# Note: The following Warning subclasses are simply copies of the Warnings in
+# Astropy of the same names.
+class AstropyWarning(Warning):
+    """
+    The base warning class from which all Astropy warnings should inherit.
+
+    Any warning inheriting from this class is handled by the Astropy logger.
+    """
+
+
+class AstropyDeprecationWarning(AstropyWarning):
+    """
+    A warning class to indicate a deprecated feature.
+    """
+
+
+class AstropyPendingDeprecationWarning(PendingDeprecationWarning,
+                                       AstropyWarning):
+    """
+    A warning class to indicate a soon-to-be deprecated feature.
+    """
 
 
 def _get_platlib_dir(cmd):
@@ -290,3 +319,273 @@ def extends_doc(extended_func):
         return func
 
     return decorator
+
+
+# Duplicated from astropy.utils.decorators.deprecated
+# When fixing issues in this function fix them in astropy first, then
+# port the fixes over to astropy-helpers
+def deprecated(since, message='', name='', alternative='', pending=False,
+               obj_type=None):
+    """
+    Used to mark a function or class as deprecated.
+
+    To mark an attribute as deprecated, use `deprecated_attribute`.
+
+    Parameters
+    ------------
+    since : str
+        The release at which this API became deprecated.  This is
+        required.
+
+    message : str, optional
+        Override the default deprecation message.  The format
+        specifier ``func`` may be used for the name of the function,
+        and ``alternative`` may be used in the deprecation message
+        to insert the name of an alternative to the deprecated
+        function. ``obj_type`` may be used to insert a friendly name
+        for the type of object being deprecated.
+
+    name : str, optional
+        The name of the deprecated function or class; if not provided
+        the name is automatically determined from the passed in
+        function or class, though this is useful in the case of
+        renamed functions, where the new function is just assigned to
+        the name of the deprecated function.  For example::
+
+            def new_function():
+                ...
+            oldFunction = new_function
+
+    alternative : str, optional
+        An alternative function or class name that the user may use in
+        place of the deprecated object.  The deprecation warning will
+        tell the user about this alternative if provided.
+
+    pending : bool, optional
+        If True, uses a AstropyPendingDeprecationWarning instead of a
+        AstropyDeprecationWarning.
+
+    obj_type : str, optional
+        The type of this object, if the automatically determined one
+        needs to be overridden.
+    """
+
+    method_types = (classmethod, staticmethod, types.MethodType)
+
+    def deprecate_doc(old_doc, message):
+        """
+        Returns a given docstring with a deprecation message prepended
+        to it.
+        """
+        if not old_doc:
+            old_doc = ''
+        old_doc = textwrap.dedent(old_doc).strip('\n')
+        new_doc = (('\n.. deprecated:: %(since)s'
+                    '\n    %(message)s\n\n' %
+                    {'since': since, 'message': message.strip()}) + old_doc)
+        if not old_doc:
+            # This is to prevent a spurious 'unexected unindent' warning from
+            # docutils when the original docstring was blank.
+            new_doc += r'\ '
+        return new_doc
+
+    def get_function(func):
+        """
+        Given a function or classmethod (or other function wrapper type), get
+        the function object.
+        """
+        if isinstance(func, method_types):
+            try:
+                func = func.__func__
+            except AttributeError:
+                # classmethods in Python2.6 and below lack the __func__
+                # attribute so we need to hack around to get it
+                method = func.__get__(None, object)
+                if isinstance(method, types.FunctionType):
+                    # For staticmethods anyways the wrapped object is just a
+                    # plain function (not a bound method or anything like that)
+                    func = method
+                elif hasattr(method, '__func__'):
+                    func = method.__func__
+                elif hasattr(method, 'im_func'):
+                    func = method.im_func
+                else:
+                    # Nothing we can do really...  just return the original
+                    # classmethod, etc.
+                    return func
+        return func
+
+    def deprecate_function(func, message):
+        """
+        Returns a wrapped function that displays an
+        ``AstropyDeprecationWarning`` when it is called.
+        """
+
+        if isinstance(func, method_types):
+            func_wrapper = type(func)
+        else:
+            func_wrapper = lambda f: f
+
+        func = get_function(func)
+
+        def deprecated_func(*args, **kwargs):
+            if pending:
+                category = AstropyPendingDeprecationWarning
+            else:
+                category = AstropyDeprecationWarning
+
+            warnings.warn(message, category, stacklevel=2)
+
+            return func(*args, **kwargs)
+
+        # If this is an extension function, we can't call
+        # functools.wraps on it, but we normally don't care.
+        # This crazy way to get the type of a wrapper descriptor is
+        # straight out of the Python 3.3 inspect module docs.
+        if type(func) != type(str.__dict__['__add__']):
+            deprecated_func = functools.wraps(func)(deprecated_func)
+
+        deprecated_func.__doc__ = deprecate_doc(
+            deprecated_func.__doc__, message)
+
+        return func_wrapper(deprecated_func)
+
+    def deprecate_class(cls, message):
+        """
+        Returns a wrapper class with the docstrings updated and an
+        __init__ function that will raise an
+        ``AstropyDeprectationWarning`` warning when called.
+        """
+        # Creates a new class with the same name and bases as the
+        # original class, but updates the dictionary with a new
+        # docstring and a wrapped __init__ method.  __module__ needs
+        # to be manually copied over, since otherwise it will be set
+        # to *this* module (astropy.utils.misc).
+
+        # This approach seems to make Sphinx happy (the new class
+        # looks enough like the original class), and works with
+        # extension classes (which functools.wraps does not, since
+        # it tries to modify the original class).
+
+        # We need to add a custom pickler or you'll get
+        #     Can't pickle <class ..>: it's not found as ...
+        # errors. Picklability is required for any class that is
+        # documented by Sphinx.
+
+        members = cls.__dict__.copy()
+
+        members.update({
+            '__doc__': deprecate_doc(cls.__doc__, message),
+            '__init__': deprecate_function(get_function(cls.__init__),
+                                           message),
+        })
+
+        return type(cls.__name__, cls.__bases__, members)
+
+    def deprecate(obj, message=message, name=name, alternative=alternative,
+                  pending=pending):
+        if obj_type is None:
+            if isinstance(obj, type):
+                obj_type_name = 'class'
+            elif inspect.isfunction(obj):
+                obj_type_name = 'function'
+            elif inspect.ismethod(obj) or isinstance(obj, method_types):
+                obj_type_name = 'method'
+            else:
+                obj_type_name = 'object'
+        else:
+            obj_type_name = obj_type
+
+        if not name:
+            name = get_function(obj).__name__
+
+        altmessage = ''
+        if not message or type(message) == type(deprecate):
+            if pending:
+                message = ('The %(func)s %(obj_type)s will be deprecated in a '
+                           'future version.')
+            else:
+                message = ('The %(func)s %(obj_type)s is deprecated and may '
+                           'be removed in a future version.')
+            if alternative:
+                altmessage = '\n        Use %s instead.' % alternative
+
+        message = ((message % {
+            'func': name,
+            'name': name,
+            'alternative': alternative,
+            'obj_type': obj_type_name}) +
+            altmessage)
+
+        if isinstance(obj, type):
+            return deprecate_class(obj, message)
+        else:
+            return deprecate_function(obj, message)
+
+    if type(message) == type(deprecate):
+        return deprecate(message)
+
+    return deprecate
+
+
+def deprecated_attribute(name, since, message=None, alternative=None,
+                         pending=False):
+    """
+    Used to mark a public attribute as deprecated.  This creates a
+    property that will warn when the given attribute name is accessed.
+    To prevent the warning (i.e. for internal code), use the private
+    name for the attribute by prepending an underscore
+    (i.e. ``self._name``).
+
+    Parameters
+    ----------
+    name : str
+        The name of the deprecated attribute.
+
+    since : str
+        The release at which this API became deprecated.  This is
+        required.
+
+    message : str, optional
+        Override the default deprecation message.  The format
+        specifier ``name`` may be used for the name of the attribute,
+        and ``alternative`` may be used in the deprecation message
+        to insert the name of an alternative to the deprecated
+        function.
+
+    alternative : str, optional
+        An alternative attribute that the user may use in place of the
+        deprecated attribute.  The deprecation warning will tell the
+        user about this alternative if provided.
+
+    pending : bool, optional
+        If True, uses a AstropyPendingDeprecationWarning instead of a
+        AstropyDeprecationWarning.
+
+    Examples
+    --------
+
+    ::
+
+        class MyClass:
+            # Mark the old_name as deprecated
+            old_name = misc.deprecated_attribute('old_name', '0.1')
+
+            def method(self):
+                self._old_name = 42
+    """
+    private_name = '_' + name
+
+    @deprecated(since, name=name, obj_type='attribute')
+    def get(self):
+        return getattr(self, private_name)
+
+    @deprecated(since, name=name, obj_type='attribute')
+    def set(self, val):
+        setattr(self, private_name, val)
+
+    @deprecated(since, name=name, obj_type='attribute')
+    def delete(self):
+        delattr(self, private_name)
+
+    return property(get, set, delete)
