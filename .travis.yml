@@ -13,14 +13,12 @@ env:
     - PYTHON_VERSION=2.7
     - PYTHON_VERSION=3.3
     - PYTHON_VERSION=3.4
-
-env:
-    global:
-        - SETUPTOOLS_VERSION=stable
+  global:
+      - SETUPTOOLS_VERSION=stable
 
 matrix:
     include:
-        - python: 2.7
+        - os: linux
           env: SETUPTOOLS_VERSION=dev
 
 before_install:
