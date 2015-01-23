@@ -3,8 +3,6 @@ import sys
 
 from textwrap import dedent
 
-from setuptools.sandbox import run_setup
-
 from .. import setup_helpers
 from ..setup_helpers import get_package_info, register_commands
 from . import *
@@ -108,6 +106,7 @@ def test_no_cython_buildext(tmpdir):
         run_setup('setup.py', ['build_ext', '--inplace'])
 
     sys.path.insert(0, str(test_pkg))
+
     try:
         import _eva_.unit01
         dirname = os.path.abspath(os.path.dirname(_eva_.unit01.__file__))

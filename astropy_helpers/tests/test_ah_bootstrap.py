@@ -9,7 +9,6 @@ from distutils.version import StrictVersion
 
 import setuptools
 from setuptools.package_index import PackageIndex
-from setuptools.sandbox import run_setup
 
 import pytest
 
