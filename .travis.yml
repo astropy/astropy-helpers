@@ -38,6 +38,10 @@ before_install:
 install:
     - conda install --yes pip "pytest<2.6" sphinx cython numpy mercurial mock
     - pip install coveralls pytest-cov
+    # We cannot install the developer version of setuptools using pip because
+    # pip tries to remove the previous version of setuptools before the
+    # installation is complete, which causes issues. Instead, we just install
+    # setuptools manually.
     - if [[ $SETUPTOOLS_VERSION == dev ]]; then hg clone https://bitbucket.org/pypa/setuptools; cd setuptools; python setup.py install; cd ..; fi
 
 before_script:
