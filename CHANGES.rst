@@ -51,6 +51,9 @@ astropy-helpers Changelog
 - Added some additional object reference link corrections for Python 3
   when building docs. [#123]
 
+- Added a workaround for documentation of properties in the rare case
+  where the class's metaclass has a property of the same name. [#130]
+
 
 0.4.4 (2014-12-31)
 ------------------
