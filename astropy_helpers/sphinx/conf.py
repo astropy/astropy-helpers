@@ -118,6 +118,7 @@ extensions = [
     'sphinx.ext.inheritance_diagram',
     'astropy_helpers.sphinx.ext.numpydoc',
     'astropy_helpers.sphinx.ext.astropyautosummary',
+    'astropy_helpers.sphinx.ext.autodoc_enhancements',
     'astropy_helpers.sphinx.ext.automodsumm',
     'astropy_helpers.sphinx.ext.automodapi',
     'astropy_helpers.sphinx.ext.tocdepthfix',
