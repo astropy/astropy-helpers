@@ -6,8 +6,6 @@ import re
 import sys
 import tarfile
 
-from setuptools.sandbox import run_setup
-
 from . import *
 
 

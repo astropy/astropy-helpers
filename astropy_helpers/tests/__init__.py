@@ -6,6 +6,8 @@ from setuptools import sandbox
 
 import pytest
 
+from ..utils import extends_doc
+
 PACKAGE_DIR = os.path.dirname(__file__)
 
 
@@ -35,6 +37,21 @@ def run_cmd(cmd, args, path=None, raise_error=True):
                 cmd, list(args), return_code, streams[0], streams[1]))
 
     return streams + (return_code,)
+
+
+@extends_doc(sandbox.run_setup)
+def run_setup(*args, **kwargs):
+    """
+    In Python 3, on MacOS X, the import cache has to be invalidated otherwise
+    new extensions built with ``run_setup`` do not always get picked up.
+    """
+
+    try:
+        return sandbox.run_setup(*args, **kwargs)
+    finally:
+        if sys.version_info[:2] >= (3, 1):
+            import importlib
+            importlib.invalidate_caches()
 
 
 @pytest.fixture(scope='function', autouse=True)
