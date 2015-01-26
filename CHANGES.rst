@@ -44,6 +44,11 @@ astropy-helpers Changelog
   defined in.  But please consider updating any imports to these objects.
   [#110]
 
+- Use of the ``astropy.sphinx.ext.astropyautosummary`` extension is deprecated
+  for use with Sphinx < 1.2.  Instead it should suffice to remove this
+  extension for the ``extensions`` list in your ``conf.py`` and add the stock
+  ``sphinx.ext.autosummary`` instead. [#131]
+
 
 0.4.5 (unreleased)
 ------------------
