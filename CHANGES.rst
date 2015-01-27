@@ -2,7 +2,7 @@ astropy-helpers Changelog
 =========================
 
 
-0.5 (unreleased)
+1.0 (unreleased)
 ----------------
 
 - Added new pre-/post-command hook points for ``setup.py`` commands.  Now any
