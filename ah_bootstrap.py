@@ -185,7 +185,8 @@ class _Bootstrapper(object):
     def parse_config(cls):
         cfg_options = [('auto_use', bool), ('path', str),
                        ('download_if_needed', bool), ('index_url', str),
-                       ('use_git', bool), ('auto_upgrade', bool)]
+                       ('use_git', bool), ('offline', bool),
+                       ('auto_upgrade', bool)]
 
         if not os.path.exists('setup.cfg'):
             return {}
