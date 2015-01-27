@@ -173,12 +173,12 @@ class _Bootstrapper(object):
         self.is_submodule = False
 
     @classmethod
-    def main(cls, args=None):
-        if args is None:
-            args = sys.argv[1:]
+    def main(cls, argv=None):
+        if argv is None:
+            argv = sys.argv
 
         config = cls.parse_config()
-        config.update(cls.parse_command_line(args))
+        config.update(cls.parse_command_line(argv))
 
         auto_use = config.pop('auto_use', False)
         bootstrapper = cls(**config)
@@ -229,9 +229,9 @@ class _Bootstrapper(object):
         return config
 
     @classmethod
-    def parse_command_line(cls, args=None):
-        if args is None:
-            args = sys.argv[1:]
+    def parse_command_line(cls, argv=None):
+        if argv is None:
+            argv = sys.argv
 
         config = {}
 
@@ -241,13 +241,13 @@ class _Bootstrapper(object):
         # of the same name then we will break that.  However there's a catch22
         # here that we can't just do full argument parsing right here, because
         # we don't yet know *how* to parse all possible command-line arguments.
-        if '--no-git' in args:
+        if '--no-git' in argv:
             config['use_git'] = False
-            args.remove('--no-git')
+            argv.remove('--no-git')
 
-        if '--offline' in args:
+        if '--offline' in argv:
             config['offline'] = True
-            args.remove('--offline')
+            argv.remove('--offline')
 
         return config
 
