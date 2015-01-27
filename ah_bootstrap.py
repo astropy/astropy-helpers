@@ -116,6 +116,13 @@ USE_GIT = True
 OFFLINE = False
 AUTO_UPGRADE = True
 
+# A list of all the configuration options and their required types
+CFG_OPTIONS = [
+    ('auto_use', bool), ('path', str), ('download_if_needed', bool),
+    ('index_url', str), ('use_git', bool), ('offline', bool),
+    ('auto_upgrade', bool)
+]
+
 
 class _Bootstrapper(object):
     """
@@ -166,27 +173,26 @@ class _Bootstrapper(object):
         self.is_submodule = False
 
     @classmethod
-    def main(cls, args=None):
-        if args is None:
-            args = sys.argv[1:]
+    def main(cls, argv=None):
+        if argv is None:
+            argv = sys.argv
 
         config = cls.parse_config()
-        config.update(cls.parse_command_line(args))
+        config.update(cls.parse_command_line(argv))
 
         auto_use = config.pop('auto_use', False)
+        bootstrapper = cls(**config)
 
         if auto_use:
-            bootstrapper = cls(**config)
+            # Run the bootstrapper, otherwise the setup.py is using the old
+            # use_astropy_helpers() interface, in which case it will run the
+            # bootstrapper manually after reconfiguring it.
             bootstrapper.run()
 
-        return config
+        return bootstrapper
 
     @classmethod
     def parse_config(cls):
-        cfg_options = [('auto_use', bool), ('path', str),
-                       ('download_if_needed', bool), ('index_url', str),
-                       ('use_git', bool), ('auto_upgrade', bool)]
-
         if not os.path.exists('setup.cfg'):
             return {}
 
@@ -209,7 +215,7 @@ class _Bootstrapper(object):
 
         config = {}
 
-        for option, type_ in cfg_options:
+        for option, type_ in CFG_OPTIONS:
             if not cfg.has_option('ah_bootstrap', option):
                 continue
 
@@ -223,9 +229,9 @@ class _Bootstrapper(object):
         return config
 
     @classmethod
-    def parse_command_line(cls, args=None):
-        if args is None:
-            args = sys.argv[1:]
+    def parse_command_line(cls, argv=None):
+        if argv is None:
+            argv = sys.argv
 
         config = {}
 
@@ -235,13 +241,13 @@ class _Bootstrapper(object):
         # of the same name then we will break that.  However there's a catch22
         # here that we can't just do full argument parsing right here, because
         # we don't yet know *how* to parse all possible command-line arguments.
-        if '--no-git' in args:
+        if '--no-git' in argv:
             config['use_git'] = False
-            args.remove('--no-git')
+            argv.remove('--no-git')
 
-        if '--offline' in args:
+        if '--offline' in argv:
             config['offline'] = True
-            args.remove('--offline')
+            argv.remove('--offline')
 
         return config
 
@@ -270,6 +276,16 @@ class _Bootstrapper(object):
         # Note: Adding the dist to the global working set also activates it
         # (makes it importable on sys.path) by default
         pkg_resources.working_set.add(dist)
+
+    @property
+    def config(self):
+        """
+        A `dict` containing the options this `_Bootstrapper` was configured
+        with.
+        """
+
+        return dict((optname, getattr(self, optname))
+                    for optname, _ in CFG_OPTIONS if hasattr(self, optname))
 
     def get_local_directory_dist(self):
         """
@@ -812,7 +828,7 @@ if sys.version_info[:2] < (2, 7):
     log = log()
 
 
-_config = _Bootstrapper.main()
+BOOTSTRAPPER = _Bootstrapper.main()
 
 
 def use_astropy_helpers(**kwargs):
@@ -871,10 +887,11 @@ def use_astropy_helpers(**kwargs):
         updates to any git submodule.  Defaults to `True`.
     """
 
-    global _config
+    global BOOTSTRAPPER
 
-    config = _config.copy()
+    config = BOOTSTRAPPER.config
     config.update(**kwargs)
 
-    bootstrapper = _Bootstrapper(**config)
-    bootstrapper.run()
+    # Create a new bootstrapper with the updated configuration and run it
+    BOOTSTRAPPER = _Bootstrapper(**config)
+    BOOTSTRAPPER.run()

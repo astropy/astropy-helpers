@@ -33,12 +33,19 @@ ah_bootstrap.PACKAGE_NAME = '_astropy_helpers_test_'
 ah_bootstrap.AUTO_UPGRADE = False
 ah_bootstrap.DOWNLOAD_IF_NEEDED = False
 try:
+    ah_bootstrap.BOOTSTRAPPER = ah_bootstrap._Bootstrapper.main()
     ah_bootstrap.use_astropy_helpers({args})
 finally:
     ah_bootstrap.DIST_NAME = 'astropy-helpers'
     ah_bootstrap.PACKAGE_NAME = 'astropy_helpers'
     ah_bootstrap.AUTO_UPGRADE = True
     ah_bootstrap.DOWNLOAD_IF_NEEDED = True
+
+# Kind of a hacky way to do this, but this assertion is specifically
+# for test_check_submodule_no_git
+# TODO: Rework the tests in this module so that it's easier to test specific
+# behaviors of ah_bootstrap for each test
+assert '--no-git' not in sys.argv
 
 import _astropy_helpers_test_
 filename = os.path.abspath(_astropy_helpers_test_.__file__)
@@ -184,6 +191,9 @@ def test_check_submodule_no_git(tmpdir, testpackage):
                         '_astropy_helpers_test_ from a git submodule')
         finally:
             ah_bootstrap._Bootstrapper._do_upgrade = orig_do_upgrade
+
+        # Ensure that the no-git option was in fact set
+        assert not ah_bootstrap.BOOTSTRAPPER.use_git
 
 
 def test_bootstrap_from_directory(tmpdir, testpackage, capsys):
