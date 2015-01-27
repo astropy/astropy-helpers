@@ -116,6 +116,13 @@ USE_GIT = True
 OFFLINE = False
 AUTO_UPGRADE = True
 
+# A list of all the configuration options and their required types
+CFG_OPTIONS = [
+    ('auto_use', bool), ('path', str), ('download_if_needed', bool),
+    ('index_url', str), ('use_git', bool), ('offline', bool),
+    ('auto_upgrade', bool)
+]
+
 
 class _Bootstrapper(object):
     """
@@ -174,20 +181,18 @@ class _Bootstrapper(object):
         config.update(cls.parse_command_line(args))
 
         auto_use = config.pop('auto_use', False)
+        bootstrapper = cls(**config)
 
         if auto_use:
-            bootstrapper = cls(**config)
+            # Run the bootstrapper, otherwise the setup.py is using the old
+            # use_astropy_helpers() interface, in which case it will run the
+            # bootstrapper manually after reconfiguring it.
             bootstrapper.run()
 
-        return config
+        return bootstrapper
 
     @classmethod
     def parse_config(cls):
-        cfg_options = [('auto_use', bool), ('path', str),
-                       ('download_if_needed', bool), ('index_url', str),
-                       ('use_git', bool), ('offline', bool),
-                       ('auto_upgrade', bool)]
-
         if not os.path.exists('setup.cfg'):
             return {}
 
@@ -210,7 +215,7 @@ class _Bootstrapper(object):
 
         config = {}
 
-        for option, type_ in cfg_options:
+        for option, type_ in CFG_OPTIONS:
             if not cfg.has_option('ah_bootstrap', option):
                 continue
 
@@ -271,6 +276,16 @@ class _Bootstrapper(object):
         # Note: Adding the dist to the global working set also activates it
         # (makes it importable on sys.path) by default
         pkg_resources.working_set.add(dist)
+
+    @property
+    def config(self):
+        """
+        A `dict` containing the options this `_Bootstrapper` was configured
+        with.
+        """
+
+        return dict((optname, getattr(self, optname))
+                    for optname, _ in CFG_OPTIONS if hasattr(self, optname))
 
     def get_local_directory_dist(self):
         """
@@ -813,7 +828,7 @@ if sys.version_info[:2] < (2, 7):
     log = log()
 
 
-_config = _Bootstrapper.main()
+BOOTSTRAPPER = _Bootstrapper.main()
 
 
 def use_astropy_helpers(**kwargs):
@@ -872,10 +887,11 @@ def use_astropy_helpers(**kwargs):
         updates to any git submodule.  Defaults to `True`.
     """
 
-    global _config
+    global BOOTSTRAPPER
 
-    config = _config.copy()
+    config = BOOTSTRAPPER.config
     config.update(**kwargs)
 
-    bootstrapper = _Bootstrapper(**config)
-    bootstrapper.run()
+    # Create a new bootstrapper with the updated configuration and run it
+    BOOTSTRAPPER = _Bootstrapper(**config)
+    BOOTSTRAPPER.run()
