@@ -36,6 +36,9 @@ setup(
     classifiers=[
         'Development Status :: 5 - Production/Stable',
         'Intended Audience :: Developers',
+        'Framework :: Setuptools Plugin',
+        'Framework :: Sphinx :: Extension',
+        'Framework :: Sphinx :: Theme',
         'License :: OSI Approved :: BSD License',
         'Operating System :: OS Independent',
         'Programming Language :: Python',
