@@ -202,7 +202,7 @@ class AstropyBuildSphinx(SphinxBuildDoc):
                     webbrowser.open(fileurl)
                 else:
                     log.warn('open-docs-in-browser option was given, but '
-                             'the builder is not html! Ignogring.')
+                             'the builder is not html! Ignoring.')
         else:
             log.warn('Sphinx Documentation subprocess failed with return '
                      'code ' + str(proc.returncode))

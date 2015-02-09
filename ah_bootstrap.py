@@ -532,7 +532,7 @@ class _Bootstrapper(object):
             perl_warning = ('perl: warning: Falling back to the standard locale '
                             '("C").')
             if not stderr.strip().endswith(perl_warning):
-                # Some other uknown error condition occurred
+                # Some other unknown error condition occurred
                 log.warn('git submodule command failed '
                          'unexpectedly:\n{0}'.format(stderr))
                 return False
@@ -846,7 +846,7 @@ def use_astropy_helpers(**kwargs):
         that should be added to `sys.path` so that `astropy_helpers` can be
         imported from that path.
 
-        If the path is a git submodule it will automatically be initialzed
+        If the path is a git submodule it will automatically be initialized
         and/or updated.
 
         The path may also be to a ``.tar.gz`` archive of the astropy_helpers

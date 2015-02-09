@@ -139,7 +139,7 @@ def get_compiler_option():
     Returns
     -------
     compiler : str
-        The compiler option specificied for the build, build_ext, or build_clib
+        The compiler option specified for the build, build_ext, or build_clib
         command; or the default compiler for the platform if none was
         specified.
 
