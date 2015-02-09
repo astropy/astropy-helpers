@@ -45,7 +45,7 @@ def doctree_read(app, doctree):
             return None
         module = sys.modules[modname]
         try:
-            # Allow an attribute to have multiple parts and incidentially allow
+            # Allow an attribute to have multiple parts and incidentally allow
             # repeated .s in the attribute.
             attr = attribute.split('.')
             value = module

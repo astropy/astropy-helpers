@@ -63,7 +63,7 @@ try:
     _module_state['have_sphinx'] = True
 except ValueError as e:
     # This can occur deep in the bowels of Sphinx's imports by way of docutils
-    # and an occurence of this bug: http://bugs.python.org/issue18378
+    # and an occurrence of this bug: http://bugs.python.org/issue18378
     # In this case sphinx is effectively unusable
     if 'unknown locale' in e.args[0]:
         log.warn(
@@ -155,7 +155,7 @@ def adjust_compiler(package):
         # ``sysconfig.get_config_var('CC')`` lower down, because this may fail
         # if the compiler used to compile Python is missing (and maybe this is
         # why the user is setting CC). For example, the official Python 2.7.3
-        # MacOS X binary was compled with gcc-4.2, which is no longer available
+        # MacOS X binary was compiled with gcc-4.2, which is no longer available
         # in XCode 4.
         return
 
@@ -523,7 +523,7 @@ def get_package_info(srcdir='.', exclude=()):
 
     # On Microsoft compilers, we need to pass the '/MANIFEST'
     # commandline argument.  This was the default on MSVC 9.0, but is
-    # now required on MSVC 10.0, but it doesn't seeem to hurt to add
+    # now required on MSVC 10.0, but it doesn't seem to hurt to add
     # it unconditionally.
     if get_compiler_option() == 'msvc':
         for ext in ext_modules:

@@ -119,7 +119,7 @@ def test_bootstrap_from_submodule_no_locale(tmpdir, testpackage, capsys,
     """
     Regression test for https://github.com/astropy/astropy/issues/2749
 
-    Runs test_bootstrap_from_submodule but with missing locale/langauge
+    Runs test_bootstrap_from_submodule but with missing locale/language
     settings.
     """
 

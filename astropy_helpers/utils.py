@@ -384,7 +384,7 @@ def deprecated(since, message='', name='', alternative='', pending=False,
                     '\n    %(message)s\n\n' %
                     {'since': since, 'message': message.strip()}) + old_doc)
         if not old_doc:
-            # This is to prevent a spurious 'unexected unindent' warning from
+            # This is to prevent a spurious 'unexpected unindent' warning from
             # docutils when the original docstring was blank.
             new_doc += r'\ '
         return new_doc
