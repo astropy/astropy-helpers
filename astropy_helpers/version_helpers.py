@@ -122,6 +122,12 @@ githash = get_git_devstr(sha=True, show_warning=False,
 """[1:]
 
 
+_FROZEN_VERSION_PY_STATIC_HEADER = """
+version = "{verstr}"
+githash = "{githash}"
+"""[1:]
+
+
 def _get_version_py_str(packagename, version, githash, release, debug,
                         uses_git=True):
     timestamp = str(datetime.datetime.now())
@@ -132,40 +138,14 @@ def _get_version_py_str(packagename, version, githash, release, debug,
     else:
         packagename = 'Astropy-affiliated package ' + packagename
 
+    header = ''
+
     if uses_git:
-        loader = pkgutil.get_loader(git_helpers)
-        source = loader.get_source(git_helpers.__name__) or ''
-        source_lines = source.splitlines()
-        if not source_lines:
-            log.warn('Cannot get source code for astropy_helpers.git_helpers; '
-                     'git support disabled.')
-            return _get_version_py_str(packagename, version, release, debug,
-                                       uses_git=False)
-        idx = 0
-        for idx, line in enumerate(source_lines):
-            if line.startswith('# BEGIN'):
-                break
-        git_helpers_py = '\n'.join(source_lines[idx + 1:])
+        header = _generate_git_header(version, githash)
 
-        if PY3:
-            verstr = version
-        else:
-            # In Python 2 don't pass in a unicode string; otherwise verstr will
-            # be represented with u'' syntax which breaks on Python 3.x with x
-            # < 3.  This is only an issue when developing on multiple Python
-            # versions at once
-            verstr = version.encode('utf8')
-
-        new_githash = git_helpers.get_git_devstr(sha=True, show_warning=False)
-
-        if new_githash:
-            githash = new_githash
-
-        header = _FROZEN_VERSION_PY_WITH_GIT_HEADER.format(
-                git_helpers=git_helpers_py,
-                verstr=verstr, githash=githash)
-    else:
-        header = 'version = {0!r}'.format(version)
+    if not header:  # If _generate_git_header fails it returns an empty string
+        header = _FROZEN_VERSION_PY_STATIC_HEADER.format(verstr=version,
+                                                         githash=githash)
 
     return _FROZEN_VERSION_PY_TEMPLATE.format(packagename=packagename,
                                               timestamp=timestamp,
@@ -174,6 +154,49 @@ def _get_version_py_str(packagename, version, githash, release, debug,
                                               minor=minor,
                                               bugfix=bugfix,
                                               rel=release, debug=debug)
+
+
+def _generate_git_header(version, githash):
+    """
+    Generates a header to the version.py module that includes utilities for
+    probing the git repository for updates (to the current git hash, etc.)
+    These utilities should only be available in development versions, and not
+    in release builds.
+
+    If this fails for any reason an empty string is returned.
+    """
+
+    loader = pkgutil.get_loader(git_helpers)
+    source = loader.get_source(git_helpers.__name__) or ''
+    source_lines = source.splitlines()
+    if not source_lines:
+        log.warn('Cannot get source code for astropy_helpers.git_helpers; '
+                 'git support disabled.')
+        return ''
+
+    idx = 0
+    for idx, line in enumerate(source_lines):
+        if line.startswith('# BEGIN'):
+            break
+    git_helpers_py = '\n'.join(source_lines[idx + 1:])
+
+    if PY3:
+        verstr = version
+    else:
+        # In Python 2 don't pass in a unicode string; otherwise verstr will
+        # be represented with u'' syntax which breaks on Python 3.x with x
+        # < 3.  This is only an issue when developing on multiple Python
+        # versions at once
+        verstr = version.encode('utf8')
+
+    new_githash = git_helpers.get_git_devstr(sha=True, show_warning=False)
+
+    if new_githash:
+        githash = new_githash
+
+    return _FROZEN_VERSION_PY_WITH_GIT_HEADER.format(
+                git_helpers=git_helpers_py,
+                verstr=verstr, githash=githash)
 
 
 def generate_version_py(packagename, version, release=None, debug=None,
