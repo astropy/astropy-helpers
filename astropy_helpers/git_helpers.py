@@ -112,16 +112,16 @@ def get_git_devstr(sha=False, show_warning=True, path=None):
         except OSError as e:
             if show_warning:
                 warnings.warn('Error running git: ' + str(e))
-            return (None, '', '')
+            return (None, b'', b'')
 
         if p.returncode == 128:
             if show_warning:
                 warnings.warn('No git repository present at {0!r}! Using '
                               'default dev version.'.format(path))
-            return (p.returncode, '', '')
+            return (p.returncode, b'', b'')
         if p.returncode == 129:
             if show_warning:
-                warnings.warn('Your git looks old (does it support {0}?); ' 
+                warnings.warn('Your git looks old (does it support {0}?); '
                               'consider upgrading to v1.7.2 or '
                               'later.'.format(cmd[0]))
             return (p.returncode, stdout, stderr)
