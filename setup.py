@@ -12,7 +12,7 @@ VERSION = '0.4.5.dev'
 RELEASE = 'dev' not in VERSION
 DOWNLOAD_BASE_URL = 'http://pypi.python.org/packages/source/a/astropy-helpers'
 
-generate_version_py(NAME, VERSION, RELEASE, False)
+generate_version_py(NAME, VERSION, RELEASE, False, uses_git=not RELEASE)
 
 # Use the updated version including the git rev count
 from astropy_helpers.version import version as VERSION

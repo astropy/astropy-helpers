@@ -125,6 +125,53 @@ def test_update_git_devstr(version_test_package, capsys):
     assert newversion == _eva_.version.version
 
 
+def test_version_update_in_other_repos(version_test_package, tmpdir):
+    """
+    Regression test for https://github.com/astropy/astropy-helpers/issues/114
+    and for https://github.com/astropy/astropy-helpers/issues/107
+    """
+
+    with version_test_package.as_cwd():
+        run_setup('setup.py', ['build'])
+
+    # Add the path to the test package to sys.path for now
+    sys.path.insert(0, str(version_test_package))
+    try:
+        import _eva_
+        m = _DEV_VERSION_RE.match(_eva_.__version__)
+        assert m
+        correct_revcount = int(m.group(1))
+
+        with tmpdir.as_cwd():
+            testrepo = tmpdir.mkdir('testrepo')
+            testrepo.chdir()
+            # Create an empty git repo
+            run_cmd('git', ['init'])
+
+            import _eva_.version
+            imp.reload(_eva_.version)
+            m = _DEV_VERSION_RE.match(_eva_.version.version)
+            assert m
+            assert int(m.group(1)) == correct_revcount
+            correct_revcount = int(m.group(1))
+
+            # Add several commits--more than the revcount for the _eva_ package
+            for idx in range(correct_revcount + 5):
+                test_filename = '.test' + str(idx)
+                testrepo.ensure(test_filename)
+                run_cmd('git', ['add', test_filename])
+                run_cmd('git', ['commit', '-m', 'A message'])
+
+            import _eva_.version
+            imp.reload(_eva_.version)
+            m = _DEV_VERSION_RE.match(_eva_.version.version)
+            assert m
+            assert int(m.group(1)) == correct_revcount
+            correct_revcount = int(m.group(1))
+    finally:
+        sys.path.remove(str(version_test_package))
+
+
 def test_installed_git_version(version_test_package, tmpdir, capsys):
     """
     Test for https://github.com/astropy/astropy-helpers/issues/87

@@ -75,7 +75,8 @@ def get_git_devstr(sha=False, show_warning=True, path=None):
 
     path : str or None
         If a string, specifies the directory to look in to find the git
-        repository.  If `None`, the current working directory is used.
+        repository.  If `None`, the current working directory is used, and must
+        be the root of the git repository.
         If given a filename it uses the directory containing that file.
 
     Returns
@@ -89,12 +90,11 @@ def get_git_devstr(sha=False, show_warning=True, path=None):
 
     if path is None:
         path = os.getcwd()
+        if not _get_repo_path(path, levels=0):
+            return ''
 
     if not os.path.isdir(path):
         path = os.path.abspath(os.path.dirname(path))
-
-    if not os.path.exists(os.path.join(path, '.git')):
-        return ''
 
     if sha:
         # Faster for getting just the hash of HEAD
@@ -112,16 +112,16 @@ def get_git_devstr(sha=False, show_warning=True, path=None):
         except OSError as e:
             if show_warning:
                 warnings.warn('Error running git: ' + str(e))
-            return (None, '', '')
+            return (None, b'', b'')
 
         if p.returncode == 128:
             if show_warning:
                 warnings.warn('No git repository present at {0!r}! Using '
                               'default dev version.'.format(path))
-            return (p.returncode, '', '')
+            return (p.returncode, b'', b'')
         if p.returncode == 129:
             if show_warning:
-                warnings.warn('Your git looks old (does it support {0}?); ' 
+                warnings.warn('Your git looks old (does it support {0}?); '
                               'consider upgrading to v1.7.2 or '
                               'later.'.format(cmd[0]))
             return (p.returncode, stdout, stderr)
@@ -153,3 +153,36 @@ def get_git_devstr(sha=False, show_warning=True, path=None):
         return _decode_stdio(stdout)[:40]
     else:
         return _decode_stdio(stdout).strip()
+
+
+def _get_repo_path(pathname, levels=None):
+    """
+    Given a file or directory name, determine the root of the git repository
+    this path is under.  If given, this won't look any higher than ``levels``
+    (that is, if ``levels=0`` then the given path must be the root of the git
+    repository and is returned if so.
+
+    Returns `None` if the given path could not be determined to belong to a git
+    repo.
+    """
+
+    if os.path.isfile(pathname):
+        current_dir = os.path.abspath(os.path.dirname(pathname))
+    elif os.path.isdir(pathname):
+        current_dir = os.path.abspath(pathname)
+    else:
+        return None
+
+    current_level = 0
+
+    while levels is None or current_level <= levels:
+        if os.path.exists(os.path.join(current_dir, '.git')):
+            return current_dir
+
+        current_level += 1
+        if current_dir == os.path.dirname(current_dir):
+            break
+
+        current_dir = os.path.dirname(current_dir)
+
+    return None
