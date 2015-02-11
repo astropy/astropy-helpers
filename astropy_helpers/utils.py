@@ -13,6 +13,9 @@ import warnings
 
 try:
     from importlib import machinery as import_machinery
+    # Python 3.2 does not have SourceLoader
+    if not hasattr(import_machinery, 'SourceLoader'):
+        import_machinery = None
 except ImportError:
     import_machinery = None
 

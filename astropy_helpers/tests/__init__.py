@@ -49,7 +49,7 @@ def run_setup(*args, **kwargs):
     try:
         return sandbox.run_setup(*args, **kwargs)
     finally:
-        if sys.version_info[:2] >= (3, 1):
+        if sys.version_info[:2] >= (3, 3):
             import importlib
             importlib.invalidate_caches()
 
