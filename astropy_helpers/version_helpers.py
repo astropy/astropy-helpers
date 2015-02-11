@@ -28,6 +28,8 @@ import sys
 
 from distutils import log
 
+import pkg_resources
+
 from . import git_helpers
 from .setup_helpers import is_distutils_display_option, get_pkg_version_module
 from .utils import invalidate_caches
@@ -38,19 +40,47 @@ PY3 = sys.version_info[0] == 3
 
 def _version_split(version):
     """
-    Split a version string into major, minor, and bugfix numbers (with bugfix
-    optional, defaulting to 0).
+    Split a version string into major, minor, and bugfix numbers.  If any of
+    those numbers are missing the default is zero.  Any pre/post release
+    modifiers are ignored.
+
+    Examples
+    ========
+    >>> _version_split('1.2.3')
+    (1, 2, 3)
+    >>> _version_split('1.2')
+    (1, 2, 0)
+    >>> _version_split('1.2rc1')
+    (1, 2, 0)
+    >>> _version_split('1')
+    (1, 0, 0)
+    >>> _version_split('')
+    (0, 0, 0)
     """
 
-    for prerel in ('.dev', 'a', 'b', 'rc'):
-        if prerel in version:
-            version = version.split(prerel)[0]
+    parsed_version = pkg_resources.parse_version(version)
 
-    versplit = version.split('.')
-    major = int(versplit[0])
-    minor = int(versplit[1])
-    bugfix = 0 if len(versplit) < 3 else int(versplit[2])
-    return major, minor, bugfix
+    if hasattr(parsed_version, 'base_version'):
+        # New version parsing for setuptools >= 8.0
+        if parsed_version.base_version:
+            parts = [int(part)
+                     for part in parsed_version.base_version.split('.')]
+        else:
+            parts = []
+    else:
+        parts = []
+        for part in parsed_version:
+            if part.startswith('*'):
+                # Ignore any .dev, a, b, rc, etc.
+                break
+            parts.append(int(part))
+
+    if len(parts) < 3:
+        parts += [0] * (3 - len(parts))
+
+    # In principle a version could have more parts (like 1.2.3.4) but we only
+    # support <major>.<minor>.<micro>
+    return tuple(parts[:3])
 
 
 # This is used by setup.py to create a new version.py - see that file for
