@@ -62,6 +62,18 @@ astropy-helpers Changelog
 - Fixed an issue where ah_bootstrap.py could blow up when astropy_helper's
   version number is 1.0.
 
+- Fixed an issue on Python 3 where importing a package using astropy-helper's
+  generated version.py module would crash when the current working directory
+  is an empty git repository. [#114]
+
+- Fixed an issue where the "revision count" appended to .dev versions by
+  the generated version.py did not accurately reflect the revision count for
+  the package it belongs to, and could be invalid if the current working
+  directory is an unrelated git repository. [#107]
+
+- Likewise, fixed a confusing warning message that could occur in the same
+  circumstances as the above issue. [#121]
+
 
 0.4.4 (2014-12-31)
 ------------------
