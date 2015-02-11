@@ -59,6 +59,9 @@ astropy-helpers Changelog
 - Added a workaround for documentation of properties in the rare case
   where the class's metaclass has a property of the same name. [#130]
 
+- Fixed an issue where ah_bootstrap.py could blow up when astropy_helper's
+  version number is 1.0.
+
 
 0.4.4 (2014-12-31)
 ------------------
