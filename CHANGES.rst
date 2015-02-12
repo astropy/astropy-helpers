@@ -50,7 +50,7 @@ astropy-helpers Changelog
   ``sphinx.ext.autosummary`` instead. [#131]
 
 
-0.4.5 (unreleased)
+0.4.5 (2015-02-11)
 ------------------
 
 - Added some additional object reference link corrections for Python 3
