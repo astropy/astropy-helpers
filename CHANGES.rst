@@ -4,7 +4,8 @@ astropy-helpers Changelog
 0.4.6 (unreleased)
 ------------------
 
-- Nothing changed yet.
+- Fixed problems related to the automatically generated _compiler
+  module not being created properly. [#139]
 
 
 0.4.5 (2015-02-11)
