@@ -50,6 +50,13 @@ astropy-helpers Changelog
   ``sphinx.ext.autosummary`` instead. [#131]
 
 
+0.4.6 (unreleased)
+------------------
+
+- Fixed problems related to the automatically generated _compiler
+  module not being created properly. [#139]
+
+
 0.4.5 (2015-02-11)
 ------------------
 
