@@ -10,42 +10,11 @@ from ..setup_helpers import get_package_info, register_commands
 from . import *
 
 
-def test_cython_autoextensions(tmpdir):
-    """
-    Regression test for https://github.com/astropy/astropy-helpers/pull/19
-
-    Ensures that Cython extensions in sub-packages are discovered and built
-    only once.
-    """
-
-    # Make a simple test package
-    test_pkg = tmpdir.mkdir('test_pkg')
-    test_pkg.mkdir('yoda').mkdir('luke')
-    test_pkg.ensure('yoda', '__init__.py')
-    test_pkg.ensure('yoda', 'luke', '__init__.py')
-    test_pkg.join('yoda', 'luke', 'dagobah.pyx').write(
-        """def testfunc(): pass""")
-
-    # Required, currently, for get_package_info to work
-    register_commands('yoda', '0.0', False)
-    package_info = get_package_info(str(test_pkg))
-
-    assert len(package_info['ext_modules']) == 1
-    assert package_info['ext_modules'][0].name == 'yoda.luke.dagobah'
 
 
-def test_no_cython_buildext(tmpdir):
-    """
-    Regression test for https://github.com/astropy/astropy-helpers/pull/35
-
-    This tests the custom build_ext command installed by astropy_helpers when
-    used with a project that has no Cython extensions (but does have one or
-    more normal C extensions).
-    """
-
-    # In order for this test to test the correct code path we need to fool
-    # setup_helpers into thinking we don't have Cython installed
-    setup_helpers._module_state['have_cython'] = False
+@pytest.fixture
+def extension_test_package(tmpdir, request):
+    """Creates a simple test package with an extension module."""
 
     test_pkg = tmpdir.mkdir('test_pkg')
     test_pkg.mkdir('_eva_').ensure('__init__.py')
@@ -54,7 +23,7 @@ def test_no_cython_buildext(tmpdir):
     # reusable fixture for other build_ext tests
 
     # A minimal C extension for testing
-    test_pkg.join('_eva_').join('unit01.c').write(dedent("""\
+    test_pkg.join('_eva_', 'unit01.c').write(dedent("""\
         #include <Python.h>
         #ifndef PY3K
         #if PY_MAJOR_VERSION >= 3
@@ -84,35 +53,128 @@ def test_no_cython_buildext(tmpdir):
         #endif
     """))
 
+    test_pkg.join('_eva_', 'setup_package.py').write(dedent("""\
+        from setuptools import Extension
+        from os.path import join
+        def get_extensions():
+            return [Extension('_eva_.unit01',
+                              [join('_eva_', 'unit01.c')])]
+    """))
+
     test_pkg.join('setup.py').write(dedent("""\
         from os.path import join
-        from setuptools import setup, Extension
+        from setuptools import setup
         from astropy_helpers.setup_helpers import register_commands
+        from astropy_helpers.setup_helpers import get_package_info
+        from astropy_helpers.version_helpers import generate_version_py
 
         NAME = '_eva_'
-        VERSION = 0.1
+        VERSION = '0.1'
         RELEASE = True
 
         cmdclassd = register_commands(NAME, VERSION, RELEASE)
+        generate_version_py(NAME, VERSION, RELEASE, False, False)
+        package_info = get_package_info()
 
         setup(
             name=NAME,
             version=VERSION,
             cmdclass=cmdclassd,
-            ext_modules=[Extension('_eva_.unit01',
-                                   [join('_eva_', 'unit01.c')])]
+            **package_info
         )
     """))
 
-    test_pkg.chdir()
-    run_setup('setup.py', ['build_ext', '--inplace'])
+    if '' in sys.path:
+        sys.path.remove('')
+
+    sys.path.insert(0, '')
+
+    def finalize():
+        cleanup_import('_eva_')
+
+    request.addfinalizer(finalize)
+
+    return test_pkg
+
+
+def test_cython_autoextensions(tmpdir):
+    """
+    Regression test for https://github.com/astropy/astropy-helpers/pull/19
+
+    Ensures that Cython extensions in sub-packages are discovered and built
+    only once.
+    """
+
+    # Make a simple test package
+    test_pkg = tmpdir.mkdir('test_pkg')
+    test_pkg.mkdir('yoda').mkdir('luke')
+    test_pkg.ensure('yoda', '__init__.py')
+    test_pkg.ensure('yoda', 'luke', '__init__.py')
+    test_pkg.join('yoda', 'luke', 'dagobah.pyx').write(
+        """def testfunc(): pass""")
+
+    # Required, currently, for get_package_info to work
+    register_commands('yoda', '0.0', False)
+    package_info = get_package_info(str(test_pkg))
+
+    assert len(package_info['ext_modules']) == 1
+    assert package_info['ext_modules'][0].name == 'yoda.luke.dagobah'
+
+
+def test_compiler_module(extension_test_package):
+    """
+    Test ensuring that the compiler module is built and installed for packages
+    that have extension modules.
+    """
+
+    test_pkg = extension_test_package
+    install_temp = test_pkg.mkdir('install_temp')
+
+    with test_pkg.as_cwd():
+        # This is one of the simplest ways to install just a package into a
+        # test directory
+        run_setup('setup.py',
+                  ['install',
+                   '--single-version-externally-managed',
+                   '--install-lib={0}'.format(install_temp),
+                   '--record={0}'.format(install_temp.join('record.txt'))])
+
+    with install_temp.as_cwd():
+        import _eva_
+        # Make sure we imported the _eva_ package from the correct place
+        dirname = os.path.abspath(os.path.dirname(_eva_.__file__))
+        assert dirname == str(install_temp.join('_eva_'))
+
+        import _eva_._compiler
+        import _eva_.version
+        assert _eva_.version.compiler == _eva_._compiler.compiler
+        assert _eva_.version.compiler != 'unknown'
+
+
+def test_no_cython_buildext(extension_test_package):
+    """
+    Regression test for https://github.com/astropy/astropy-helpers/pull/35
+
+    This tests the custom build_ext command installed by astropy_helpers when
+    used with a project that has no Cython extensions (but does have one or
+    more normal C extensions).
+    """
+
+    test_pkg = extension_test_package
+
+    # In order for this test to test the correct code path we need to fool
+    # setup_helpers into thinking we don't have Cython installed
+    setup_helpers._module_state['have_cython'] = False
+
+    with test_pkg.as_cwd():
+        run_setup('setup.py', ['build_ext', '--inplace'])
+
     sys.path.insert(0, str(test_pkg))
     try:
         import _eva_.unit01
         dirname = os.path.abspath(os.path.dirname(_eva_.unit01.__file__))
         assert dirname == str(test_pkg.join('_eva_'))
     finally:
-        cleanup_import('_eva_')
         sys.path.remove(str(test_pkg))
 
 
