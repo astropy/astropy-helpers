@@ -50,7 +50,7 @@ astropy-helpers Changelog
   ``sphinx.ext.autosummary`` instead. [#131]
 
 
-0.4.6 (unreleased)
+0.4.6 (2015-02-16)
 ------------------
 
 - Fixed problems related to the automatically generated _compiler
@@ -60,14 +60,11 @@ astropy-helpers Changelog
 0.4.5 (2015-02-11)
 ------------------
 
-- Added some additional object reference link corrections for Python 3
-  when building docs. [#123]
+- Fixed an issue where ah_bootstrap.py could blow up when astropy_helper's
+  version number is 1.0.
 
 - Added a workaround for documentation of properties in the rare case
   where the class's metaclass has a property of the same name. [#130]
-
-- Fixed an issue where ah_bootstrap.py could blow up when astropy_helper's
-  version number is 1.0.
 
 - Fixed an issue on Python 3 where importing a package using astropy-helper's
   generated version.py module would crash when the current working directory
