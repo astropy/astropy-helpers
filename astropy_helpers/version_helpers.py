@@ -155,6 +155,12 @@ def _get_version_py_str(packagename, version, githash, release, debug,
 
     if uses_git:
         header = _generate_git_header(packagename, version, githash)
+    elif not githash:
+        # _generate_git_header will already generate a new git has for us, but
+        # for creating a new version.py for a release (even if uses_git=False)
+        # we still need to get the githash to include in the version.py
+        # See https://github.com/astropy/astropy-helpers/issues/141
+        githash = git_helpers.get_git_devstr(sha=True, show_warning=True)
 
     if not header:  # If _generate_git_header fails it returns an empty string
         header = _FROZEN_VERSION_PY_STATIC_HEADER.format(verstr=version,
@@ -227,7 +233,7 @@ def generate_version_py(packagename, version, release=None, debug=None,
         try:
             last_githash = version_module._last_githash
         except AttributeError:
-            last_githash = ''
+            last_githash = version_module.githash
 
         current_release = version_module.release
         current_debug = version_module.debug

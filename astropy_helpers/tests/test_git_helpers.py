@@ -37,7 +37,7 @@ from astropy_helpers.version_helpers import generate_version_py
 if not RELEASE:
     VERSION += get_git_devstr(False)
 
-generate_version_py(NAME, VERSION, RELEASE, False)
+generate_version_py(NAME, VERSION, RELEASE, False, uses_git=not RELEASE)
 
 setup(name=NAME, version=VERSION, packages=['_eva_'])
 """
@@ -53,27 +53,30 @@ except ImportError:
 
 
 @pytest.fixture
-def version_test_package(tmpdir, request, version='42.42.dev'):
-    test_package = tmpdir.mkdir('test_package')
-    test_package.join('setup.py').write(
-        TEST_VERSION_SETUP_PY.format(version=version))
-    test_package.mkdir('_eva_').join('__init__.py').write(TEST_VERSION_INIT)
-    with test_package.as_cwd():
-        run_cmd('git', ['init'])
-        run_cmd('git', ['add', '--all'])
-        run_cmd('git', ['commit', '-m', 'test package'])
+def version_test_package(tmpdir, request):
+    def make_test_package(version='42.42.dev'):
+        test_package = tmpdir.mkdir('test_package')
+        test_package.join('setup.py').write(
+            TEST_VERSION_SETUP_PY.format(version=version))
+        test_package.mkdir('_eva_').join('__init__.py').write(TEST_VERSION_INIT)
+        with test_package.as_cwd():
+            run_cmd('git', ['init'])
+            run_cmd('git', ['add', '--all'])
+            run_cmd('git', ['commit', '-m', 'test package'])
 
-    if '' in sys.path:
-        sys.path.remove('')
+        if '' in sys.path:
+            sys.path.remove('')
 
-    sys.path.insert(0, '')
+        sys.path.insert(0, '')
 
-    def finalize():
-        cleanup_import('_eva_')
+        def finalize():
+            cleanup_import('_eva_')
 
-    request.addfinalizer(finalize)
+        request.addfinalizer(finalize)
 
-    return test_package
+        return test_package
+
+    return make_test_package
 
 
 def test_update_git_devstr(version_test_package, capsys):
@@ -81,7 +84,10 @@ def test_update_git_devstr(version_test_package, capsys):
     after git commits even without re-running setup.py.
     """
 
-    with version_test_package.as_cwd():
+    # We have to call version_test_package to actually create the package
+    test_pkg = version_test_package()
+
+    with test_pkg.as_cwd():
         run_setup('setup.py', ['--version'])
 
         stdout, stderr = capsys.readouterr()
@@ -121,7 +127,7 @@ def test_update_git_devstr(version_test_package, capsys):
     # directly and compare to the value in packagename
     from astropy_helpers.git_helpers import update_git_devstr
 
-    newversion = update_git_devstr(version, path=str(version_test_package))
+    newversion = update_git_devstr(version, path=str(test_pkg))
     assert newversion == _eva_.version.version
 
 
@@ -131,11 +137,13 @@ def test_version_update_in_other_repos(version_test_package, tmpdir):
     and for https://github.com/astropy/astropy-helpers/issues/107
     """
 
-    with version_test_package.as_cwd():
+    test_pkg = version_test_package()
+
+    with test_pkg.as_cwd():
         run_setup('setup.py', ['build'])
 
     # Add the path to the test package to sys.path for now
-    sys.path.insert(0, str(version_test_package))
+    sys.path.insert(0, str(test_pkg))
     try:
         import _eva_
         m = _DEV_VERSION_RE.match(_eva_.__version__)
@@ -169,10 +177,11 @@ def test_version_update_in_other_repos(version_test_package, tmpdir):
             assert int(m.group(1)) == correct_revcount
             correct_revcount = int(m.group(1))
     finally:
-        sys.path.remove(str(version_test_package))
+        sys.path.remove(str(test_pkg))
 
 
-def test_installed_git_version(version_test_package, tmpdir, capsys):
+@pytest.mark.parametrize('version', ['1.0.dev', '1.0'])
+def test_installed_git_version(version_test_package, version, tmpdir, capsys):
     """
     Test for https://github.com/astropy/astropy-helpers/issues/87
 
@@ -184,13 +193,18 @@ def test_installed_git_version(version_test_package, tmpdir, capsys):
     # somewhere outside the git repository, and then do a build and import
     # from the build directory--no need to "install" as such
 
-    with version_test_package.as_cwd():
+    test_pkg = version_test_package(version)
+
+    with test_pkg.as_cwd():
         run_setup('setup.py', ['build'])
 
         try:
             import _eva_
             githash = _eva_.__githash__
             assert githash and isinstance(githash, _text_type)
+            # Ensure that it does in fact look like a git hash and not some
+            # other arbitrary string
+            assert re.match(r'[0-9a-f]{40}', githash)
         finally:
             cleanup_import('_eva_')
 
@@ -199,7 +213,7 @@ def test_installed_git_version(version_test_package, tmpdir, capsys):
         tgzs = glob.glob(os.path.join('dist', '*.tar.gz'))
         assert len(tgzs) == 1
 
-        tgz = version_test_package.join(tgzs[0])
+        tgz = test_pkg.join(tgzs[0])
 
     build_dir = tmpdir.mkdir('build_dir')
     tf = tarfile.open(str(tgz), mode='r:gz')
