@@ -50,6 +50,13 @@ astropy-helpers Changelog
   ``sphinx.ext.autosummary`` instead. [#131]
 
 
+0.4.7 (unreleased)
+------------------
+
+- Fixed incorrect/missing git hash being added to the generated ``version.py``
+  when creating a release. [#141]
+
+
 0.4.6 (2015-02-16)
 ------------------
 
