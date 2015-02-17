@@ -1,7 +1,7 @@
 astropy-helpers Changelog
 =========================
 
-0.4.7 (unreleased)
+0.4.7 (2015-02-17)
 ------------------
 
 - Fixed incorrect/missing git hash being added to the generated ``version.py``
