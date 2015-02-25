@@ -56,6 +56,12 @@ else:
     _text_type = str
     PY3 = True
 
+
+# What follows are several import statements meant to deal with install-time
+# issues with either missing or misbehaving pacakges (including making sure
+# setuptools itself is installed):
+
+
 # Some pre-setuptools checks to ensure that either distribute or setuptools >=
 # 0.7 is used (over pre-distribute setuptools) if it is available on the path;
 # otherwise the latest setuptools will be downloaded and bootstrapped with
@@ -84,16 +90,6 @@ except:
     from ez_setup import use_setuptools
     use_setuptools()
 
-from distutils import log
-from distutils.debug import DEBUG
-
-
-# In case it didn't successfully import before the ez_setup checks
-import pkg_resources
-
-from setuptools import Distribution
-from setuptools.package_index import PackageIndex
-from setuptools.sandbox import run_setup
 
 # Note: The following import is required as a workaround to
 # https://github.com/astropy/astropy-helpers/issues/89; if we don't import this
@@ -104,6 +100,35 @@ try:
     import setuptools.py31compat
 except ImportError:
     pass
+
+
+# matplotlib can cause problems if it is imported from within a call of
+# run_setup(), because in some circumstances it will try to write to the user's
+# home directory, resulting in a SandboxViolation.  See
+# https://github.com/matplotlib/matplotlib/pull/4165
+# Making sure matplotlib, if it is available, is imported early in the setup
+# process can mitigate this (note importing matplotlib.pyplot has the same
+# issue)
+try:
+    import matplotlib.pyplot
+except:
+    # Ignore if this fails for *any* reason*
+    pass
+
+
+# End compatibility imports...
+
+
+# In case it didn't successfully import before the ez_setup checks
+import pkg_resources
+
+from setuptools import Distribution
+from setuptools.package_index import PackageIndex
+from setuptools.sandbox import run_setup
+
+from distutils import log
+from distutils.debug import DEBUG
+
 
 # TODO: Maybe enable checking for a specific version of astropy_helpers?
 DIST_NAME = 'astropy-helpers'
