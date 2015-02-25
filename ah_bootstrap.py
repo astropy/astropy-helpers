@@ -269,13 +269,39 @@ class _Bootstrapper(object):
                 "available and importable as a prerequisite to building "
                 "or installing this package.".format(PACKAGE_NAME))
 
+        # This is a bit hacky, but if astropy_helpers was loaded from a
+        # directory/submodule its Distribution object gets a "precedence" of
+        # "DEVELOP_DIST".  However, in other cases it gets a precedence of
+        # "EGG_DIST".  However, when activing the distribution it will only be
+        # placed early on sys.path if it is treated as an EGG_DIST, so always
+        # do that
+        dist = dist.clone(precedence=pkg_resources.EGG_DIST)
+
         # Otherwise we found a version of astropy-helpers, so we're done
         # Just active the found distribution on sys.path--if we did a
         # download this usually happens automatically but it doesn't hurt to
         # do it again
         # Note: Adding the dist to the global working set also activates it
-        # (makes it importable on sys.path) by default
-        pkg_resources.working_set.add(dist)
+        # (makes it importable on sys.path) by default.
+
+        # But first, remove any previously imported versions of
+        # astropy_helpers; this is necessary for nested installs where one
+        # package's installer is installing another package via
+        # setuptools.sandbox.run_set, as in the case of setup_requires
+        for key in list(sys.modules):
+            if key == PACKAGE_NAME or key.startswith(PACKAGE_NAME + '.'):
+                del sys.modules[key]
+
+        try:
+            pkg_resources.working_set.add(dist, replace=True)
+        except TypeError:
+            # Some (much) older versions of setuptools do not have the
+            # replace=True option here.  These versions are old enough that all
+            # bets may be off anyways, but it's easy enough to work around just
+            # in case...
+            if dist.key in pkg_resources.working_set.by_key:
+                del pkg_resources.working_set.by_key[dist.key]
+            pkg_resources.working_set.add(dist)
 
     @property
     def config(self):
