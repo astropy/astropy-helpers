@@ -110,6 +110,8 @@ except ImportError:
 # process can mitigate this (note importing matplotlib.pyplot has the same
 # issue)
 try:
+    import matplotlib
+    matplotlib.use('Agg')
     import matplotlib.pyplot
 except:
     # Ignore if this fails for *any* reason*
