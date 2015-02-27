@@ -27,6 +27,8 @@ if 'ah_bootstrap' in sys.modules:
 # process can mitigate this (note importing matplotlib.pyplot has the same
 # issue)
 try:
+    import matplotlib
+    matplotlib.rcParams['backend_fallback'] = False
     import matplotlib.pyplot
 except:
     # Ignore if this fails for *any* reason*
