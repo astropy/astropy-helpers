@@ -1,7 +1,7 @@
 astropy-helpers Changelog
 =========================
 
-0.4.8 (unreleased)
+0.4.8 (2015-03-04)
 ------------------
 
 - Improved the ``ah_bootstrap`` script's ability to override existing
