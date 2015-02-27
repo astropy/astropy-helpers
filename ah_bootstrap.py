@@ -314,8 +314,13 @@ class _Bootstrapper(object):
         # package's installer is installing another package via
         # setuptools.sandbox.run_set, as in the case of setup_requires
         for key in list(sys.modules):
-            if key == PACKAGE_NAME or key.startswith(PACKAGE_NAME + '.'):
-                del sys.modules[key]
+            try:
+                if key == PACKAGE_NAME or key.startswith(PACKAGE_NAME + '.'):
+                    del sys.modules[key]
+            except AttributeError:
+                # Sometimes mysterious non-string things can turn up in
+                # sys.modules
+                continue
 
         try:
             pkg_resources.working_set.add(dist, replace=True)
