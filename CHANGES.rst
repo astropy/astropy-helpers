@@ -4,7 +4,15 @@ astropy-helpers Changelog
 0.4.8 (unreleased)
 ------------------
 
-- Nothing changed yet.
+- Improved the ``ah_bootstrap`` script's ability to override existing
+  installations of astropy-helpers with new versions in the context of
+  installing multiple packages simultaneously within the same Python
+  interpreter (e.g. when one package has in its ``setup_requires`` another
+  package that uses a different version of astropy-helpers. [#144]
+
+- Added a workaround to an issue in matplotlib that can, in rare cases, lead
+  to a crash when installing packages that import matplotlib at build time.
+  [#144]
 
 
 0.4.7 (2015-02-17)
