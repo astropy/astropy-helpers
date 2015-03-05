@@ -28,7 +28,7 @@ if 'ah_bootstrap' in sys.modules:
 # issue)
 try:
     import matplotlib
-    matplotlib.rcParams['backend_fallback'] = False
+    matplotlib.use('Agg')
     import matplotlib.pyplot
 except:
     # Ignore if this fails for *any* reason*

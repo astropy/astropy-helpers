@@ -111,7 +111,7 @@ except ImportError:
 # issue)
 try:
     import matplotlib
-    matplotlib.rcParams['backend_fallback'] = False
+    matplotlib.use('Agg')
     import matplotlib.pyplot
 except:
     # Ignore if this fails for *any* reason*
