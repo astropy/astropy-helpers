@@ -157,6 +157,9 @@ automodapi_toctreedirnm = 'api'
 # the __init__ docstring
 autoclass_content = "both"
 
+# Render inheritance diagrams in SVG
+graphviz_output_format = "svg"
+
 
 # -- Options for HTML output -------------------------------------------------
 
