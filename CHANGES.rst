@@ -36,6 +36,9 @@ astropy-helpers Changelog
   to a crash when installing packages that import matplotlib at build time.
   [#144]
 
+- To better support high resolution displays, use SVG for the astropy
+  logo and linkout image, falling back to PNGs for browsers that
+  support it. [#151]
 
 1.0 (2015-02-17)
 ----------------

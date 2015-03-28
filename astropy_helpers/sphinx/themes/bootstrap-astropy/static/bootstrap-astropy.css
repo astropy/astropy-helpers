@@ -241,6 +241,8 @@ div.topbar a.brand {
   padding: 8px 12px 0px 45px;
   margin-left: -10px;
   background: transparent url("astropy_logo_32.png") no-repeat 10px 4px;
+  background-image: url("astropy_logo.svg"), none;
+  background-size: 32px 32px;
 }
 
 #logotext1 {
@@ -300,6 +302,8 @@ div.topbar ul li a.homelink {
   height: 20px;
   padding: 5px 0px;
   background: transparent url("astropy_linkout_20.png") no-repeat 10px 5px;
+  background-image: url("astropy_linkout.svg"), none;
+  background-size: 91px 20px;
 }
 
 div.topbar form {
