@@ -1,4 +1,4 @@
 #!/bin/bash
 
-sudo brew update
-sudo brew install graphviz
+brew update
+brew install graphviz
