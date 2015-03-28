@@ -7,7 +7,13 @@ astropy-helpers Changelog
 - Nothing changed yet.
 
 
-1.0.1 (unreleased)
+1.0.2 (unreleased)
+------------------
+
+- Nothing changed yet.
+
+
+1.0.1 (2015-03-04)
 ------------------
 
 - Released in concert with v0.4.8 to address the same issues.
