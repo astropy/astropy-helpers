@@ -14,6 +14,9 @@ astropy-helpers Changelog
   logo and linkout image, falling back to PNGs for browsers that
   support it. [#151]
 
+- Various fixes enabling the astropy-helpers Sphinx build command and
+  Sphinx extensions to work with Sphinx 1.3. [#148]
+
 
 1.0.1 (2015-03-04)
 ------------------
