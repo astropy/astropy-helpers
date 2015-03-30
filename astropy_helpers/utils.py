@@ -592,3 +592,70 @@ def deprecated_attribute(name, since, message=None, alternative=None,
         delattr(self, private_name)
 
     return property(get, set, delete)
+
+
+def minversion(module, version, inclusive=True, version_path='__version__'):
+    """
+    Returns `True` if the specified Python module satisfies a minimum version
+    requirement, and `False` if not.
+
+    By default this uses `pkg_resources.parse_version` to do the version
+    comparison if available.  Otherwise it falls back on
+    `distutils.version.LooseVersion`.
+
+    Parameters
+    ----------
+
+    module : module or `str`
+        An imported module of which to check the version, or the name of
+        that module (in which case an import of that module is attempted--
+        if this fails `False` is returned).
+
+    version : `str`
+        The version as a string that this module must have at a minimum (e.g.
+        ``'0.12'``).
+
+    inclusive : `bool`
+        The specified version meets the requirement inclusively (i.e. ``>=``)
+        as opposed to strictly greater than (default: `True`).
+
+    version_path : `str`
+        A dotted attribute path to follow in the module for the version.
+        Defaults to just ``'__version__'``, which should work for most Python
+        modules.
+
+    Examples
+    --------
+
+    >>> import astropy
+    >>> minversion(astropy, '0.4.4')
+    True
+    """
+
+    if isinstance(module, types.ModuleType):
+        module_name = module.__name__
+    elif isinstance(module, six.string_types):
+        module_name = module
+        try:
+            module = resolve_name(module_name)
+        except ImportError:
+            return False
+    else:
+        raise ValueError('module argument must be an actual imported '
+                         'module, or the import name of the module; '
+                         'got {0!r}'.format(module))
+
+    if '.' not in version_path:
+        have_version = getattr(module, version_path)
+    else:
+        have_version = resolve_name('.'.join([module.__name__, version_path]))
+
+    try:
+        from pkg_resources import parse_version
+    except ImportError:
+        from distutils.version import LooseVersion as parse_version
+
+    if inclusive:
+        return parse_version(have_version) >= parse_version(version)
+    else:
+        return parse_version(have_version) > parse_version(version)

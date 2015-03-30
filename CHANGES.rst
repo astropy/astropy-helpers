@@ -6,6 +6,9 @@ astropy-helpers Changelog
 
 - Nothing changed yet.
 
+- Various fixes enabling the astropy-helpers Sphinx build command and
+  Sphinx extensions to work with Sphinx 1.3. [#148]
+
 
 1.0.1 (2015-03-04)
 ------------------

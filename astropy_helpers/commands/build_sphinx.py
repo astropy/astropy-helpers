@@ -10,7 +10,10 @@ import textwrap
 from distutils import log
 from distutils.cmd import DistutilsOptionError
 
+import sphinx
 from sphinx.setup_command import BuildDoc as SphinxBuildDoc
+
+from ..utils import minversion
 
 
 PY3 = sys.version_info[0] >= 3
@@ -145,6 +148,12 @@ class AstropyBuildSphinx(SphinxBuildDoc):
             else:
                 subproccode[i] = repr(val)
         subproccode = ''.join(subproccode)
+
+        # This is a quick gross hack, but it ensures that the code grabbed from
+        # SphinxBuildDoc.run will work in Python 2 if it uses the print
+        # function
+        if minversion(sphinx, '1.3'):
+            subproccode = 'from __future__ import print_function' + subproccode
 
         if self.no_intersphinx:
             # the confoverrides variable in sphinx.setup_command.BuildDoc can
