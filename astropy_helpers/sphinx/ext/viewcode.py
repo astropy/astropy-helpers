@@ -16,6 +16,7 @@ from docutils import nodes
 from sphinx import addnodes
 from sphinx.locale import _
 from sphinx.pycode import ModuleAnalyzer
+from sphinx.util.inspect import safe_getattr
 from sphinx.util.nodes import make_refnode
 
 import sys
@@ -51,12 +52,12 @@ def doctree_read(app, doctree):
             value = module
             for attr in attribute.split('.'):
                 if attr:
-                    value = getattr(value, attr)
+                    value = safe_getattr(value, attr)
         except AttributeError:
             app.warn('Didn\'t find %s in %s' % (attribute, module.__name__))
             return None
         else:
-            return getattr(value, '__module__', None)
+            return safe_getattr(value, '__module__', None)
 
 
     def has_tag(modname, fullname, docname, refname):
