@@ -49,7 +49,8 @@ _module_state = {
     'registered_commands': None,
     'have_cython': False,
     'have_sphinx': False,
-    'package_cache': None
+    'package_cache': None,
+    'compiler_version_cache': {}
 }
 
 try:
@@ -199,15 +200,43 @@ def adjust_compiler(package):
 
 
 def get_compiler_version(compiler):
+    if compiler in _module_state['compiler_version_cache']:
+        return _module_state['compiler_version_cache'][compiler]
 
-    process = subprocess.Popen(
-        shlex.split(compiler) + ['--version'], stdout=subprocess.PIPE)
+    # Different flags to try to get the compiler version
+    # TODO: It might be worth making this configurable to support
+    # arbitrary odd compilers; though all bets may be off in such
+    # cases anyway
+    flags = ['--version', '--Version', '-version', '-Version',
+             '-v', '-V']
 
-    output = process.communicate()[0].strip()
-    try:
-        version = output.split()[0]
-    except IndexError:
-        return 'unknown'
+    def try_get_version(flag):
+        process = subprocess.Popen(
+            shlex.split(compiler) + [flag],
+            stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+
+        stdout, stderr = process.communicate()
+
+        if process.returncode != 0:
+            return 'unknown'
+
+        output = stdout.strip()
+        if not output:
+            # Some compilers return their version info on stderr
+            output = stderr.strip()
+
+        if not output:
+            output = 'unknown'
+
+        return output
+
+    for flag in flags:
+        version = try_get_version(flag)
+        if version != 'unknown':
+            break
+
+    # Cache results to speed up future calls
+    _module_state['compiler_version_cache'][compiler] = version
 
     return version
 
