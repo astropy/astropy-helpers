@@ -1,7 +1,7 @@
 astropy-helpers Changelog
 =========================
 
-1.0.2 (unreleased)
+1.0.2 (2015-04-02)
 ------------------
 
 - Various fixes enabling the astropy-helpers Sphinx build command and
