@@ -10,16 +10,16 @@ astropy-helpers Changelog
 1.0.2 (unreleased)
 ------------------
 
-- To better support high resolution displays, use SVG for the astropy
-  logo and linkout image, falling back to PNGs for browsers that
-  support it. [#151]
-
 - Various fixes enabling the astropy-helpers Sphinx build command and
   Sphinx extensions to work with Sphinx 1.3. [#148]
 
 - More improvement to the ability to handle multiple versions of
   astropy-helpers being imported in the same Python interpreter session
   in the (somewhat rare) case of nested installs. [#147]
+
+- To better support high resolution displays, use SVG for the astropy
+  logo and linkout image, falling back to PNGs for browsers that
+  support it. [#150, #151]
 
 
 1.0.1 (2015-03-04)
