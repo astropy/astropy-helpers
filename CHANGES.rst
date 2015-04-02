@@ -21,6 +21,10 @@ astropy-helpers Changelog
   logo and linkout image, falling back to PNGs for browsers that
   support it. [#150, #151]
 
+- Improve ``setup_helpers.get_compiler_version`` to work with more compilers,
+  and to return more info.  This will help fix builds of Astropy on less
+  common compilers, like Sun C. [#153]
+
 
 1.0.1 (2015-03-04)
 ------------------
