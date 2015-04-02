@@ -17,6 +17,10 @@ astropy-helpers Changelog
 - Various fixes enabling the astropy-helpers Sphinx build command and
   Sphinx extensions to work with Sphinx 1.3. [#148]
 
+- More improvement to the ability to handle multiple versions of
+  astropy-helpers being imported in the same Python interpreter session
+  in the (somewhat rare) case of nested installs. [#147]
+
 
 1.0.1 (2015-03-04)
 ------------------
