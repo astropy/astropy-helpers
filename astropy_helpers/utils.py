@@ -2,10 +2,13 @@
 from __future__ import absolute_import, unicode_literals
 
 import contextlib
+import errno
 import functools
 import imp
 import inspect
+import locale
 import os
+import subprocess
 import sys
 import textwrap
 import types
@@ -28,6 +31,17 @@ if sys.version_info[:2] >= (3, 3):
     from importlib import invalidate_caches
 else:
     invalidate_caches = lambda: None
+
+
+PY3 = sys.version_info[0] >= 3
+
+
+if not PY3:
+    _str_types = (str, unicode)
+    _text_type = unicode
+else:
+    _str_types = (str, bytes)
+    _text_type = str
 
 
 # Note: The following Warning subclasses are simply copies of the Warnings in
@@ -634,7 +648,7 @@ def minversion(module, version, inclusive=True, version_path='__version__'):
 
     if isinstance(module, types.ModuleType):
         module_name = module.__name__
-    elif isinstance(module, six.string_types):
+    elif isinstance(module, _str_types):
         module_name = module
         try:
             module = resolve_name(module_name)
@@ -659,3 +673,52 @@ def minversion(module, version, inclusive=True, version_path='__version__'):
         return parse_version(have_version) >= parse_version(version)
     else:
         return parse_version(have_version) > parse_version(version)
+
+
+class CommandNotFound(OSError):
+    """
+    An exception raised when a command run with run_cmd is not found on the
+    system.
+    """
+
+
+def run_cmd(cmd):
+    """
+    Run a command in a subprocess, given as a list of command-line
+    arguments.
+
+    Returns a ``(returncode, stdout, stderr)`` tuple.
+    """
+    try:
+        p = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        # XXX: May block if either stdout or stderr fill their buffers;
+        # however for the commands this is currently used for that is
+        # unlikely (they should have very brief output)
+        stdout, stderr = p.communicate()
+    except OSError as e:
+        if e.errno == errno.ENOENT:
+            msg = 'Command not found: `{0}`'.format(' '.join(cmd))
+            raise CommandNotFound(msg, cmd)
+        else:
+            raise SystemExit(
+                'An unexpected error occurred when running the '
+                '`{0}` command:\n{1}'.format(' '.join(cmd), str(e)))
+
+    # Can fail of the default locale is not configured properly.  See
+    # https://github.com/astropy/astropy/issues/2749.  For the purposes under
+    # consideration 'latin1' is an acceptable fallback.
+    try:
+        stdio_encoding = locale.getdefaultlocale()[1] or 'latin1'
+    except ValueError:
+        # Due to an OSX oddity locale.getdefaultlocale() can also crash
+        # depending on the user's locale/language settings.  See:
+        # http://bugs.python.org/issue18378
+        stdio_encoding = 'latin1'
+
+    # Unlikely to fail at this point but even then let's be flexible
+    if not isinstance(stdout, _text_type):
+        stdout = stdout.decode(stdio_encoding, 'replace')
+    if not isinstance(stderr, _text_type):
+        stderr = stderr.decode(stdio_encoding, 'replace')
+
+    return (p.returncode, stdout, stderr)
