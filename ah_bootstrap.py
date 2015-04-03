@@ -50,10 +50,12 @@ except ImportError:
 if sys.version_info[0] < 3:
     _str_types = (str, unicode)
     _text_type = unicode
+    import __builtin__ as _builtins
     PY3 = False
 else:
     _str_types = (str, bytes)
     _text_type = str
+    import builtins as _builtins
     PY3 = True
 
 
@@ -209,6 +211,8 @@ class _Bootstrapper(object):
 
         auto_use = config.pop('auto_use', False)
         bootstrapper = cls(**config)
+
+        _builtins._astropy_helpers_config = config
 
         if auto_use:
             # Run the bootstrapper, otherwise the setup.py is using the old
