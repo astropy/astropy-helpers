@@ -10,7 +10,9 @@ astropy-helpers Changelog
 1.0.3 (unreleased)
 ------------------
 
-- Nothing changed yet.
+- Added workaround for sphinx-doc/sphinx#1843, a but in Sphinx which
+  prevented descriptor classes with a custom metaclass from being documented
+  correctly. [#158]
 
 
 1.0.2 (2015-04-02)
