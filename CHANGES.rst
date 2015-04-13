@@ -14,6 +14,12 @@ astropy-helpers Changelog
   prevented descriptor classes with a custom metaclass from being documented
   correctly. [#158]
 
+- Fixed interface between ``setup.py test`` command and different versions
+  of the Astropy test runner and/or affiliated package template.  This was
+  originally addressed in astropy-helpers v0.4.4 in order to include support
+  for new ``setup.py test`` options, but the fix was never ported to the
+  v1.0.x series. [#159]
+
 
 1.0.2 (2015-04-02)
 ------------------
