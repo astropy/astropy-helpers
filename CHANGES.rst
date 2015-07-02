@@ -16,6 +16,10 @@ astropy-helpers Changelog
 
 - The fonts in graphviz diagrams now match the font of the HTML content. [#169]
 
+- When the documentation is built on readthedocs.org, MathJax will be
+  used for math rendering.  When built elsewhere, the "pngmath"
+  extension is still used for math rendering. [#170]
+
 1.0.2 (2015-04-02)
 ------------------
 
