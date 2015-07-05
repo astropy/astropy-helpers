@@ -12,6 +12,8 @@ astropy-helpers Changelog
   ``./setup.py build_docs`` which, to a new contributor, should hopefully be
   less cryptic. [#161]
 
+- The fonts in graphviz diagrams now match the font of the HTML content. [#169]
+
 
 1.0.2 (2015-04-02)
 ------------------
