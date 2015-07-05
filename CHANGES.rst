@@ -14,6 +14,7 @@ astropy-helpers Changelog
   prevented descriptor classes with a custom metaclass from being documented
   correctly. [#158]
 
+- The fonts in graphviz diagrams now match the font of the HTML content. [#169]
 
 1.0.2 (2015-04-02)
 ------------------
