@@ -9,6 +9,7 @@
 # All configuration values have a default; values that are commented out
 # serve to show the default.
 
+import os
 import warnings
 
 from os import path
@@ -21,6 +22,9 @@ from os import path
 # specific version check, call check_sphinx_version("x.y.z.") from
 # your project's conf.py
 needs_sphinx = '1.2'
+
+
+on_rtd = os.environ.get('READTHEDOCS', None) == 'True'
 
 
 def check_sphinx_version(expected_version):
@@ -114,7 +118,6 @@ extensions = [
     'sphinx.ext.intersphinx',
     'sphinx.ext.todo',
     'sphinx.ext.coverage',
-    'sphinx.ext.pngmath',
     'sphinx.ext.inheritance_diagram',
     'astropy_helpers.sphinx.ext.numpydoc',
     'astropy_helpers.sphinx.ext.astropyautosummary',
@@ -127,6 +130,13 @@ extensions = [
     'astropy_helpers.sphinx.ext.viewcode',  # Use patched version of viewcode
     'astropy_helpers.sphinx.ext.smart_resolver'
     ]
+
+
+if on_rtd:
+    extensions.append('sphinx.ext.mathjax')
+else:
+    extensions.append('sphinx.ext.pngmath')
+
 
 # Above, we use a patched version of viewcode rather than 'sphinx.ext.viewcode'
 # This can be changed to the sphinx version once the following issue is fixed
