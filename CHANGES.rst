@@ -8,6 +8,10 @@ astropy-helpers Changelog
   prevented descriptor classes with a custom metaclass from being documented
   correctly. [#158]
 
+- Added an alias for the ``./setup.py build_sphinx`` command as
+  ``./setup.py build_docs`` which, to a new contributor, should hopefully be
+  less cryptic. [#161]
+
 
 1.0.2 (2015-04-02)
 ------------------
