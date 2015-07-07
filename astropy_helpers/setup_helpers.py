@@ -278,9 +278,9 @@ def register_commands(package, version, release, srcdir='.'):
         return _module_state['registered_commands']
 
     if _module_state['have_sphinx']:
-        from .commands.build_sphinx import AstropyBuildSphinx
+        from .commands.build_sphinx import AstropyBuildSphinx, AstropyBuildDocs
     else:
-        AstropyBuildSphinx = FakeBuildSphinx
+        AstropyBuildSphinx = AstropyBuildDocs = FakeBuildSphinx
 
     _module_state['registered_commands'] = registered_commands = {
         'test': generate_test_command(package),
@@ -304,7 +304,8 @@ def register_commands(package, version, release, srcdir='.'):
         'install_lib': AstropyInstallLib,
 
         'register': AstropyRegister,
-        'build_sphinx': AstropyBuildSphinx
+        'build_sphinx': AstropyBuildSphinx,
+        'build_docs': AstropyBuildDocs
     }
 
     # Need to override the __name__ here so that the commandline options are

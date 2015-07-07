@@ -222,3 +222,7 @@ class AstropyBuildSphinx(SphinxBuildDoc):
             # prevent that from running.  But there's no other apparent way
             # to signal what the return code should be.
             sys.exit(retcode)
+
+
+class AstropyBuildDocs(AstropyBuildSphinx):
+    description = 'alias to the build_sphinx command'
