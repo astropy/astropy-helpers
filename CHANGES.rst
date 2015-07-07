@@ -14,6 +14,10 @@ astropy-helpers Changelog
   prevented descriptor classes with a custom metaclass from being documented
   correctly. [#158]
 
+- Added an alias for the ``./setup.py build_sphinx`` command as
+  ``./setup.py build_docs`` which, to a new contributor, should hopefully be
+  less cryptic. [#161]
+
 - The fonts in graphviz diagrams now match the font of the HTML content. [#169]
 
 - When the documentation is built on readthedocs.org, MathJax will be
