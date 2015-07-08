@@ -24,6 +24,10 @@ astropy-helpers Changelog
   used for math rendering.  When built elsewhere, the "pngmath"
   extension is still used for math rendering. [#170]
 
+- Fix crash when importing astropy_helpers when running with ``python -OO``
+  [#171]
+
+
 1.0.2 (2015-04-02)
 ------------------
 

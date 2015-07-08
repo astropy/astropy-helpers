@@ -317,8 +317,9 @@ def extends_doc(extended_func):
     """
 
     def decorator(func):
-        func.__doc__ = '\n\n'.join([extended_func.__doc__.rstrip('\n'),
-                                    func.__doc__.lstrip('\n')])
+        if not (extended_func.__doc__ is None or func.__doc__ is None):
+            func.__doc__ = '\n\n'.join([extended_func.__doc__.rstrip('\n'),
+                                        func.__doc__.lstrip('\n')])
         return func
 
     return decorator
