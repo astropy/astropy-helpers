@@ -27,6 +27,9 @@ astropy-helpers Changelog
 - Fix crash when importing astropy_helpers when running with ``python -OO``
   [#171]
 
+- The ``build`` and ``build_ext`` stages now correctly recognize the presence
+  of C++ files in Cython extensions (previously only vanilla C worked). [#173]
+
 
 1.0.2 (2015-04-02)
 ------------------
