@@ -649,7 +649,7 @@ def get_cython_extensions(srcdir, packages, prevextensions=tuple(),
 
     for ext in prevextensions:
         for s in ext.sources:
-            if s.endswith(('.pyx', '.c')):
+            if s.endswith(('.pyx', '.c', '.cpp')):
                 sourcepath = os.path.realpath(os.path.splitext(s)[0])
                 prevsourcepaths.append(sourcepath)
 
