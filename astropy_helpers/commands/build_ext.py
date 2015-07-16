@@ -125,9 +125,11 @@ def generate_build_ext_command(packagename, release):
                 if src.endswith('.pyx'):
                     pyxfn = src
                     cfn = src[:-4] + '.c'
+                    cppfn = src[:-4] + '.cpp'
                 elif src.endswith('.c'):
                     pyxfn = src[:-2] + '.pyx'
                     cfn = src
+                    cppfn = src
 
                 if not os.path.isfile(pyxfn):
                     continue
@@ -137,13 +139,15 @@ def generate_build_ext_command(packagename, release):
                 else:
                     if os.path.isfile(cfn):
                         extension.sources[jdx] = cfn
+                    elif os.path.isfile(cppfn):
+                        extension.sources[jdx] = cppfn
                     else:
                         msg = (
-                            'Could not find C file {0} for Cython file {1} '
+                            'Could not find C/C++ file {0}/{3} for Cython file {1} '
                             'when building extension {2}. Cython must be '
                             'installed to build from a git checkout.'.format(
                                 cfn, pyxfn, extension.name))
-                        raise IOError(errno.ENOENT, msg, cfn)
+                        raise IOError(errno.ENOENT, msg, cfn, cppfn)
 
         if orig_run is not None:
             # This should always be the case for a correctly implemented
