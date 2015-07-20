@@ -175,6 +175,7 @@ class AstropyBuildSphinx(SphinxBuildDoc):
                                     stdout=subprocess.PIPE,
                                     stderr=subprocess.STDOUT)
             stdo, stde = proc.communicate(subproccode.encode('utf-8'))
+            stdo = stdo.decode('utf-8')
 
             print(stdo)
 
