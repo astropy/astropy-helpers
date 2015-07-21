@@ -181,7 +181,7 @@ class AstropyBuildSphinx(SphinxBuildDoc):
 
             stdolines = stdo.splitlines()
 
-            if b'build succeeded.' in stdolines:
+            if 'build succeeded.' in stdolines:
                 retcode = 0
             else:
                 retcode = 1
