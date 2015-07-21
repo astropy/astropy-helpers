@@ -122,14 +122,11 @@ def generate_build_ext_command(packagename, release):
 
             # Replace .pyx with C-equivalents, unless c files are missing
             for jdx, src in enumerate(extension.sources):
-                if src.endswith('.pyx'):
-                    pyxfn = src
-                    cfn = src[:-4] + '.c'
-                    cppfn = src[:-4] + '.cpp'
-                elif src.endswith('.c'):
-                    pyxfn = src[:-2] + '.pyx'
-                    cfn = src
-                    cppfn = src
+                base, ext = os.path.splitext(src)
+                pyxfn = base + '.pyx'
+                cfn = base + '.c'
+                cppfn = base + '.cpp'
+
 
                 if not os.path.isfile(pyxfn):
                     continue
