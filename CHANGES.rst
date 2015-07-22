@@ -7,7 +7,13 @@ astropy-helpers Changelog
 - Nothing changed yet.
 
 
-1.0.3 (unreleased)
+1.0.4 (unreleased)
+------------------
+
+- Nothing changed yet.
+
+
+1.0.3 (2015-07-22)
 ------------------
 
 - Added workaround for sphinx-doc/sphinx#1843, a but in Sphinx which
