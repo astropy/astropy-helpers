@@ -4,7 +4,8 @@ astropy-helpers Changelog
 1.0.4 (unreleased)
 ------------------
 
-- Nothing changed yet.
+- Fixed a crash in ``ah_bootstrap.py`` when astropy-helpers can't be downloaded
+  due to use off the ``--offline`` option, and a local copy is not available.
 
 
 1.0.3 (2015-07-22)
