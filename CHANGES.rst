@@ -10,7 +10,8 @@ astropy-helpers Changelog
 1.0.4 (unreleased)
 ------------------
 
-- Nothing changed yet.
+- Fixed issue with the sphinx documentation css where the line numbers for code
+  blocks were not aligned with the code. [#179]
 
 
 1.0.3 (2015-07-22)
