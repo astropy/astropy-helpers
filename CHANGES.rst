@@ -11,6 +11,9 @@ astropy-helpers Changelog
   now copies all doc pages into the temporary test directory as well, so that
   all test files have a "common root directory". [#189]
 
+- Fixed issue with the sphinx documentation css where the line numbers for code
+  blocks were not aligned with the code. [#179]
+
 
 1.0.3 (2015-07-22)
 ------------------
