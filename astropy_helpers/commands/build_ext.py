@@ -145,7 +145,7 @@ def generate_build_ext_command(packagename, release):
                             'must be installed to build from a git '
                             'checkout.'.format(cfn, cppfn, pyxfn,
                                                extension.name))
-                        raise IOError(errno.ENOENT, msg, cfn, cppfn)
+                        raise IOError(errno.ENOENT, msg, cfn)
 
         if orig_run is not None:
             # This should always be the case for a correctly implemented
