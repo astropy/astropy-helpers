@@ -140,10 +140,11 @@ def generate_build_ext_command(packagename, release):
                         extension.sources[jdx] = cppfn
                     else:
                         msg = (
-                            'Could not find C/C++ file {0}/{3} for Cython file {1} '
-                            'when building extension {2}. Cython must be '
-                            'installed to build from a git checkout.'.format(
-                                cfn, pyxfn, extension.name))
+                            'Could not find C/C++ file {0}/{1} for Cython '
+                            'file {2} when building extension {3}. Cython '
+                            'must be installed to build from a git '
+                            'checkout.'.format(cfn, cppfn, pyxfn,
+                                               extension.name))
                         raise IOError(errno.ENOENT, msg, cfn, cppfn)
 
         if orig_run is not None:
