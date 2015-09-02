@@ -1,10 +1,13 @@
+import contextlib
 import shutil
+import stat
 import sys
 
 from textwrap import dedent
 
 from .. import setup_helpers
-from ..setup_helpers import get_package_info, register_commands
+from ..setup_helpers import (get_package_info, register_commands,
+                             adjust_compiler)
 from . import *
 
 
@@ -311,3 +314,124 @@ def test_command_hooks(tmpdir, capsys):
     """).strip()
 
     assert want in stdout
+
+
+def test_adjust_compiler(monkeypatch, tmpdir):
+    """
+    Regression test for https://github.com/astropy/astropy-helpers/issues/182
+    """
+
+    from distutils import ccompiler, sysconfig
+
+    class MockLog(object):
+        def __init__(self):
+            self.messages = []
+
+        def warn(self, message):
+            self.messages.append(message)
+
+    good = tmpdir.join('gcc-good')
+    good.write(dedent("""\
+        #!{python}
+        import sys
+        print('gcc 4.10')
+        sys.exit(0)
+    """.format(python=sys.executable)))
+    good.chmod(stat.S_IRUSR | stat.S_IEXEC)
+
+    # A "compiler" that reports itself to be a version of Apple's llvm-gcc
+    # which is broken
+    bad = tmpdir.join('gcc-bad')
+    bad.write(dedent("""\
+        #!{python}
+        import sys
+        print('i686-apple-darwin-llvm-gcc-4.2')
+        sys.exit(0)
+    """.format(python=sys.executable)))
+    bad.chmod(stat.S_IRUSR | stat.S_IEXEC)
+
+    # A "compiler" that doesn't even know its identity (this reproduces the bug
+    # in #182)
+    ugly = tmpdir.join('gcc-ugly')
+    ugly.write(dedent("""\
+        #!{python}
+        import sys
+        sys.exit(1)
+    """.format(python=sys.executable)))
+    ugly.chmod(stat.S_IRUSR | stat.S_IEXEC)
+
+    @contextlib.contextmanager
+    def test_setup():
+        setup_helpers._module_state['adjusted_compiler'] = False
+        log = MockLog()
+        monkeypatch.setattr(setup_helpers, 'log', log)
+        yield log
+        monkeypatch.undo()
+        setup_helpers._module_state['adjusted_compiler'] = False
+
+    @contextlib.contextmanager
+    def compiler_setter_with_environ(compiler):
+        monkeypatch.setenv('CC', compiler)
+        with test_setup() as log:
+            yield log
+        monkeypatch.undo()
+
+    @contextlib.contextmanager
+    def compiler_setter_with_sysconfig(compiler):
+        monkeypatch.setattr(ccompiler, 'get_default_compiler', lambda: 'unix')
+        monkeypatch.setattr(sysconfig, 'get_config_var', lambda v: compiler)
+        monkeypatch.setattr(setup_helpers, 'get_distutils_build_option',
+                            lambda opt: '')
+
+        with test_setup() as log:
+            yield log
+
+        monkeypatch.undo()
+        monkeypatch.undo()
+        monkeypatch.undo()
+
+    compiler_setters = (compiler_setter_with_environ,
+                        compiler_setter_with_sysconfig)
+
+    for compiler_setter in compiler_setters:
+        with compiler_setter(str(good)):
+            # Should have no side-effects
+            adjust_compiler('astropy')
+
+        with compiler_setter(str(ugly)):
+            # Should just pass without complaint, since we can't determine
+            # anything about the compiler anyways
+            adjust_compiler('astropy')
+
+    with compiler_setter_with_environ(str(bad)) as log:
+        with pytest.raises(SystemExit):
+            adjust_compiler('astropy')
+
+        assert len(log.messages) == 1
+        assert 'will fail to compile astropy' in log.messages[0]
+
+    with compiler_setter_with_sysconfig(str(bad)):
+        adjust_compiler('astropy')
+        try:
+            assert 'CC' in os.environ and os.environ['CC'] == 'clang'
+        finally:
+            try:
+                del os.environ['CC']
+            except KeyError:
+                pass
+
+    with compiler_setter_with_environ('bogus') as log:
+        with pytest.raises(SystemExit):
+            # Missing compiler?
+            adjust_compiler('astropy')
+
+        assert len(log.messages) == 1
+        assert 'cannot be found or executed' in log.messages[0]
+
+    with compiler_setter_with_sysconfig('bogus') as log:
+        with pytest.raises(SystemExit):
+            # Missing compiler?
+            adjust_compiler('astropy')
+
+        assert len(log.messages) == 1
+        assert 'The C compiler used to compile Python' in log.messages[0]

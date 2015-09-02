@@ -107,7 +107,7 @@ def adjust_compiler(package):
     """
 
     compiler_mapping = [
-        (b'i686-apple-darwin[0-9]*-llvm-gcc-4.2', 'clang')
+        ('i686-apple-darwin[0-9]*-llvm-gcc-4.2', 'clang')
         ]
 
     if _module_state['adjusted_compiler']:
@@ -220,10 +220,10 @@ def get_compiler_version(compiler):
         if process.returncode != 0:
             return 'unknown'
 
-        output = stdout.strip()
+        output = stdout.strip().decode('latin-1')  # Safest bet
         if not output:
             # Some compilers return their version info on stderr
-            output = stderr.strip()
+            output = stderr.strip().decode('latin-1')
 
         if not output:
             output = 'unknown'
