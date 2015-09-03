@@ -382,6 +382,9 @@ def test_adjust_compiler(monkeypatch, tmpdir):
         monkeypatch.setattr(sysconfig, 'get_config_var', lambda v: compiler)
         monkeypatch.setattr(setup_helpers, 'get_distutils_build_option',
                             lambda opt: '')
+        old_cc = os.environ.get('CC')
+        if old_cc is not None:
+            del os.environ['CC']
 
         with test_setup() as log:
             yield log
@@ -389,6 +392,9 @@ def test_adjust_compiler(monkeypatch, tmpdir):
         monkeypatch.undo()
         monkeypatch.undo()
         monkeypatch.undo()
+
+        if old_cc is not None:
+            os.environ['CC'] = old_cc
 
     compiler_setters = (compiler_setter_with_environ,
                         compiler_setter_with_sysconfig)
@@ -412,13 +418,7 @@ def test_adjust_compiler(monkeypatch, tmpdir):
 
     with compiler_setter_with_sysconfig(str(bad)):
         adjust_compiler('astropy')
-        try:
-            assert 'CC' in os.environ and os.environ['CC'] == 'clang'
-        finally:
-            try:
-                del os.environ['CC']
-            except KeyError:
-                pass
+        assert 'CC' in os.environ and os.environ['CC'] == 'clang'
 
     with compiler_setter_with_environ('bogus') as log:
         with pytest.raises(SystemExit):
