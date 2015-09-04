@@ -14,6 +14,9 @@ astropy-helpers Changelog
 - Fixed issue with the sphinx documentation css where the line numbers for code
   blocks were not aligned with the code. [#179]
 
+- Fixed a crash that could occur on Python 3 when a working C compiler isn't
+  found. [#182]
+
 
 1.0.3 (2015-07-22)
 ------------------
