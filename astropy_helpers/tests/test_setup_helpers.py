@@ -360,6 +360,13 @@ def test_adjust_compiler(monkeypatch, tmpdir):
     """.format(python=sys.executable)))
     ugly.chmod(stat.S_IRUSR | stat.S_IEXEC)
 
+    # Scripts with shebang lines don't work implicitly in Windows when passed
+    # to subprocess.Popen, so...
+    if 'win' in sys.platform:
+        good = ' '.join((sys.executable, str(good)))
+        bad = ' '.join((sys.executable, str(bad)))
+        ugly = ' '.join((sys.executable, str(ugly)))
+
     @contextlib.contextmanager
     def test_setup():
         setup_helpers._module_state['adjusted_compiler'] = False

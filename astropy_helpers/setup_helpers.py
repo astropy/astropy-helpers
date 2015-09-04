@@ -212,7 +212,7 @@ def get_compiler_version(compiler):
 
     def try_get_version(flag):
         process = subprocess.Popen(
-            shlex.split(compiler) + [flag],
+            shlex.split(compiler, posix=('win' not in sys.platform)) + [flag],
             stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 
         stdout, stderr = process.communicate()
