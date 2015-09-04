@@ -60,65 +60,98 @@ def generate_build_ext_command(packagename, release):
     Uses the default distutils.command.build_ext by default.
     """
 
-    uses_cython = should_build_with_cython(packagename, release)
-
-    if uses_cython:
+    if should_build_with_cython(packagename, release):
         from Cython.Distutils import build_ext as basecls
     else:
         basecls = SetuptoolsBuildExt
 
-    attrs = dict(basecls.__dict__)
-    orig_run = getattr(basecls, 'run', None)
-    orig_finalize = getattr(basecls, 'finalize_options', None)
+    class build_ext(basecls, object):
+        uses_cython = should_build_with_cython(packagename, release)
+        package_name = packagename
+        user_options = basecls.user_options[:]
+        boolean_options = basecls.boolean_options[:]
+        force_rebuild = False
 
-    def finalize_options(self):
-        # Add a copy of the _compiler.so module as well, but only if there are
-        # in fact C modules to compile (otherwise there's no reason to include
-        # a record of the compiler used)
-        # Note, self.extensions may not be set yet, but
-        # self.distribution.ext_modules is where any extension modules passed
-        # to setup() can be found
-        extensions = self.distribution.ext_modules
-        if extensions:
-            src_path = os.path.relpath(
-                os.path.join(os.path.dirname(__file__), 'src'))
-            shutil.copy2(os.path.join(src_path, 'compiler.c'),
-                         os.path.join(self.package_name, '_compiler.c'))
-            ext = Extension(self.package_name + '._compiler',
-                            [os.path.join(self.package_name, '_compiler.c')])
-            extensions.insert(0, ext)
+        def finalize_options(self):
+            # Add a copy of the _compiler.so module as well, but only if there
+            # are in fact C modules to compile (otherwise there's no reason to
+            # include a record of the compiler used)
+            # Note, self.extensions may not be set yet, but
+            # self.distribution.ext_modules is where any extension modules
+            # passed to setup() can be found
+            extensions = self.distribution.ext_modules
+            if extensions:
+                src_path = os.path.relpath(
+                    os.path.join(os.path.dirname(__file__), 'src'))
+                shutil.copy2(os.path.join(src_path, 'compiler.c'),
+                             os.path.join(self.package_name, '_compiler.c'))
+                ext = Extension(self.package_name + '._compiler',
+                                [os.path.join(self.package_name, '_compiler.c')])
+                extensions.insert(0, ext)
 
-        if orig_finalize is not None:
-            orig_finalize(self)
+            basecls.finalize_options(self)
 
-        # Generate
-        if self.uses_cython:
+            # Generate
+            if self.uses_cython:
+                try:
+                    from Cython import __version__ as cython_version
+                except ImportError:
+                    # This shouldn't happen if we made it this far
+                    cython_version = None
+
+                if (cython_version is not None and
+                        cython_version != self.uses_cython):
+                    self.force_rebuild = True
+                    # Update the used cython version
+                    self.uses_cython = cython_version
+
+            # Regardless of the value of the '--force' option, force a rebuild
+            # if the debug flag changed from the last build
+            if self.force_rebuild:
+                self.force = True
+
+        def run(self):
+            # For extensions that require 'numpy' in their include dirs,
+            # replace 'numpy' with the actual paths
+            np_include = get_numpy_include_path()
+            for extension in self.extensions:
+                if 'numpy' in extension.include_dirs:
+                    idx = extension.include_dirs.index('numpy')
+                    extension.include_dirs.insert(idx, np_include)
+                    extension.include_dirs.remove('numpy')
+
+                self._check_cython_sources(extension)
+
+            basecls.run(self)
+
+            # Update cython_version.py if building with Cython
             try:
-                from Cython import __version__ as cython_version
-            except ImportError:
-                # This shouldn't happen if we made it this far
-                cython_version = None
+                cython_version = get_pkg_version_module(
+                        packagename, fromlist=['cython_version'])[0]
+            except (AttributeError, ImportError):
+                cython_version = 'unknown'
+            if self.uses_cython and self.uses_cython != cython_version:
+                package_dir = os.path.relpath(packagename)
+                cython_py = os.path.join(package_dir, 'cython_version.py')
+                with open(cython_py, 'w') as f:
+                    f.write('# Generated file; do not modify\n')
+                    f.write('cython_version = {0!r}\n'.format(self.uses_cython))
 
-            if (cython_version is not None and
-                    cython_version != self.uses_cython):
-                self.force_rebuild = True
-                # Update the used cython version
-                self.uses_cython = cython_version
+                if os.path.isdir(self.build_lib):
+                    # The build/lib directory may not exist if the build_py
+                    # command was not previously run, which may sometimes be
+                    # the case
+                    self.copy_file(cython_py,
+                                   os.path.join(self.build_lib, cython_py),
+                                   preserve_mode=False)
 
-        # Regardless of the value of the '--force' option, force a rebuild if
-        # the debug flag changed from the last build
-        if self.force_rebuild:
-            self.force = True
+                invalidate_caches()
 
-    def run(self):
-        # For extensions that require 'numpy' in their include dirs, replace
-        # 'numpy' with the actual paths
-        np_include = get_numpy_include_path()
-        for extension in self.extensions:
-            if 'numpy' in extension.include_dirs:
-                idx = extension.include_dirs.index('numpy')
-                extension.include_dirs.insert(idx, np_include)
-                extension.include_dirs.remove('numpy')
+        def _check_cython_sources(self, extension):
+            """
+            Where relevant, make sure that the .c files associated with .pyx
+            modules are present (if building without Cython installed).
+            """
 
             # Replace .pyx with C-equivalents, unless c files are missing
             for jdx, src in enumerate(extension.sources):
@@ -147,39 +180,4 @@ def generate_build_ext_command(packagename, release):
                                                extension.name))
                         raise IOError(errno.ENOENT, msg, cfn)
 
-        if orig_run is not None:
-            # This should always be the case for a correctly implemented
-            # distutils command.
-            orig_run(self)
-
-        # Update cython_version.py if building with Cython
-        try:
-            cython_version = get_pkg_version_module(
-                    packagename, fromlist=['cython_version'])[0]
-        except (AttributeError, ImportError):
-            cython_version = 'unknown'
-        if self.uses_cython and self.uses_cython != cython_version:
-            package_dir = os.path.relpath(packagename)
-            cython_py = os.path.join(package_dir, 'cython_version.py')
-            with open(cython_py, 'w') as f:
-                f.write('# Generated file; do not modify\n')
-                f.write('cython_version = {0!r}\n'.format(self.uses_cython))
-
-            if os.path.isdir(self.build_lib):
-                # The build/lib directory may not exist if the build_py command
-                # was not previously run, which may sometimes be the case
-                self.copy_file(cython_py,
-                               os.path.join(self.build_lib, cython_py),
-                               preserve_mode=False)
-
-            invalidate_caches()
-
-    attrs['run'] = run
-    attrs['finalize_options'] = finalize_options
-    attrs['force_rebuild'] = False
-    attrs['uses_cython'] = uses_cython
-    attrs['package_name'] = packagename
-    attrs['user_options'] = basecls.user_options[:]
-    attrs['boolean_options'] = basecls.boolean_options[:]
-
-    return type('build_ext', (basecls, object), attrs)
+    return build_ext
