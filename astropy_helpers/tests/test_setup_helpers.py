@@ -228,8 +228,10 @@ def test_missing_cython_c_files(pyx_extension_test_package):
         with pytest.raises(SystemExit) as exc_info:
             run_setup('setup.py', ['build_ext', '--inplace'])
 
-    assert ('Could not find C/C++ file _eva_/unit02.(c/cpp)' in
-            str(exc_info.value))
+    msg = ('Could not find C/C++ file '
+           '{0}.(c/cpp)'.format('_eva_/unit02'.replace('/', os.sep)))
+
+    assert msg in str(exc_info.value)
 
 
 @pytest.mark.parametrize('mode', ['cli', 'cli-w', 'direct'])
