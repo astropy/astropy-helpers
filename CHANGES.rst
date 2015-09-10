@@ -13,6 +13,11 @@ astropy-helpers Changelog
 - Fixed issue with the sphinx documentation css where the line numbers for code
   blocks were not aligned with the code. [#179]
 
+- Fixed crash that could occur when trying to build Cython extension modules
+  when Cython isn't installed. Normally this still results in a failed build,
+  but was supposed to provide a useful error message rather than crash
+  outright (this was a regression introduced in v1.0.3). [#181]
+
 - Fixed a crash that could occur on Python 3 when a working C compiler isn't
   found. [#182]
 
