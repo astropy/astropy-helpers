@@ -11,8 +11,7 @@ from ..setup_helpers import (get_package_info, register_commands,
 from . import *
 
 
-@pytest.fixture
-def extension_test_package(tmpdir, request):
+def _extension_test_package(tmpdir, request, extension_type='c'):
     """Creates a simple test package with an extension module."""
 
     test_pkg = tmpdir.mkdir('test_pkg')
@@ -21,44 +20,62 @@ def extension_test_package(tmpdir, request):
     # TODO: It might be later worth making this particular test package into a
     # reusable fixture for other build_ext tests
 
-    # A minimal C extension for testing
-    test_pkg.join('_eva_', 'unit01.c').write(dedent("""\
-        #include <Python.h>
-        #ifndef PY3K
-        #if PY_MAJOR_VERSION >= 3
-        #define PY3K 1
-        #else
-        #define PY3K 0
-        #endif
-        #endif
+    if extension_type in ('c', 'both'):
+        # A minimal C extension for testing
+        test_pkg.join('_eva_', 'unit01.c').write(dedent("""\
+            #include <Python.h>
+            #ifndef PY3K
+            #if PY_MAJOR_VERSION >= 3
+            #define PY3K 1
+            #else
+            #define PY3K 0
+            #endif
+            #endif
 
-        #if PY3K
-        static struct PyModuleDef moduledef = {
-            PyModuleDef_HEAD_INIT,
-            "unit01",
-            NULL,
-            -1,
-            NULL
-        };
-        PyMODINIT_FUNC
-        PyInit_unit01(void) {
-            return PyModule_Create(&moduledef);
-        }
-        #else
-        PyMODINIT_FUNC
-        initunit01(void) {
-            Py_InitModule3("unit01", NULL, NULL);
-        }
-        #endif
-    """))
+            #if PY3K
+            static struct PyModuleDef moduledef = {
+                PyModuleDef_HEAD_INIT,
+                "unit01",
+                NULL,
+                -1,
+                NULL
+            };
+            PyMODINIT_FUNC
+            PyInit_unit01(void) {
+                return PyModule_Create(&moduledef);
+            }
+            #else
+            PyMODINIT_FUNC
+            initunit01(void) {
+                Py_InitModule3("unit01", NULL, NULL);
+            }
+            #endif
+        """))
+
+    if extension_type in ('pyx', 'both'):
+        # A minimal Cython extension for testing
+        test_pkg.join('_eva_', 'unit02.pyx').write(dedent("""\
+            print("Hello cruel angel.")
+        """))
+
+    if extension_type == 'c':
+        extensions = ['unit01.c']
+    elif extension_type == 'pyx':
+        extensions = ['unit02.pyx']
+    elif extension_type == 'both':
+        extensions = ['unit01.c', 'unit02.pyx']
+
+    extensions_list = [
+        "Extension('_eva_.{0}', [join('_eva_', '{1}')])".format(
+            os.path.splitext(extension)[0], extension)
+        for extension in extensions]
 
     test_pkg.join('_eva_', 'setup_package.py').write(dedent("""\
         from setuptools import Extension
         from os.path import join
         def get_extensions():
-            return [Extension('_eva_.unit01',
-                              [join('_eva_', 'unit01.c')])]
-    """))
+            return [{0}]
+    """.format(', '.join(extensions_list))))
 
     test_pkg.join('setup.py').write(dedent("""\
         from os.path import join
@@ -96,6 +113,21 @@ def extension_test_package(tmpdir, request):
     return test_pkg
 
 
+@pytest.fixture
+def extension_test_package(tmpdir, request):
+    return _extension_test_package(tmpdir, request, extension_type='both')
+
+
+@pytest.fixture
+def c_extension_test_package(tmpdir, request):
+    return _extension_test_package(tmpdir, request, extension_type='c')
+
+
+@pytest.fixture
+def pyx_extension_test_package(tmpdir, request):
+    return _extension_test_package(tmpdir, request, extension_type='pyx')
+
+
 def test_cython_autoextensions(tmpdir):
     """
     Regression test for https://github.com/astropy/astropy-helpers/pull/19
@@ -120,13 +152,13 @@ def test_cython_autoextensions(tmpdir):
     assert package_info['ext_modules'][0].name == 'yoda.luke.dagobah'
 
 
-def test_compiler_module(extension_test_package):
+def test_compiler_module(c_extension_test_package):
     """
     Test ensuring that the compiler module is built and installed for packages
     that have extension modules.
     """
 
-    test_pkg = extension_test_package
+    test_pkg = c_extension_test_package
     install_temp = test_pkg.mkdir('install_temp')
 
     with test_pkg.as_cwd():
@@ -150,7 +182,7 @@ def test_compiler_module(extension_test_package):
         assert _eva_.version.compiler != 'unknown'
 
 
-def test_no_cython_buildext(extension_test_package):
+def test_no_cython_buildext(c_extension_test_package):
     """
     Regression test for https://github.com/astropy/astropy-helpers/pull/35
 
@@ -159,7 +191,7 @@ def test_no_cython_buildext(extension_test_package):
     more normal C extensions).
     """
 
-    test_pkg = extension_test_package
+    test_pkg = c_extension_test_package
 
     # In order for this test to test the correct code path we need to fool
     # setup_helpers into thinking we don't have Cython installed
@@ -176,6 +208,30 @@ def test_no_cython_buildext(extension_test_package):
         assert dirname == str(test_pkg.join('_eva_'))
     finally:
         sys.path.remove(str(test_pkg))
+
+
+def test_missing_cython_c_files(pyx_extension_test_package):
+    """
+    Regression test for https://github.com/astropy/astropy-helpers/pull/181
+
+    Test failure mode when building a package that has Cython modules, but
+    where Cython is not installed and the generated C files are missing.
+    """
+
+    test_pkg = pyx_extension_test_package
+
+    # In order for this test to test the correct code path we need to fool
+    # setup_helpers into thinking we don't have Cython installed
+    setup_helpers._module_state['have_cython'] = False
+
+    with test_pkg.as_cwd():
+        with pytest.raises(SystemExit) as exc_info:
+            run_setup('setup.py', ['build_ext', '--inplace'])
+
+    msg = ('Could not find C/C++ file '
+           '{0}.(c/cpp)'.format('_eva_/unit02'.replace('/', os.sep)))
+
+    assert msg in str(exc_info.value)
 
 
 @pytest.mark.parametrize('mode', ['cli', 'cli-w', 'direct'])
