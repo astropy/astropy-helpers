@@ -21,6 +21,9 @@ astropy-helpers Changelog
 - Fixed a crash that could occur on Python 3 when a working C compiler isn't
   found. [#182]
 
+- Quieted warnings about deprecated Numpy API in Cython extensions, when
+  building Cython extensions against Numpy >= 1.7. [#183]
+
 
 1.0.3 (2015-07-22)
 ------------------
