@@ -179,4 +179,11 @@ def generate_build_ext_command(packagename, release):
                             'checkout.'.format(base, pyxfn, extension.name))
                         raise IOError(errno.ENOENT, msg, cfn)
 
+                # Current versions of Cython use deprecated Numpy API features
+                # the use of which produces a few warnings when compiling.
+                # These additional flags should squelch those warnings.
+                # TODO: Feel free to remove this if/when a Cython update
+                # removes use of the deprecated Numpy API
+                extension.extra_compile_args.extend([
+                    '-Wp,-w', '-Wno-unused-function'])
     return build_ext
