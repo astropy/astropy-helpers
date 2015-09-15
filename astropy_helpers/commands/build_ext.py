@@ -3,6 +3,7 @@ import os
 import shutil
 
 from distutils.core import Extension
+from distutils.ccompiler import get_default_compiler
 from setuptools.command.build_ext import build_ext as SetuptoolsBuildExt
 
 from ..utils import get_numpy_include_path, invalidate_caches
@@ -153,6 +154,12 @@ def generate_build_ext_command(packagename, release):
             modules are present (if building without Cython installed).
             """
 
+            # Determine the compiler we'll be using
+            if self.compiler is None:
+                compiler = get_default_compiler()
+            else:
+                compiler = self.compiler
+
             # Replace .pyx with C-equivalents, unless c files are missing
             for jdx, src in enumerate(extension.sources):
                 base, ext = os.path.splitext(src)
@@ -184,6 +191,8 @@ def generate_build_ext_command(packagename, release):
                 # These additional flags should squelch those warnings.
                 # TODO: Feel free to remove this if/when a Cython update
                 # removes use of the deprecated Numpy API
-                extension.extra_compile_args.extend([
-                    '-Wp,-w', '-Wno-unused-function'])
+                if compiler == 'unix':
+                    extension.extra_compile_args.extend([
+                        '-Wp,-w', '-Wno-unused-function'])
+
     return build_ext
