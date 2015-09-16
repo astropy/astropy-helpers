@@ -4,7 +4,14 @@ astropy-helpers Changelog
 1.1 (unreleased)
 ----------------
 
-- Nothing changed yet.
+- The original ``AstropyTest`` class in ``astropy_helpers``, which implements
+  the ``setup.py test`` command, is deprecated in favor of moving the
+  implementation of that command closer to the actual Astropy test runner in
+  ``astropy.tests``.  Now a dummy ``test`` command is provided solely for
+  informing users that they need ``astropy`` installed to run the tests
+  (however, the previous, now deprecated implementation is still provided and
+  continues to work with older versions of Astropy). See the related issue for
+  more details. [#184]
 
 
 1.0.4 (unreleased)
