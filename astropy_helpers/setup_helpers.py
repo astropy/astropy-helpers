@@ -27,7 +27,6 @@ from setuptools import find_packages as _find_packages
 
 from .distutils_helpers import *
 from .version_helpers import get_pkg_version_module
-from .test_helpers import AstropyTest
 from .utils import (silence, walk_skip_hidden, import_file, extends_doc,
                     resolve_name)
 
@@ -37,6 +36,7 @@ from .commands.build_py import AstropyBuildPy
 from .commands.install import AstropyInstall
 from .commands.install_lib import AstropyInstallLib
 from .commands.register import AstropyRegister
+from .commands.test import AstropyTest
 
 # This import is not used in this module, but it is included for backwards
 # compat with version 0.4, which included this function in the public API
