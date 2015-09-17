@@ -20,6 +20,11 @@ astropy-helpers Changelog
   just ensures that any other imports that occur during build will have this
   flag set. [#191]
 
+- It is now possible to use Cython as a ``setup_requires`` build requirement,
+  and still build Cython extensions even if Cython wasn't available at the
+  beginning of the build processes (that is, is automatically downloaded via
+  setuptools' processing of ``setup_requires``). [#185]
+
 
 1.0.4 (unreleased)
 ------------------
