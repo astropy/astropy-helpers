@@ -7,6 +7,10 @@ astropy-helpers Changelog
 - Fixed a crash in ``ah_bootstrap.py`` when astropy-helpers can't be downloaded
   due to use off the ``--offline`` option, and a local copy is not available.
 
+- Added a new ``temp-root`` option to the ``./setup.py test`` command, which is
+  needed in part to support the upgrade to py.test 2.7 (which itself is needed
+  to support Python 3.5). [#187]
+
 
 1.0.3 (2015-07-22)
 ------------------
