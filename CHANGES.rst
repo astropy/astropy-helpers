@@ -31,6 +31,10 @@ astropy-helpers Changelog
 - Quieted warnings about deprecated Numpy API in Cython extensions, when
   building Cython extensions against Numpy >= 1.7. [#183]
 
+- Added a new ``temp-root`` option to the ``./setup.py test`` command, which is
+  needed in part to support the upgrade to py.test 2.7 (which itself is needed
+  to support Python 3.5). [#187]
+
 
 1.0.3 (2015-07-22)
 ------------------
