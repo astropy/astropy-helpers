@@ -145,16 +145,17 @@ class AstropyTest(Command, object):
         """
         Run the tests!
         """
-        # Build a testing install of the package
-        self._build_temp_install()
-
-        # Ensure all required packages are installed
-        self._validate_required_deps()
 
         # Ensure there is a doc path
         if self.docs_path is None:
             if os.path.exists('docs'):
                 self.docs_path = os.path.abspath('docs')
+
+        # Build a testing install of the package
+        self._build_temp_install()
+
+        # Ensure all required packages are installed
+        self._validate_required_deps()
 
         # Run everything in a try: finally: so that the tmp dir gets deleted.
         try:
@@ -201,7 +202,13 @@ class AstropyTest(Command, object):
                                         dir=self.temp_root)
         self.testing_path = os.path.join(self.tmp_dir, os.path.basename(new_path))
         shutil.copytree(new_path, self.testing_path)
-        shutil.copy('setup.cfg', self.testing_path)
+
+        new_docs_path = os.path.join(self.tmp_dir,
+                                     os.path.basename(self.docs_path))
+        shutil.copytree(self.docs_path, new_docs_path)
+        self.docs_path = new_docs_path
+
+        shutil.copy('setup.cfg', self.tmp_dir)
 
     def _generate_coverage_commands(self):
         """
