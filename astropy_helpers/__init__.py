@@ -33,3 +33,12 @@ try:
 except:
     # Ignore if this fails for *any* reason*
     pass
+
+
+# Ensure that all module-level code in astropy or other packages know that
+# we're in setup mode:
+if sys.version_info[0] >= 3:
+    import builtins
+else:
+    import __builtin__ as builtins
+builtins._ASTROPY_SETUP_ = True
