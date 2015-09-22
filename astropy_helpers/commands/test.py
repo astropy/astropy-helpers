@@ -12,13 +12,18 @@ that allows users to at least discover the ``./setup.py test`` command and
 learn that they need Astropy to run it.
 """
 
+
+# Previously these except statements caught only ImportErrors, but there are
+# some other obscure exceptional conditions that can occur when importing
+# astropy.tests (at least on older versions) that can cause these imports to
+# fail
 try:
     import astropy
     try:
         from astropy.tests.command import AstropyTest
-    except ImportError:
+    except Exception:
         from ._test_compat import AstropyTest
-except ImportError:
+except Exception:
     # No astropy at all--provide the dummy implementation
     import sys
     from setuptools import Command
