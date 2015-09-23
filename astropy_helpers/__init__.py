@@ -37,8 +37,11 @@ except:
 
 # Ensure that all module-level code in astropy or other packages know that
 # we're in setup mode:
-if sys.version_info[0] >= 3:
-    import builtins
-else:
-    import __builtin__ as builtins
-builtins._ASTROPY_SETUP_ = True
+if ('__main__' in sys.modules and
+        hasattr(sys.modules['__main__'], '__file__') and
+        sys.modules['__main__'].__file__.startswith('setup.py')):
+    if sys.version_info[0] >= 3:
+        import builtins
+    else:
+        import __builtin__ as builtins
+    builtins._ASTROPY_SETUP_ = True
