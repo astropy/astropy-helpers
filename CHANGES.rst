@@ -7,6 +7,10 @@ astropy-helpers Changelog
 - Fixed a crash in ``ah_bootstrap.py`` when astropy-helpers can't be downloaded
   due to use off the ``--offline`` option, and a local copy is not available.
 
+- Improved support for py.test >= 2.7--running the ``./setup.py test`` command
+  now copies all doc pages into the temporary test directory as well, so that
+  all test files have a "common root directory". [#189]
+
 
 1.0.3 (2015-07-22)
 ------------------
