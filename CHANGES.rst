@@ -13,6 +13,13 @@ astropy-helpers Changelog
   continues to work with older versions of Astropy). See the related issue for
   more details. [#184]
 
+- The ``astropy_helpers`` module now sets the global ``_ASTROPY_SETUP_``
+  flag upon import (from within a ``setup.py``) script, so it's not necessary
+  to have this in the ``setup.py`` script explicitly.  If in doubt though,
+  there's no harm in setting it twice.  Putting it in ``astropy_helpers``
+  just ensures that any other imports that occur during build will have this
+  flag set. [#191]
+
 
 1.0.4 (unreleased)
 ------------------
