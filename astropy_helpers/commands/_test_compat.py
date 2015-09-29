@@ -261,6 +261,12 @@ class AstropyTest(Command, object):
 
         return cmd_pre, cmd_post
 
+    # Most of the test runner arguments have the same name as attributes on
+    # this command class, with one exception (for now)
+    _test_runner_arg_attr_map = {
+        'verbose': 'verbose_results'
+    }
+
     def _get_test_runner_args(self):
         """
         A hack to determine what arguments are supported by the package's
@@ -284,7 +290,8 @@ class AstropyTest(Command, object):
                     'required by the Astropy test runner'.format(package_name))
 
             argspec = inspect.getargspec(pkg.test)
-            return argspec.args
+            return [cls._test_runner_arg_attr_map.get(arg, arg)
+                    for arg in argspec.args]
         finally:
             if PY3:
                 del builtins._ASTROPY_TEST_
