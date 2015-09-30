@@ -98,6 +98,12 @@ class AstropyTest(Command, object):
         # run_tests
         pass
 
+    # Most of the test runner arguments have the same name as attributes on
+    # this command class, with one exception (for now)
+    _test_runner_arg_attr_map = {
+        'verbose': 'verbose_results'
+    }
+
     def generate_testing_command(self):
         """
         Build a Python script to run the tests.
@@ -111,10 +117,14 @@ class AstropyTest(Command, object):
            cmd_pre += pre
            cmd_post += post
 
+        def get_attr(arg):
+            attr = self._test_runner_arg_attr_map.get(arg, arg)
+            return getattr(self, attr)
+
         test_args = filter(lambda arg: hasattr(self, arg),
                            self._get_test_runner_args())
 
-        test_args = ', '.join('{0}={1!r}'.format(arg, getattr(self, arg))
+        test_args = ', '.join('{0}={1!r}'.format(arg, get_attr(arg))
                               for arg in test_args)
 
         if PY3:
@@ -261,12 +271,6 @@ class AstropyTest(Command, object):
 
         return cmd_pre, cmd_post
 
-    # Most of the test runner arguments have the same name as attributes on
-    # this command class, with one exception (for now)
-    _test_runner_arg_attr_map = {
-        'verbose': 'verbose_results'
-    }
-
     def _get_test_runner_args(self):
         """
         A hack to determine what arguments are supported by the package's
@@ -290,8 +294,7 @@ class AstropyTest(Command, object):
                     'required by the Astropy test runner'.format(package_name))
 
             argspec = inspect.getargspec(pkg.test)
-            return [cls._test_runner_arg_attr_map.get(arg, arg)
-                    for arg in argspec.args]
+            return argspec.args
         finally:
             if PY3:
                 del builtins._ASTROPY_TEST_
