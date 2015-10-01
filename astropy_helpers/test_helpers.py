@@ -194,7 +194,13 @@ class AstropyTest(Command, object):
         build_cmd = self.get_finalized_command('build')
         new_path = os.path.abspath(build_cmd.build_lib)
 
-        self.tmp_dir = tempfile.mkdtemp(prefix=self.package_name + '-test-')
+        # On OSX the default path for temp files is under /var, but in most
+        # cases on OSX /var is actually a symlink to /private/var; ensure we
+        # dereference that link, because py.test is very sensitive to relative
+        # paths...
+        tmp_dir = tempfile.mkdtemp(prefix=self.package_name + '-test-',
+                                   dir=self.temp_root)
+        self.tmp_dir = os.path.realpath(tmp_dir)
         self.testing_path = os.path.join(self.tmp_dir, os.path.basename(new_path))
         shutil.copytree(new_path, self.testing_path)
 
