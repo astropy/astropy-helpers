@@ -21,7 +21,7 @@ astropy-helpers Changelog
   flag set. [#191]
 
 
-1.0.4 (unreleased)
+1.0.4 (2015-10-02)
 ------------------
 
 - Fixed issue with the sphinx documentation css where the line numbers for code
