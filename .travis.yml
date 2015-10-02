@@ -51,7 +51,8 @@ before_script:
     - git config --global user.email "author@example.com"
 
 script:
-    - py.test --cov astropy_helpers astropy_helpers
+    # Use full path for coveragerc; see issue #193
+    - py.test --cov astropy_helpers --cov-config $(pwd)/astropy_helpers/tests/coveragerc astropy_helpers
 
 after_success:
     - coveralls
