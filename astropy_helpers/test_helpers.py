@@ -198,8 +198,7 @@ class AstropyTest(Command, object):
         # cases on OSX /var is actually a symlink to /private/var; ensure we
         # dereference that link, because py.test is very sensitive to relative
         # paths...
-        tmp_dir = tempfile.mkdtemp(prefix=self.package_name + '-test-',
-                                   dir=self.temp_root)
+        tmp_dir = tempfile.mkdtemp(prefix=self.package_name + '-test-')
         self.tmp_dir = os.path.realpath(tmp_dir)
         self.testing_path = os.path.join(self.tmp_dir, os.path.basename(new_path))
         shutil.copytree(new_path, self.testing_path)
