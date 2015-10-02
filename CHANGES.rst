@@ -1,7 +1,7 @@
 astropy-helpers Changelog
 =========================
 
-1.0.5 (unreleased)
+1.0.5 (2015-10-02)
 ------------------
 
 - Fixed a regression in the ``./setup.py test`` command that was introduced in
