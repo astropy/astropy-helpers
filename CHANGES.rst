@@ -1,7 +1,7 @@
 astropy-helpers Changelog
 =========================
 
-1.0.4 (unreleased)
+1.0.4 (2015-10-02)
 ------------------
 
 - Fixed a crash in ``ah_bootstrap.py`` when astropy-helpers can't be downloaded
