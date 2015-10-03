@@ -7,7 +7,7 @@ import imp
 import inspect
 import os
 import sys
-import fnmatch
+import glob
 import textwrap
 import types
 import warnings
@@ -847,26 +847,33 @@ class classproperty(property):
         return fget
 
 
-def find_data_files(package, pattern, subdir='.'):
+def find_data_files(package, pattern):
     """
     Include files matching ``pattern`` inside ``package``.
-
-    Optionally, a sub-directory of ``package``, ``subdir``, can be specified
-    to search only in that particular sub-package. The filenames returned are
-    relative to the ``package`` directory.
 
     Parameters
     ----------
     package : str
         The pacakge inside which to look for data files
     pattern : str
-        The pattern to match for the data files (e.g. ``*.dat``)
-    subdir : str, optional
-         An optional sub-directory inside which to search (e.g. ``data``)
+        Pattern (glob-style) to match for the data files (e.g. ``*.dat``).
+        This supports the Python 3.5 ``**``recursive syntax. For example,
+        ``**/*.fits`` matches all files ending with ``.fits``
+        recursively. Only one instance of ``**`` can be included in the
+        pattern.
     """
-    matches = []
-    for root, dirs, files in os.walk(os.path.join(package, subdir)):
-        for filename in fnmatch.filter(files, pattern):
-            matches.append(os.path.join(os.path.relpath(root, package),
-                                        filename))
-    return matches
+    
+    if sys.version_info[:2] >= (3, 5):
+        return glob.glob(os.path.join(package, pattern), recursive=True)
+    else:
+        if '**' in pattern:
+            start, end = pattern.split('**')
+            if end.startswith(('/', os.sep)):
+                end = end[1:]
+            matches = []
+            for root, dirs, files in os.walk(os.path.join(package, start)):
+                for dirname in dirs:
+                    matches += glob.glob(os.path.join(root, dirname, end))
+            return matches            
+        else:
+            return glob.glob(os.path.join(package, pattern))
