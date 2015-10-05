@@ -21,6 +21,19 @@ astropy-helpers Changelog
   flag set. [#191]
 
 
+1.0.6 (unreleased)
+------------------
+
+- Nothing changed yet.
+
+
+1.0.5 (2015-10-02)
+------------------
+
+- Fixed a regression in the ``./setup.py test`` command that was introduced in
+  v1.0.4.
+
+
 1.0.4 (2015-10-02)
 ------------------
 
