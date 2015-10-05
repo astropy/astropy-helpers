@@ -30,6 +30,13 @@ else:
     invalidate_caches = lambda: None
 
 
+# Python 2/3 compatibility
+if sys.version_info[0] < 3:
+    string_types = (str, unicode)
+else:
+    string_types = (str,)
+
+
 # Note: The following Warning subclasses are simply copies of the Warnings in
 # Astropy of the same names.
 class AstropyWarning(Warning):
@@ -635,7 +642,7 @@ def minversion(module, version, inclusive=True, version_path='__version__'):
 
     if isinstance(module, types.ModuleType):
         module_name = module.__name__
-    elif isinstance(module, six.string_types):
+    elif isinstance(module, string_types):
         module_name = module
         try:
             module = resolve_name(module_name)
