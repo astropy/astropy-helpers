@@ -862,7 +862,7 @@ def find_data_files(package, pattern):
         recursively. Only one instance of ``**`` can be included in the
         pattern.
     """
-    
+
     if sys.version_info[:2] >= (3, 5):
         return glob.glob(os.path.join(package, pattern), recursive=True)
     else:
@@ -870,10 +870,10 @@ def find_data_files(package, pattern):
             start, end = pattern.split('**')
             if end.startswith(('/', os.sep)):
                 end = end[1:]
-            matches = []
+            matches = glob.glob(os.path.join(package, start, end))
             for root, dirs, files in os.walk(os.path.join(package, start)):
                 for dirname in dirs:
                     matches += glob.glob(os.path.join(root, dirname, end))
-            return matches            
+            return matches
         else:
             return glob.glob(os.path.join(package, pattern))
