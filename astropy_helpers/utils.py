@@ -854,7 +854,7 @@ def find_data_files(package, pattern):
     Parameters
     ----------
     package : str
-        The pacakge inside which to look for data files
+        The package inside which to look for data files
     pattern : str
         Pattern (glob-style) to match for the data files (e.g. ``*.dat``).
         This supports the Python 3.5 ``**``recursive syntax. For example,
