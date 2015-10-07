@@ -18,7 +18,7 @@ def test_find_data_files(tmpdir):
 
     filenames = sorted(os.path.relpath(x, data.strpath) for x in filenames)
 
-    assert filenames[0] == 'data.dat'
-    assert filenames[1] == 'sub1/data.dat'
-    assert filenames[2] == 'sub1/sub3/data.dat'
-    assert filenames[3] == 'sub2/data.dat'
+    assert filenames[0] == os.path.join('data.dat')
+    assert filenames[1] == os.path.join('sub1', 'data.dat')
+    assert filenames[2] == os.path.join('sub1', 'sub3', 'data.dat')
+    assert filenames[3] == os.path.join('sub2', 'data.dat')
