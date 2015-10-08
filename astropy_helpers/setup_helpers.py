@@ -47,17 +47,10 @@ from .commands.build_ext import should_build_with_cython
 _module_state = {
     'adjusted_compiler': False,
     'registered_commands': None,
-    'have_cython': False,
     'have_sphinx': False,
     'package_cache': None,
     'compiler_version_cache': {}
 }
-
-try:
-    import Cython
-    _module_state['have_cython'] = True
-except ImportError:
-    pass
 
 try:
     import sphinx

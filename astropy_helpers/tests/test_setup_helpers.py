@@ -8,6 +8,7 @@ from textwrap import dedent
 from .. import setup_helpers
 from ..setup_helpers import (get_package_info, register_commands,
                              adjust_compiler)
+from ..commands import build_ext
 from . import *
 
 
@@ -182,7 +183,7 @@ def test_compiler_module(c_extension_test_package):
         assert _eva_.version.compiler != 'unknown'
 
 
-def test_no_cython_buildext(c_extension_test_package):
+def test_no_cython_buildext(c_extension_test_package, monkeypatch):
     """
     Regression test for https://github.com/astropy/astropy-helpers/pull/35
 
@@ -194,8 +195,9 @@ def test_no_cython_buildext(c_extension_test_package):
     test_pkg = c_extension_test_package
 
     # In order for this test to test the correct code path we need to fool
-    # setup_helpers into thinking we don't have Cython installed
-    setup_helpers._module_state['have_cython'] = False
+    # build_ext into thinking we don't have Cython installed
+    monkeypatch.setattr(build_ext, 'should_build_with_cython',
+                        lambda *args: False)
 
     with test_pkg.as_cwd():
         run_setup('setup.py', ['build_ext', '--inplace'])
@@ -210,7 +212,7 @@ def test_no_cython_buildext(c_extension_test_package):
         sys.path.remove(str(test_pkg))
 
 
-def test_missing_cython_c_files(pyx_extension_test_package):
+def test_missing_cython_c_files(pyx_extension_test_package, monkeypatch):
     """
     Regression test for https://github.com/astropy/astropy-helpers/pull/181
 
@@ -221,8 +223,9 @@ def test_missing_cython_c_files(pyx_extension_test_package):
     test_pkg = pyx_extension_test_package
 
     # In order for this test to test the correct code path we need to fool
-    # setup_helpers into thinking we don't have Cython installed
-    setup_helpers._module_state['have_cython'] = False
+    # build_ext into thinking we don't have Cython installed
+    monkeypatch.setattr(build_ext, 'should_build_with_cython',
+                        lambda *args: False)
 
     with test_pkg.as_cwd():
         with pytest.raises(SystemExit) as exc_info:
