@@ -7,6 +7,7 @@ import imp
 import inspect
 import os
 import sys
+import glob
 import textwrap
 import types
 import warnings
@@ -18,6 +19,7 @@ try:
         import_machinery = None
 except ImportError:
     import_machinery = None
+
 
 
 # Python 3.3's importlib caches filesystem reads for faster imports in the
@@ -843,3 +845,35 @@ class classproperty(property):
         fget.__wrapped__ = orig_fget
 
         return fget
+
+
+def find_data_files(package, pattern):
+    """
+    Include files matching ``pattern`` inside ``package``.
+
+    Parameters
+    ----------
+    package : str
+        The package inside which to look for data files
+    pattern : str
+        Pattern (glob-style) to match for the data files (e.g. ``*.dat``).
+        This supports the Python 3.5 ``**``recursive syntax. For example,
+        ``**/*.fits`` matches all files ending with ``.fits``
+        recursively. Only one instance of ``**`` can be included in the
+        pattern.
+    """
+
+    if sys.version_info[:2] >= (3, 5):
+        return glob.glob(os.path.join(package, pattern), recursive=True)
+    else:
+        if '**' in pattern:
+            start, end = pattern.split('**')
+            if end.startswith(('/', os.sep)):
+                end = end[1:]
+            matches = glob.glob(os.path.join(package, start, end))
+            for root, dirs, files in os.walk(os.path.join(package, start)):
+                for dirname in dirs:
+                    matches += glob.glob(os.path.join(root, dirname, end))
+            return matches
+        else:
+            return glob.glob(os.path.join(package, pattern))
