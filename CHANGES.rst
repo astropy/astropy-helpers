@@ -13,6 +13,13 @@ astropy-helpers Changelog
   continues to work with older versions of Astropy). See the related issue for
   more details. [#184]
 
+- Added a useful new utility function to ``astropy_helpers.utils`` called
+  ``find_data_files``.  This is similar to the ``find_packages`` function in
+  setuptools in that it can be used to search a package for data files
+  (matching a pattern) that can be passed to the ``package_data`` argument for
+  ``setup()``.  See the docstring to ``astropy_helpers.utils.find_data_files``
+  for more details. [#42]
+
 - The ``astropy_helpers`` module now sets the global ``_ASTROPY_SETUP_``
   flag upon import (from within a ``setup.py``) script, so it's not necessary
   to have this in the ``setup.py`` script explicitly.  If in doubt though,
