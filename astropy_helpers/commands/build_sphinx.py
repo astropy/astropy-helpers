@@ -1,3 +1,5 @@
+from __future__ import print_function
+
 import inspect
 import os
 import pkgutil
@@ -170,18 +172,20 @@ class AstropyBuildSphinx(SphinxBuildDoc):
         # prevents a continuous updating at the terminal, but there's no
         # apparent way around this.
         if self.warnings_returncode:
-            proc = subprocess.Popen([sys.executable],
+            proc = subprocess.Popen([sys.executable, '-c', subproccode.encode('utf-8')],
                                     stdin=subprocess.PIPE,
                                     stdout=subprocess.PIPE,
                                     stderr=subprocess.STDOUT)
-            stdo, _ = proc.communicate(subproccode.encode('utf-8'))
-            stdo = stdo.decode('utf-8')
-
-            print(stdo)
-
-            stdolines = stdo.splitlines()
-
-            if 'build succeeded.' in stdolines:
+#            stdo, stde = proc.communicate(subproccode.encode('utf-8'))
+            stdolines = []
+            with proc.stdout:
+                for line in iter(proc.stdout.readline, b''):
+                    line = line.strip(b'\n')
+                    stdolines.append(line)
+                    print(line)
+            proc.poll()
+            #stdolines = stdo.splitlines()
+            if b'build succeeded.' in stdolines:
                 retcode = 0
             else:
                 retcode = 1
