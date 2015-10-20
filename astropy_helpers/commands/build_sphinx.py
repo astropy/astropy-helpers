@@ -176,13 +176,13 @@ class AstropyBuildSphinx(SphinxBuildDoc):
                                     stdin=subprocess.PIPE,
                                     stdout=subprocess.PIPE,
                                     stderr=subprocess.STDOUT)
-#            stdo, stde = proc.communicate(subproccode.encode('utf-8'))
+
             stdolines = []
             with proc.stdout:
                 for line in iter(proc.stdout.readline, b''):
                     line = line.strip(b'\n')
                     stdolines.append(line)
-                    print(line)
+                    print(line.decode('utf-8'))
             proc.poll()
             #stdolines = stdo.splitlines()
             if b'build succeeded.' in stdolines:
