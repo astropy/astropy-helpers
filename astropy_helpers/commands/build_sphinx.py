@@ -184,8 +184,8 @@ class AstropyBuildSphinx(SphinxBuildDoc):
                     stdolines.append(line)
                     print(line.decode('utf-8'))
 
-           # Poll to set proc.retcode
-           proc.poll()
+            # Poll to set proc.retcode
+            proc.poll()
 
             if b'build succeeded.' in stdolines:
                 retcode = 0
