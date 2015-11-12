@@ -34,6 +34,11 @@ before_install:
     - source continuous-integration/travis/install_graphviz_$TRAVIS_OS_NAME.sh
 
 install:
+    - hash -r
+    - conda config --set always_yes yes --set changeps1 no
+    - conda update -q conda
+    - conda info -a
+
     - conda create --yes -n test python=$PYTHON_VERSION
     - source activate test
     - conda install --yes pip "pytest<2.6" sphinx cython numpy
