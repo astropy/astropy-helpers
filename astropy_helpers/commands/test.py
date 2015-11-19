@@ -33,14 +33,18 @@ except Exception:
 
     class _AstropyTestMeta(type):
         """
-        Causes an exception to be raised on accessing user_options so that
-        if ``./setup.py test`` is run with additional command-line options we
-        can provide a useful error message instead of the default that tells
-        users the options are unrecognized.
+        Causes an exception to be raised on accessing attributes of the test
+        command class so that if ``./setup.py test`` is run with additional
+        command-line options we can provide a useful error message instead of
+        the default that tells users the options are unrecognized.
         """
 
-        @property
-        def user_options(cls):
+        def __getattribute__(cls, attr):
+            if attr == 'description':
+                # Allow cls.description to work so that `./setup.py
+                # --help-commands` still works
+                return super(_AstropyTestMeta, cls).__getattribute__(attr)
+
             raise DistutilsArgError(
                 "Test 'test' command requires the astropy package to be "
                 "installed and importable.")
