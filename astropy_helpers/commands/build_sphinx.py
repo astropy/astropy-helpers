@@ -215,6 +215,7 @@ class AstropyBuildSphinx(SphinxBuildDoc):
         else:
             log.warn('Sphinx Documentation subprocess failed with return '
                      'code ' + str(proc.returncode))
+            retcode = proc.returncode
 
         if retcode is not None:
             # this is potentially dangerous in that there might be something
