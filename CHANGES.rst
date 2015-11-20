@@ -32,6 +32,10 @@ astropy-helpers Changelog
   beginning of the build processes (that is, is automatically downloaded via
   setuptools' processing of ``setup_requires``). [#185]
 
+- Moves the ``adjust_compiler`` check into the ``build_ext`` command itself,
+  so it's only used when actually building extension modules.  This also
+  deprecates the stand-alone ``adjust_compiler`` function. [#76]
+
 
 1.0.6 (unreleased)
 ------------------

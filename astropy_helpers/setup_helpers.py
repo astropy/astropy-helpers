@@ -9,14 +9,14 @@ from __future__ import absolute_import, print_function
 import collections
 import os
 import re
-import shlex
 import shutil
 import subprocess
 import sys
 import textwrap
 import traceback
+import warnings
 
-from distutils import log, ccompiler, sysconfig
+from distutils import log
 from distutils.dist import Distribution
 from distutils.errors import DistutilsOptionError, DistutilsModuleError
 from distutils.core import Extension
@@ -28,8 +28,7 @@ from setuptools import find_packages as _find_packages
 from .distutils_helpers import *
 from .version_helpers import get_pkg_version_module
 from .utils import (silence, walk_skip_hidden, import_file, extends_doc,
-                    resolve_name)
-
+                    resolve_name, AstropyDeprecationWarning)
 
 from .commands.build_ext import generate_build_ext_command
 from .commands.build_py import AstropyBuildPy
@@ -38,18 +37,15 @@ from .commands.install_lib import AstropyInstallLib
 from .commands.register import AstropyRegister
 from .commands.test import AstropyTest
 
-# This import is not used in this module, but it is included for backwards
-# compat with version 0.4, which included this function in the public API
-# for this module
+# These imports are not used in this module, but are included for backwards
+# compat with older versions of this module
 from .utils import get_numpy_include_path, write_if_different
-from .commands.build_ext import should_build_with_cython
+from .commands.build_ext import should_build_with_cython, get_compiler_version
 
 _module_state = {
-    'adjusted_compiler': False,
     'registered_commands': None,
     'have_sphinx': False,
     'package_cache': None,
-    'compiler_version_cache': {}
 }
 
 try:
@@ -99,139 +95,11 @@ def adjust_compiler(package):
     to.
     """
 
-    compiler_mapping = [
-        ('i686-apple-darwin[0-9]*-llvm-gcc-4.2', 'clang')
-        ]
-
-    if _module_state['adjusted_compiler']:
-        return
-
-    # Whatever the result of this function is, it only needs to be run once
-    _module_state['adjusted_compiler'] = True
-
-    if 'CC' in os.environ:
-
-        # Check that CC is not set to llvm-gcc-4.2
-        c_compiler = os.environ['CC']
-
-        try:
-            version = get_compiler_version(c_compiler)
-        except OSError:
-            msg = textwrap.dedent(
-                    """
-                    The C compiler set by the CC environment variable:
-
-                        {compiler:s}
-
-                    cannot be found or executed.
-                    """.format(compiler=c_compiler))
-            log.warn(msg)
-            sys.exit(1)
-
-        for broken, fixed in compiler_mapping:
-            if re.match(broken, version):
-                msg = textwrap.dedent(
-                    """Compiler specified by CC environment variable
-                    ({compiler:s}:{version:s}) will fail to compile {pkg:s}.
-                    Please set CC={fixed:s} and try again.
-                    You can do this, for example, by running:
-
-                        CC={fixed:s} python setup.py <command>
-
-                    where <command> is the command you ran.
-                    """.format(compiler=c_compiler, version=version,
-                               pkg=package, fixed=fixed))
-                log.warn(msg)
-                sys.exit(1)
-
-        # If C compiler is set via CC, and isn't broken, we are good to go. We
-        # should definitely not try accessing the compiler specified by
-        # ``sysconfig.get_config_var('CC')`` lower down, because this may fail
-        # if the compiler used to compile Python is missing (and maybe this is
-        # why the user is setting CC). For example, the official Python 2.7.3
-        # MacOS X binary was compiled with gcc-4.2, which is no longer available
-        # in XCode 4.
-        return
-
-    if get_distutils_build_option('compiler'):
-        return
-
-    compiler_type = ccompiler.get_default_compiler()
-
-    if compiler_type == 'unix':
-
-        # We have to get the compiler this way, as this is the one that is
-        # used if os.environ['CC'] is not set. It is actually read in from
-        # the Python Makefile. Note that this is not necessarily the same
-        # compiler as returned by ccompiler.new_compiler()
-        c_compiler = sysconfig.get_config_var('CC')
-
-        try:
-            version = get_compiler_version(c_compiler)
-        except OSError:
-            msg = textwrap.dedent(
-                    """
-                    The C compiler used to compile Python {compiler:s}, and
-                    which is normally used to compile C extensions, is not
-                    available. You can explicitly specify which compiler to
-                    use by setting the CC environment variable, for example:
-
-                        CC=gcc python setup.py <command>
-
-                    or if you are using MacOS X, you can try:
-
-                        CC=clang python setup.py <command>
-                    """.format(compiler=c_compiler))
-            log.warn(msg)
-            sys.exit(1)
-
-
-        for broken, fixed in compiler_mapping:
-            if re.match(broken, version):
-                os.environ['CC'] = fixed
-                break
-
-
-def get_compiler_version(compiler):
-    if compiler in _module_state['compiler_version_cache']:
-        return _module_state['compiler_version_cache'][compiler]
-
-    # Different flags to try to get the compiler version
-    # TODO: It might be worth making this configurable to support
-    # arbitrary odd compilers; though all bets may be off in such
-    # cases anyway
-    flags = ['--version', '--Version', '-version', '-Version',
-             '-v', '-V']
-
-    def try_get_version(flag):
-        process = subprocess.Popen(
-            shlex.split(compiler, posix=('win' not in sys.platform)) + [flag],
-            stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-
-        stdout, stderr = process.communicate()
-
-        if process.returncode != 0:
-            return 'unknown'
-
-        output = stdout.strip().decode('latin-1')  # Safest bet
-        if not output:
-            # Some compilers return their version info on stderr
-            output = stderr.strip().decode('latin-1')
-
-        if not output:
-            output = 'unknown'
-
-        return output
-
-    for flag in flags:
-        version = try_get_version(flag)
-        if version != 'unknown':
-            break
-
-    # Cache results to speed up future calls
-    _module_state['compiler_version_cache'][compiler] = version
-
-    return version
+    warnings.warn(
+        'Direct use of the adjust_compiler function in setup.py is '
+        'deprecated and can be removed from your setup.py.  This '
+        'functionality is now incorporated directly into the build_ext '
+        'command.', AstropyDeprecationWarning)
 
 
 def get_debug_option(packagename):
