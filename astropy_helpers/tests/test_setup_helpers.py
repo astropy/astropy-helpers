@@ -5,9 +5,9 @@ import sys
 
 from textwrap import dedent
 
-from .. import setup_helpers
-from ..setup_helpers import (get_package_info, register_commands,
-                             adjust_compiler)
+from setuptools import Distribution
+
+from ..setup_helpers import get_package_info, register_commands
 from ..commands import build_ext
 from . import *
 
@@ -426,14 +426,17 @@ def test_adjust_compiler(monkeypatch, tmpdir):
         bad = ' '.join((sys.executable, str(bad)))
         ugly = ' '.join((sys.executable, str(ugly)))
 
+    dist = Distribution({})
+    cmd_cls = build_ext.generate_build_ext_command('astropy', False)
+    cmd = cmd_cls(dist)
+    adjust_compiler = cmd._adjust_compiler
+
     @contextlib.contextmanager
     def test_setup():
-        setup_helpers._module_state['adjusted_compiler'] = False
         log = MockLog()
-        monkeypatch.setattr(setup_helpers, 'log', log)
+        monkeypatch.setattr(build_ext, 'log', log)
         yield log
         monkeypatch.undo()
-        setup_helpers._module_state['adjusted_compiler'] = False
 
     @contextlib.contextmanager
     def compiler_setter_with_environ(compiler):
@@ -446,8 +449,6 @@ def test_adjust_compiler(monkeypatch, tmpdir):
     def compiler_setter_with_sysconfig(compiler):
         monkeypatch.setattr(ccompiler, 'get_default_compiler', lambda: 'unix')
         monkeypatch.setattr(sysconfig, 'get_config_var', lambda v: compiler)
-        monkeypatch.setattr(setup_helpers, 'get_distutils_build_option',
-                            lambda opt: '')
         old_cc = os.environ.get('CC')
         if old_cc is not None:
             del os.environ['CC']
@@ -468,28 +469,30 @@ def test_adjust_compiler(monkeypatch, tmpdir):
     for compiler_setter in compiler_setters:
         with compiler_setter(str(good)):
             # Should have no side-effects
-            adjust_compiler('astropy')
+            adjust_compiler()
 
         with compiler_setter(str(ugly)):
             # Should just pass without complaint, since we can't determine
             # anything about the compiler anyways
-            adjust_compiler('astropy')
+            adjust_compiler()
 
+    # In the following tests we check the log messages just to ensure that the
+    # failures occur on the correct code paths for these cases
     with compiler_setter_with_environ(str(bad)) as log:
         with pytest.raises(SystemExit):
-            adjust_compiler('astropy')
+            adjust_compiler()
 
         assert len(log.messages) == 1
-        assert 'will fail to compile astropy' in log.messages[0]
+        assert 'will fail to compile' in log.messages[0]
 
     with compiler_setter_with_sysconfig(str(bad)):
-        adjust_compiler('astropy')
+        adjust_compiler()
         assert 'CC' in os.environ and os.environ['CC'] == 'clang'
 
     with compiler_setter_with_environ('bogus') as log:
         with pytest.raises(SystemExit):
             # Missing compiler?
-            adjust_compiler('astropy')
+            adjust_compiler()
 
         assert len(log.messages) == 1
         assert 'cannot be found or executed' in log.messages[0]
@@ -497,7 +500,7 @@ def test_adjust_compiler(monkeypatch, tmpdir):
     with compiler_setter_with_sysconfig('bogus') as log:
         with pytest.raises(SystemExit):
             # Missing compiler?
-            adjust_compiler('astropy')
+            adjust_compiler()
 
         assert len(log.messages) == 1
         assert 'The C compiler used to compile Python' in log.messages[0]

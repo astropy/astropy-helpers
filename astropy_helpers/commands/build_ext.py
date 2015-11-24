@@ -1,7 +1,13 @@
 import errno
 import os
+import re
+import shlex
 import shutil
+import subprocess
+import sys
+import textwrap
 
+from distutils import log, ccompiler, sysconfig
 from distutils.cmd import Command
 from distutils.core import Extension
 from distutils.ccompiler import get_default_compiler
@@ -53,6 +59,49 @@ def should_build_with_cython(package, release=None):
         return False
 
 
+_compiler_versions = {}
+def get_compiler_version(compiler):
+    if compiler in _compiler_versions:
+        return _compiler_versions[compiler]
+
+    # Different flags to try to get the compiler version
+    # TODO: It might be worth making this configurable to support
+    # arbitrary odd compilers; though all bets may be off in such
+    # cases anyway
+    flags = ['--version', '--Version', '-version', '-Version',
+             '-v', '-V']
+
+    def try_get_version(flag):
+        process = subprocess.Popen(
+            shlex.split(compiler, posix=('win' not in sys.platform)) + [flag],
+            stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+
+        stdout, stderr = process.communicate()
+
+        if process.returncode != 0:
+            return 'unknown'
+
+        output = stdout.strip().decode('latin-1')  # Safest bet
+        if not output:
+            # Some compilers return their version info on stderr
+            output = stderr.strip().decode('latin-1')
+
+        if not output:
+            output = 'unknown'
+
+        return output
+
+    for flag in flags:
+        version = try_get_version(flag)
+        if version != 'unknown':
+            break
+
+    # Cache results to speed up future calls
+    _compiler_versions[compiler] = version
+
+    return version
+
+
 # TODO: I think this can be reworked without having to create the class
 # programmatically.
 def generate_build_ext_command(packagename, release):
@@ -72,6 +121,11 @@ def generate_build_ext_command(packagename, release):
         _user_options = []
         _boolean_options = []
         force_rebuild = False
+
+
+        _broken_compiler_mapping = [
+            ('i686-apple-darwin[0-9]*-llvm-gcc-4.2', 'clang')
+            ]
 
         # Warning: Spaghetti code ahead.
         # During setup.py, the setup_helpers module needs the ability to add
@@ -156,6 +210,8 @@ def generate_build_ext_command(packagename, release):
             # Note, self.extensions may not be set yet, but
             # self.distribution.ext_modules is where any extension modules
             # passed to setup() can be found
+            self._adjust_compiler()
+
             extensions = self.distribution.ext_modules
             if extensions:
                 src_path = os.path.relpath(
@@ -223,6 +279,107 @@ def generate_build_ext_command(packagename, release):
                                    preserve_mode=False)
 
                 invalidate_caches()
+
+        def _adjust_compiler(self):
+            """
+            This function detects broken compilers and switches to another.  If
+            the environment variable CC is explicitly set, or a compiler is
+            specified on the commandline, no override is performed -- the
+            purpose here is to only override a default compiler.
+
+            The specific compilers with problems are:
+
+                * The default compiler in XCode-4.2, llvm-gcc-4.2,
+                  segfaults when compiling wcslib.
+
+            The set of broken compilers can be updated by changing the
+            compiler_mapping variable.  It is a list of 2-tuples where the
+            first in the pair is a regular expression matching the version of
+            the broken compiler, and the second is the compiler to change to.
+            """
+            if 'CC' in os.environ:
+                # Check that CC is not set to llvm-gcc-4.2
+                c_compiler = os.environ['CC']
+
+                try:
+                    version = get_compiler_version(c_compiler)
+                except OSError:
+                    msg = textwrap.dedent(
+                        """
+                        The C compiler set by the CC environment variable:
+
+                            {compiler:s}
+
+                        cannot be found or executed.
+                        """.format(compiler=c_compiler))
+                    log.warn(msg)
+                    sys.exit(1)
+
+                for broken, fixed in self._broken_compiler_mapping:
+                    if re.match(broken, version):
+                        msg = textwrap.dedent(
+                            """Compiler specified by CC environment variable
+                            ({compiler:s}:{version:s}) will fail to compile
+                            {pkg:s}.
+
+                            Please set CC={fixed:s} and try again.
+                            You can do this, for example, by running:
+
+                                CC={fixed:s} python setup.py <command>
+
+                            where <command> is the command you ran.
+                            """.format(compiler=c_compiler, version=version,
+                                       pkg=self.package_name, fixed=fixed))
+                        log.warn(msg)
+                        sys.exit(1)
+
+                # If C compiler is set via CC, and isn't broken, we are good to go. We
+                # should definitely not try accessing the compiler specified by
+                # ``sysconfig.get_config_var('CC')`` lower down, because this may fail
+                # if the compiler used to compile Python is missing (and maybe this is
+                # why the user is setting CC). For example, the official Python 2.7.3
+                # MacOS X binary was compiled with gcc-4.2, which is no longer available
+                # in XCode 4.
+                return
+
+            if self.compiler is not None:
+                # At this point, self.compiler will be set only if a compiler
+                # was specified in the command-line or via setup.cfg, in which
+                # case we don't do anything
+                return
+
+            compiler_type = ccompiler.get_default_compiler()
+
+            if compiler_type == 'unix':
+                # We have to get the compiler this way, as this is the one that is
+                # used if os.environ['CC'] is not set. It is actually read in from
+                # the Python Makefile. Note that this is not necessarily the same
+                # compiler as returned by ccompiler.new_compiler()
+                c_compiler = sysconfig.get_config_var('CC')
+
+                try:
+                    version = get_compiler_version(c_compiler)
+                except OSError:
+                    msg = textwrap.dedent(
+                        """
+                        The C compiler used to compile Python {compiler:s}, and
+                        which is normally used to compile C extensions, is not
+                        available. You can explicitly specify which compiler to
+                        use by setting the CC environment variable, for example:
+
+                            CC=gcc python setup.py <command>
+
+                        or if you are using MacOS X, you can try:
+
+                            CC=clang python setup.py <command>
+                        """.format(compiler=c_compiler))
+                    log.warn(msg)
+                    sys.exit(1)
+
+                for broken, fixed in self._broken_compiler_mapping:
+                    if re.match(broken, version):
+                        os.environ['CC'] = fixed
+                        break
 
         def _check_cython_sources(self, extension):
             """
