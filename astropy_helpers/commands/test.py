@@ -25,40 +25,11 @@ try:
         from ._test_compat import AstropyTest
 except Exception:
     # No astropy at all--provide the dummy implementation
-    import sys
-    from setuptools import Command
-    from distutils.errors import DistutilsArgError
-    from textwrap import dedent
+    from ._dummy import _DummyCommand
 
-
-    class _AstropyTestMeta(type):
-        """
-        Causes an exception to be raised on accessing attributes of the test
-        command class so that if ``./setup.py test`` is run with additional
-        command-line options we can provide a useful error message instead of
-        the default that tells users the options are unrecognized.
-        """
-
-        def __getattribute__(cls, attr):
-            if attr == 'description':
-                # Allow cls.description to work so that `./setup.py
-                # --help-commands` still works
-                return super(_AstropyTestMeta, cls).__getattribute__(attr)
-
-            raise DistutilsArgError(
-                "Test 'test' command requires the astropy package to be "
-                "installed and importable.")
-
-    if sys.version_info[0] < 3:
-        exec(dedent("""
-            class _AstropyTestBase(Command, object):
-                __metaclass__ = _AstropyTestMeta
-        """))
-    else:
-        exec(dedent("""
-            class _AstropyTestBase(Command, metaclass=_AstropyTestMeta):
-                pass
-        """))
-
-    class AstropyTest(_AstropyTestBase):
+    class AstropyTest(_DummyCommand):
+        command_name = 'test'
         description = 'Run the tests for this package'
+        error_msg = (
+                "The 'test' command requires the astropy package to be "
+                "installed and importable.")

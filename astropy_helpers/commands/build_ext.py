@@ -115,11 +115,13 @@ def generate_build_ext_command(packagename, release):
     Uses the default distutils.command.build_ext by default.
     """
 
-    class build_ext(Command, object):
+    class build_ext(SetuptoolsBuildExt, object):
         package_name = packagename
         is_release = release
-        _user_options = []
-        _boolean_options = []
+        _user_options = SetuptoolsBuildExt.user_options[:]
+        _boolean_options = SetuptoolsBuildExt.boolean_options[:]
+        _help_options = SetuptoolsBuildExt.help_options[:]
+
         force_rebuild = False
 
 
@@ -163,6 +165,18 @@ def generate_build_ext_command(packagename, release):
 
             return cls._final_class.boolean_options
 
+        @classproperty
+        def help_options(cls):
+            # Similar to user_options above
+            from distutils import core
+
+            if core._setup_distribution is None:
+                # We haven't gotten into setup() yet, and the Distribution has
+                # not yet been initialized
+                return cls._help_options
+
+            return cls._final_class.help_options
+
         @classproperty(lazy=True)
         def _final_class(cls):
             """
@@ -183,10 +197,22 @@ def generate_build_ext_command(packagename, release):
 
             # Create and return an instance of a new class based on this class
             # using one of the above possible base classes
+            def merge_options(attr):
+                base = getattr(base_cls, attr)
+                ours = getattr(cls, '_' + attr)
+
+                all_base = set(opt[0] for opt in base)
+
+                return base + [opt for opt in ours if opt[0] not in all_base]
+
+            boolean_options = (base_cls.boolean_options +
+                               [opt for opt in cls._boolean_options
+                                if opt not in base_cls.boolean_options])
+
             members = {
-                'user_options': base_cls.user_options + cls._user_options,
-                'boolean_options': (base_cls.boolean_options +
-                                    cls._boolean_options),
+                'user_options': merge_options('user_options'),
+                'help_options': merge_options('help_options'),
+                'boolean_options': boolean_options,
                 'uses_cython': uses_cython,
             }
 
