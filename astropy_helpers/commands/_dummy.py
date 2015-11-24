@@ -76,6 +76,6 @@ if sys.version_info[0] < 3:
     """))
 else:
     exec(dedent("""
-        class _DummyCommand(Command, metaclass=_DummyCommandMeta):
+        class _DummyCommand(Command, object, metaclass=_DummyCommandMeta):
             pass
     """))
