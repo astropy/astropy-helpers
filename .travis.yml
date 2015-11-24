@@ -41,7 +41,7 @@ install:
 
     - conda create --yes -n test python=$PYTHON_VERSION
     - source activate test
-    - conda install --yes pip "pytest<2.6" sphinx cython numpy
+    - conda install --yes pip pytest sphinx cython numpy
     - pip install coveralls pytest-cov
     # We cannot install the developer version of setuptools using pip because
     # pip tries to remove the previous version of setuptools before the
