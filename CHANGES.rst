@@ -36,6 +36,10 @@ astropy-helpers Changelog
   so it's only used when actually building extension modules.  This also
   deprecates the stand-alone ``adjust_compiler`` function. [#76]
 
+- When running the ``build_sphinx`` / ``build_docs`` command with the ``-w``
+  option, the output from Sphinx is streamed as it runs instead of silently
+  buffering until the doc build is complete. [#197]
+
 
 1.0.6 (unreleased)
 ------------------
