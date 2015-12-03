@@ -172,7 +172,7 @@ class AstropyBuildSphinx(SphinxBuildDoc):
         # prevents a continuous updating at the terminal, but there's no
         # apparent way around this.
         if self.warnings_returncode:
-            proc = subprocess.Popen([sys.executable, '-c', subproccode.encode('utf-8')],
+            proc = subprocess.Popen([sys.executable, '-c', subproccode],
                                     stdin=subprocess.PIPE,
                                     stdout=subprocess.PIPE,
                                     stderr=subprocess.STDOUT)
