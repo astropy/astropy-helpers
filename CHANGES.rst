@@ -1,6 +1,12 @@
 astropy-helpers Changelog
 =========================
 
+1.0.7 (unreleased)
+------------------
+
+- Nothing changed yet.
+
+
 1.0.6 (2015-12-04)
 ------------------
 
