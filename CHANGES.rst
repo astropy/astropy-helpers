@@ -1,7 +1,7 @@
 astropy-helpers Changelog
 =========================
 
-1.0.6 (unreleased)
+1.0.6 (2015-12-04)
 ------------------
 
 - Fixed bug where running ``./setup.py build_sphinx`` could return successfully
