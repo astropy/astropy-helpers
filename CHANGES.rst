@@ -41,7 +41,13 @@ astropy-helpers Changelog
   buffering until the doc build is complete. [#197]
 
 
-1.0.6 (unreleased)
+1.0.7 (unreleased)
+------------------
+
+- Nothing changed yet.
+
+
+1.0.6 (2015-12-04)
 ------------------
 
 - Fixed bug where running ``./setup.py build_sphinx`` could return successfully
