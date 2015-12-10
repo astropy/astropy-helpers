@@ -1,7 +1,7 @@
 astropy-helpers Changelog
 =========================
 
-1.1 (unreleased)
+1.1 (2015-12-10)
 ----------------
 
 - The original ``AstropyTest`` class in ``astropy_helpers``, which implements
