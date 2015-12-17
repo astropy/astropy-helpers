@@ -209,14 +209,21 @@ def generate_build_ext_command(packagename, release):
                                [opt for opt in cls._boolean_options
                                 if opt not in base_cls.boolean_options])
 
-            members = {
+            members = dict(cls.__dict__)
+            members.update({
                 'user_options': merge_options('user_options'),
                 'help_options': merge_options('help_options'),
                 'boolean_options': boolean_options,
                 'uses_cython': uses_cython,
-            }
+            })
 
-            return type(cls.__name__, (cls, base_cls,), members)
+            # Update the base class for the original build_ext command
+            build_ext.__bases__ = (base_cls, object)
+
+            # Create a new class for the existing class, but now with the
+            # appropriate base class depending on whether or not to use Cython.
+            # Ensure that object is one of the bases to make a new-style class.
+            return type(cls.__name__, (build_ext,), members)
 
         def __new__(cls, *args, **kwargs):
             # By the time the command is actually instantialized, the
@@ -226,8 +233,13 @@ def generate_build_ext_command(packagename, release):
             # instance of a build_ext command that uses that base class (right
             # now the options being Cython.Distutils.build_ext, or the stock
             # setuptools build_ext)
-            return super(build_ext, cls._final_class).__new__(
+            new_cls = super(build_ext, cls._final_class).__new__(
                     cls._final_class)
+
+            # Since the new cls is not a subclass of the original cls, we must
+            # manually call its __init__
+            new_cls.__init__(*args, **kwargs)
+            return new_cls
 
         def finalize_options(self):
             # Add a copy of the _compiler.so module as well, but only if there
