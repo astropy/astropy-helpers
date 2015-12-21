@@ -1,6 +1,13 @@
 astropy-helpers Changelog
 =========================
 
+1.1.1 (unreleased)
+------------------
+
+- Fixed crash in build with ``AttributeError: cython_create_listing``
+  with older versions of setuptools. [#209]
+
+
 1.1 (2015-12-10)
 ----------------
 
