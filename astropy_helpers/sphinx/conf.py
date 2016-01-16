@@ -10,12 +10,14 @@
 # serve to show the default.
 
 import os
+import sys
 import warnings
 
 from os import path
 
 import sphinx
 from distutils.version import LooseVersion
+
 
 
 # -- General configuration ----------------------------------------------------
@@ -42,14 +44,22 @@ def check_sphinx_version(expected_version):
 
 # Configuration for intersphinx: refer to the Python standard library.
 intersphinx_mapping = {
-    'python': ('http://docs.python.org/', None),
-    'python3': ('http://docs.python.org/3/', path.abspath(path.join(path.dirname(__file__), 'local/python3links.inv'))),
+    'python': ('http://docs.python.org/3/', None),
+    'pythonloc': ('http://docs.python.org/',
+                  path.abspath(path.join(path.dirname(__file__),
+                                         'local/python3_local_links.inv'))),
     'numpy': ('http://docs.scipy.org/doc/numpy/', None),
     'scipy': ('http://docs.scipy.org/doc/scipy/reference/', None),
     'matplotlib': ('http://matplotlib.org/', None),
     'astropy': ('http://docs.astropy.org/en/stable/', None),
-    'h5py': ('http://docs.h5py.org/en/latest/', None)
-    }
+    'h5py': ('http://docs.h5py.org/en/latest/', None)}
+
+if sys.version_info[0] == 2:
+    intersphinx_mapping['python'] = ('http://docs.python.org/2/', None)
+    intersphinx_mapping['pythonloc'] = (
+        'http://docs.python.org/',
+        path.abspath(path.join(path.dirname(__file__),
+                               'local/python2_local_links.inv')))
 
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
