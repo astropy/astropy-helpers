@@ -10,7 +10,10 @@ astropy-helpers Changelog
 1.1.3 (unreleased)
 ------------------
 
-- Nothing changed yet.
+- Added sphinx configuration value ``automodsumm_inherited_members``.
+  If ``True`` this will include members that are inherited from a base
+  class in the generated API docs. Defaults to ``False`` which matches
+  the previous behavior. [#215]
 
 
 1.1.2 (2016-03-9)
