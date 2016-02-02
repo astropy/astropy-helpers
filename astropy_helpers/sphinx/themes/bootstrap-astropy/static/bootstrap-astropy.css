@@ -234,6 +234,7 @@ div.topbar {
   background-image: -o-linear-gradient(top, #333333, #222222);
   background-image: linear-gradient(top, #333333, #222222);
   filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#333333', endColorstr='#222222', GradientType=0);
+  overflow: auto;
 }
 
 div.topbar a.brand {
