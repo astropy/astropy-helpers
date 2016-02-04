@@ -4,7 +4,8 @@ astropy-helpers Changelog
 1.1.2 (unreleased)
 ------------------
 
-- Nothing changed yet.
+- The CSS for the sphinx documentation was altered to prevent some text overflow
+  problems. [#217]
 
 
 1.1.1 (2015-12-23)
