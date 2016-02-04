@@ -234,6 +234,7 @@ div.topbar {
   background-image: -o-linear-gradient(top, #333333, #222222);
   background-image: linear-gradient(top, #333333, #222222);
   filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#333333', endColorstr='#222222', GradientType=0);
+  overflow: auto;
 }
 
 div.topbar a.brand {
@@ -415,6 +416,10 @@ div.sphinxsidebar {
     border-radius: 3px;
     background-color: #eee;
     border: 1px solid #bbb;
+    word-wrap: break-word;
+    /* overflow-wrap is the canonical name for word-wrap in the CSS3 text draft.
+    We include it here mainly for future-proofing. */
+    overflow-wrap: break-word;
 }
 
 div.sphinxsidebarwrapper {
