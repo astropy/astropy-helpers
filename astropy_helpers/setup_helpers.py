@@ -56,7 +56,7 @@ except ValueError as e:
     # and an occurrence of this bug: http://bugs.python.org/issue18378
     # In this case sphinx is effectively unusable
     if 'unknown locale' in e.args[0]:
-        log.warn(
+        log.warning(
             "Possible misconfiguration of one of the environment variables "
             "LC_ALL, LC_CTYPES, LANG, or LANGUAGE.  For an example of how to "
             "configure your system's language environment on OSX see "
@@ -594,7 +594,7 @@ def pkg_config(packages, default_libraries, executable='pkg-config'):
             "  returncode: {0}".format(e.returncode),
             "  output: {0}".format(e.output)
             ]
-        log.warn('\n'.join(lines))
+        log.warning('\n'.join(lines))
         result['libraries'].extend(default_libraries)
     else:
         if pipe.returncode != 0:
@@ -603,7 +603,7 @@ def pkg_config(packages, default_libraries, executable='pkg-config'):
                     ", ".join(packages)),
                 "This may cause the build to fail below."
                 ]
-            log.warn('\n'.join(lines))
+            log.warning('\n'.join(lines))
             result['libraries'].extend(default_libraries)
         else:
             for token in output.split():

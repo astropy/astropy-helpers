@@ -189,7 +189,7 @@ def _generate_git_header(packagename, version, githash):
     source = loader.get_source(git_helpers.__name__) or ''
     source_lines = source.splitlines()
     if not source_lines:
-        log.warn('Cannot get source code for astropy_helpers.git_helpers; '
+        log.warning('Cannot get source code for astropy_helpers.git_helpers; '
                  'git support disabled.')
         return ''
 
