@@ -9,6 +9,9 @@ astropy-helpers Changelog
   class in the generated API docs. Defaults to ``False`` which matches
   the previous behavior. [#215]
 
+- Add Python version dependent local sphinx inventories that contain
+  otherwise missing references. [#216]
+
 
 1.1.3 (unreleased)
 ------------------
