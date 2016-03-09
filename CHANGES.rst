@@ -1,8 +1,20 @@
 astropy-helpers Changelog
 =========================
 
-1.1.2 (unreleased)
+1.2 (unreleased)
+----------------
+
+- Nothing changed yet.
+
+
+1.1.3 (unreleased)
 ------------------
+
+- Nothing changed yet.
+
+
+1.1.2 (2016-03-9)
+-----------------
 
 - The CSS for the sphinx documentation was altered to prevent some text overflow
   problems. [#217]
@@ -11,8 +23,8 @@ astropy-helpers Changelog
 1.1.1 (2015-12-23)
 ------------------
 
-- Fixed crash in build with ``AttributeError: cython_create_listing``
-  with older versions of setuptools. [#209]
+- Fixed crash in build with ``AttributeError: cython_create_listing`` with
+  older versions of setuptools. [#209]
 
 
 1.1 (2015-12-10)
@@ -53,12 +65,6 @@ astropy-helpers Changelog
 - When running the ``build_sphinx`` / ``build_docs`` command with the ``-w``
   option, the output from Sphinx is streamed as it runs instead of silently
   buffering until the doc build is complete. [#197]
-
-
-1.0.7 (unreleased)
-------------------
-
-- Nothing changed yet.
 
 
 1.0.6 (2015-12-04)
