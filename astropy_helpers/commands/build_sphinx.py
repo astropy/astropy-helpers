@@ -177,14 +177,13 @@ class AstropyBuildSphinx(SphinxBuildDoc):
                                     stdout=subprocess.PIPE,
                                     stderr=subprocess.STDOUT)
 
+            retcode = 1
             with proc.stdout:
                 for line in iter(proc.stdout.readline, b''):
                     line = line.strip(b'\n')
                     print(line.decode('utf-8'))
-                    if 'build succeeded.' in str(line):
+                    if 'build succeeded.' == str(line):
                         retcode = 0
-                    else:
-                        retcode = 1
 
             # Poll to set proc.retcode
             proc.wait()
