@@ -1,7 +1,8 @@
 # -*- encoding:utf-8 -*-
 from __future__ import division, absolute_import, print_function
 
-import sys, textwrap
+import sys
+import textwrap
 
 from ..docscrape import NumpyDocString, FunctionDoc, ClassDoc
 from ..docscrape_sphinx import SphinxDocString, SphinxClassDoc
@@ -126,28 +127,33 @@ def test_signature():
     assert doc['Signature'].startswith('numpy.multivariate_normal(')
     assert doc['Signature'].endswith('spam=None)')
 
+
 def test_summary():
     assert doc['Summary'][0].startswith('Draw values')
     assert doc['Summary'][-1].endswith('covariance.')
 
+
 def test_extended_summary():
     assert doc['Extended Summary'][0].startswith('The multivariate normal')
 
+
 def test_parameters():
     assert len(doc['Parameters']) == 3
-    assert [n for n,_,_ in doc['Parameters']] == ['mean','cov','shape']
+    assert [n for n, _, _ in doc['Parameters']] == ['mean', 'cov', 'shape']
 
     arg, arg_type, desc = doc['Parameters'][1]
     assert arg_type == '(N, N) ndarray'
     assert desc[0].startswith('Covariance matrix')
     assert doc['Parameters'][0][-1][-2] == '   (1+2+3)/3'
 
+
 def test_other_parameters():
     assert len(doc['Other Parameters']) == 1
-    assert [n for n,_,_ in doc['Other Parameters']] == ['spam']
+    assert [n for n, _, _ in doc['Other Parameters']] == ['spam']
     arg, arg_type, desc = doc['Other Parameters'][0]
     assert arg_type == 'parrot'
     assert desc[0].startswith('A parrot off its mortal coil')
+
 
 def test_returns():
     assert len(doc['Returns']) == 2
@@ -163,34 +169,41 @@ def test_returns():
     assert desc[0].startswith('This is not a real')
     assert desc[-1].endswith('anonymous return values.')
 
+
 def test_notes():
     assert doc['Notes'][0].startswith('Instead')
     assert doc['Notes'][-1].endswith('definite.')
     assert len(doc['Notes']) == 17
 
+
 def test_references():
     assert doc['References'][0].startswith('..')
     assert doc['References'][-1].endswith('2001.')
 
+
 def test_examples():
     assert doc['Examples'][0].startswith('>>>')
     assert doc['Examples'][-1].endswith('True]')
+
 
 def test_index():
     assert doc['index']['default'] == 'random'
     assert len(doc['index']) == 2
     assert len(doc['index']['refguide']) == 2
 
-def non_blank_line_by_line_compare(a,b):
+
+def non_blank_line_by_line_compare(a, b):
     a = textwrap.dedent(a)
     b = textwrap.dedent(b)
     a = [l.rstrip() for l in a.split('\n') if l.strip()]
     b = [l.rstrip() for l in b.split('\n') if l.strip()]
-    for n,line in enumerate(a):
+    for n, line in enumerate(a):
         if not line == b[n]:
             raise AssertionError("Lines %s of a and b differ: "
                                  "\n>>> %s\n<<< %s\n" %
-                                 (n,line,b[n]))
+                                 (n, line, b[n]))
+
+
 def test_str():
     non_blank_line_by_line_compare(str(doc),
 """numpy.multivariate_normal(mean, cov, shape=None, spam=None)
@@ -437,6 +450,7 @@ doc2 = NumpyDocString("""
         If None, the index is into the flattened array, otherwise along
         the specified axis""")
 
+
 def test_parameters_without_extended_description():
     assert len(doc2['Parameters']) == 2
 
@@ -446,6 +460,7 @@ doc3 = NumpyDocString("""
     Return this and that.
     """)
 
+
 def test_escape_stars():
     signature = str(doc3).split('\n')[0]
     signature == 'my_signature(\*params, \*\*kwds)'
@@ -454,6 +469,7 @@ doc4 = NumpyDocString(
     """a.conj()
 
     Return an array with all complex-valued elements conjugated.""")
+
 
 def test_empty_extended_summary():
     assert doc4['Extended Summary'] == []
@@ -473,17 +489,20 @@ doc5 = NumpyDocString(
         If needed
     """)
 
+
 def test_raises():
     assert len(doc5['Raises']) == 1
-    name,_,desc = doc5['Raises'][0]
+    name, _, desc = doc5['Raises'][0]
     assert name == 'LinAlgException'
     assert desc == ['If array is singular.']
 
+
 def test_warns():
     assert len(doc5['Warns']) == 1
-    name,_,desc = doc5['Warns'][0]
+    name, _, desc = doc5['Warns'][0]
     assert name == 'SomeWarning'
     assert desc == ['If needed']
+
 
 def test_see_also():
     doc6 = NumpyDocString(
@@ -527,6 +546,7 @@ def test_see_also():
         elif func == 'class_j':
             assert desc == ['fubar', 'foobar']
 
+
 def test_see_also_print():
     class Dummy(object):
         """
@@ -550,6 +570,7 @@ doc7 = NumpyDocString("""
         Doc starts on second line.
 
         """)
+
 
 def test_empty_first_line():
     assert doc7['Summary'][0].startswith('Doc starts')
@@ -581,6 +602,7 @@ def test_unicode():
     assert isinstance(doc['Summary'][0], str)
     assert doc['Summary'][0] == 'öäöäöäöäöåååå'
 
+
 def test_plot_examples():
     cfg = dict(use_plots=True)
 
@@ -604,6 +626,7 @@ def test_plot_examples():
     """, config=cfg)
     assert str(doc).count('plot::') == 1, str(doc)
 
+
 def test_class_members():
 
     class Dummy(object):
@@ -611,12 +634,15 @@ def test_class_members():
         Dummy class.
 
         """
+
         def spam(self, a, b):
             """Spam\n\nSpam spam."""
             pass
+
         def ham(self, c, d):
             """Cheese\n\nNo cheese."""
             pass
+
         @property
         def spammity(self):
             """Spammity index"""
@@ -644,6 +670,7 @@ def test_class_members():
             assert '.. autosummary::' in str(doc), str(doc)
         else:
             assert 'Spammity index' in str(doc), str(doc)
+
 
 def test_duplicate_signature():
     # Duplicate function signatures occur e.g. in ufuncs, when the
@@ -688,6 +715,7 @@ class_doc_txt = """
     For usage examples, see `ode`.
 """
 
+
 def test_class_members_doc():
     doc = ClassDoc(None, class_doc_txt)
     non_blank_line_by_line_compare(str(doc),
@@ -723,6 +751,7 @@ def test_class_members_doc():
     .. index::
 
     """)
+
 
 def test_class_members_doc_sphinx():
     doc = SphinxClassDoc(None, class_doc_txt)

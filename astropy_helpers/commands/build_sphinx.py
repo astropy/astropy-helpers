@@ -35,19 +35,23 @@ class AstropyBuildSphinx(SphinxBuildDoc):
 
     description = 'Build Sphinx documentation for Astropy environment'
     user_options = SphinxBuildDoc.user_options[:]
-    user_options.append(('warnings-returncode', 'w',
-            'Parses the sphinx output and sets the return code to 1 if there '
-            'are any warnings. Note that this will cause the sphinx log to '
-            'only update when it completes, rather than continuously as is '
-            'normally the case.'))
-    user_options.append(('clean-docs', 'l',
-            'Completely clean previous builds, including '
-            'automodapi-generated files before building new ones'))
-    user_options.append(('no-intersphinx', 'n',
-            'Skip intersphinx, even if conf.py says to use it'))
-    user_options.append(('open-docs-in-browser', 'o',
-            'Open the docs in a browser (using the webbrowser module) if the '
-            'build finishes successfully.'))
+    user_options.append(
+        ('warnings-returncode', 'w',
+         'Parses the sphinx output and sets the return code to 1 if there '
+         'are any warnings. Note that this will cause the sphinx log to '
+         'only update when it completes, rather than continuously as is '
+         'normally the case.'))
+    user_options.append(
+        ('clean-docs', 'l',
+         'Completely clean previous builds, including '
+         'automodapi-generated files before building new ones'))
+    user_options.append(
+        ('no-intersphinx', 'n',
+         'Skip intersphinx, even if conf.py says to use it'))
+    user_options.append(
+        ('open-docs-in-browser', 'o',
+         'Open the docs in a browser (using the webbrowser module) if the '
+         'build finishes successfully.'))
 
     boolean_options = SphinxBuildDoc.boolean_options[:]
     boolean_options.append('warnings-returncode')
@@ -65,7 +69,7 @@ class AstropyBuildSphinx(SphinxBuildDoc):
         self.warnings_returncode = False
 
     def finalize_options(self):
-        #Clear out previous sphinx builds, if requested
+        # Clear out previous sphinx builds, if requested
         if self.clean_docs:
             dirstorm = [os.path.join(self.source_dir, 'api'),
                         os.path.join(self.source_dir, 'generated')]
@@ -163,7 +167,8 @@ class AstropyBuildSphinx(SphinxBuildDoc):
             # be used to override the conf.py ... but this could well break
             # if future versions of sphinx change the internals of BuildDoc,
             # so remain vigilant!
-            subproccode = subproccode.replace('confoverrides = {}',
+            subproccode = subproccode.replace(
+                'confoverrides = {}',
                 'confoverrides = {\'intersphinx_mapping\':{}}')
 
         log.debug('Starting subprocess of {0} with python code:\n{1}\n'
@@ -191,8 +196,8 @@ class AstropyBuildSphinx(SphinxBuildDoc):
 
             if retcode != 0:
                 if os.environ.get('TRAVIS', None) == 'true':
-                    #this means we are in the travis build, so customize
-                    #the message appropriately.
+                    # this means we are in the travis build, so customize
+                    # the message appropriately.
                     msg = ('The build_sphinx travis build FAILED '
                            'because sphinx issued documentation '
                            'warnings (scroll up to see the warnings).')
