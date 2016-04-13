@@ -135,7 +135,7 @@ extensions = [
 if on_rtd:
     extensions.append('sphinx.ext.mathjax')
 else:
-    extensions.append('sphinx.ext.pngmath')
+    extensions.append('sphinx.ext.imgmath')
 
 
 # Above, we use a patched version of viewcode rather than 'sphinx.ext.viewcode'
