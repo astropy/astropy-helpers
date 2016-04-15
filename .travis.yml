@@ -15,15 +15,13 @@ env:
     - PYTHON_VERSION=3.4
     - PYTHON_VERSION=3.5
   global:
-    - SETUPTOOLS_VERSION=stable
+    - SETUPTOOLS_VERSION='<20'
     - SPHINX_VERSION='<1.4'
     - CONDA_DEPENDENCIES="setuptools pytest sphinx cython numpy"
     - PIP_DEPENDENCIES="coveralls pytest-cov"
 
 matrix:
     include:
-        - os: linux
-          env: PYTHON_VERSION=2.7 SETUPTOOLS_VERSION='<20' DEBUG=True
         - os: linux
           env: PYTHON_VERSION=2.7 SETUPTOOLS_VERSION=dev DEBUG=True
                CONDA_DEPENDENCIES='pytest sphinx cython numpy'
