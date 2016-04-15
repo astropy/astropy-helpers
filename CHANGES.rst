@@ -13,7 +13,10 @@ astropy-helpers Changelog
 1.1.3 (unreleased)
 ------------------
 
-- Nothing changed yet.
+- Fixed ``build_sphinx`` to recognize builds that succeeded but have output
+  *after* the "build succeeded." statement. This only applies when
+  ``--warnings-returncode`` is  given (which is primarily relevant for Travis
+  documentation builds).  [#223]
 
 
 1.1.2 (2016-03-9)
