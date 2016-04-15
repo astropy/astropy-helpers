@@ -14,6 +14,9 @@ import warnings
 
 from os import path
 
+import sphinx
+from distutils.version import LooseVersion
+
 
 # -- General configuration ----------------------------------------------------
 
@@ -28,11 +31,8 @@ on_rtd = os.environ.get('READTHEDOCS', None) == 'True'
 
 
 def check_sphinx_version(expected_version):
-    import sphinx
-    from distutils import version
-
-    sphinx_version = version.LooseVersion(sphinx.__version__)
-    expected_version = version.LooseVersion(expected_version)
+    sphinx_version = LooseVersion(sphinx.__version__)
+    expected_version = LooseVersion(expected_version)
     if sphinx_version < expected_version:
         raise RuntimeError(
             "At least Sphinx version {0} is required to build this "
@@ -134,8 +134,10 @@ extensions = [
 
 if on_rtd:
     extensions.append('sphinx.ext.mathjax')
-else:
+elif LooseVersion(sphinx.__version__) < LooseVersion('1.4'):
     extensions.append('sphinx.ext.pngmath')
+else:
+    extensions.append('sphinx.ext.imgmath')
 
 
 # Above, we use a patched version of viewcode rather than 'sphinx.ext.viewcode'
