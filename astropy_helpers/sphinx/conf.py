@@ -129,6 +129,7 @@ extensions = [
     'sphinx.ext.todo',
     'sphinx.ext.coverage',
     'sphinx.ext.inheritance_diagram',
+    'sphinx.ext.viewcode',
     'astropy_helpers.sphinx.ext.numpydoc',
     'astropy_helpers.sphinx.ext.astropyautosummary',
     'astropy_helpers.sphinx.ext.autodoc_enhancements',
@@ -137,9 +138,7 @@ extensions = [
     'astropy_helpers.sphinx.ext.tocdepthfix',
     'astropy_helpers.sphinx.ext.doctest',
     'astropy_helpers.sphinx.ext.changelog_links',
-    'astropy_helpers.sphinx.ext.viewcode',  # Use patched version of viewcode
-    'astropy_helpers.sphinx.ext.smart_resolver'
-    ]
+    'astropy_helpers.sphinx.ext.smart_resolver']
 
 
 if on_rtd:
