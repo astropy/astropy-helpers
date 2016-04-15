@@ -182,7 +182,7 @@ class AstropyBuildSphinx(SphinxBuildDoc):
                 for line in iter(proc.stdout.readline, b''):
                     line = line.strip(b'\n')
                     print(line.decode('utf-8'))
-                    if 'build succeeded.' == str(line):
+                    if 'build succeeded.' == line.decode('utf-8'):
                         retcode = 0
 
             # Poll to set proc.retcode
