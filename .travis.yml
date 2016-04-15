@@ -22,6 +22,8 @@ env:
 matrix:
     include:
         - os: linux
+          env: PYTHON_VERSION=2.7 SETUPTOOLS_VERSION='<20' DEBUG=True
+        - os: linux
           env: PYTHON_VERSION=2.7 SETUPTOOLS_VERSION=dev
                CONDA_DEPENDENCIES="pytest sphinx cython numpy mercurial mock"
 
