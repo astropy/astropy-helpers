@@ -23,6 +23,23 @@ env:
 matrix:
     include:
         - os: linux
+          env: PYTHON_VERSION=2.7 SPHINX_VERSION=1.4
+        - os: linux
+          env: PYTHON_VERSION=2.7 SETUPTOOLS_VERSION=20
+        - os: linux
+          env: PYTHON_VERSION=2.7 SETUPTOOLS_VERSION=dev DEBUG=True
+               CONDA_DEPENDENCIES='pytest sphinx cython numpy'
+
+    allow_failures:
+        # Remove this once https://github.com/astropy/astropy-helpers/issues/224
+        # is solved and remove the version limitation
+        - os: linux
+          env: PYTHON_VERSION=2.7 SPHINX_VERSION=1.4
+        # Remove these once https://github.com/astropy/astropy-helpers/issues/222
+        # is solved, and set back the default version to 'stable'
+        - os: linux
+          env: PYTHON_VERSION=2.7 SETUPTOOLS_VERSION=20
+        - os: linux
           env: PYTHON_VERSION=2.7 SETUPTOOLS_VERSION=dev DEBUG=True
                CONDA_DEPENDENCIES='pytest sphinx cython numpy'
 
