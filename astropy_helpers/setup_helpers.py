@@ -269,9 +269,9 @@ def run_command_hooks(cmd_obj, hook_kind):
         if isinstance(hook, str):
             try:
                 hook_obj = resolve_name(hook)
-            except ImportError:
+            except ImportError as exc:
                 raise DistutilsModuleError(
-                    'cannot find hook {0}: {1}'.format(hook, err))
+                    'cannot find hook {0}: {1}'.format(hook, exc))
         else:
             hook_obj = hook
 
