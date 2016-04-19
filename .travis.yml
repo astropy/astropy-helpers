@@ -15,7 +15,7 @@ env:
     - PYTHON_VERSION=3.4
     - PYTHON_VERSION=3.5
   global:
-    - SETUPTOOLS_VERSION='<20'
+    - SETUPTOOLS_VERSION=stable
     - CONDA_DEPENDENCIES="setuptools pytest sphinx cython numpy"
     - PIP_DEPENDENCIES="coveralls pytest-cov"
 
@@ -28,10 +28,6 @@ matrix:
                CONDA_DEPENDENCIES='pytest sphinx cython numpy'
 
     allow_failures:
-        # Remove these once https://github.com/astropy/astropy-helpers/issues/222
-        # is solved, and set back the default version to 'stable'
-        - os: linux
-          env: PYTHON_VERSION=2.7 SETUPTOOLS_VERSION=20
         - os: linux
           env: PYTHON_VERSION=2.7 SETUPTOOLS_VERSION=dev DEBUG=True
                CONDA_DEPENDENCIES='pytest sphinx cython numpy'
