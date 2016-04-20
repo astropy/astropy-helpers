@@ -81,6 +81,12 @@ rst_epilog = """
 .. _Astropy: http://astropy.org
 """
 
+# A list of warning types to suppress arbitrary warning messages. We mean to
+# override directives in astropy_helpers.sphinx.ext.autodoc_enhancements,
+# thus need to ignore those warning. This can be removed once the patch gets
+# released in upstream Sphinx (https://github.com/sphinx-doc/sphinx/pull/1843).
+# Suppress the warnings requires Sphinx v1.4.2
+suppress_warnings = ['app.add_directive', ]
 
 # -- Project information ------------------------------------------------------
 
