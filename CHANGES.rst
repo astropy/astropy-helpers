@@ -18,6 +18,9 @@ astropy-helpers Changelog
   ``--warnings-returncode`` is  given (which is primarily relevant for Travis
   documentation builds).  [#223]
 
+- Fixed ``build_sphinx`` the sphinx extensions to not output a spurious warning
+  for sphinx versions > 1.4. [#229]
+
 
 1.1.2 (2016-03-9)
 -----------------
