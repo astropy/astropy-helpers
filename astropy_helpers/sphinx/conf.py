@@ -26,7 +26,7 @@ from distutils.version import LooseVersion
 # minor parts of the version number, not the micro.  To do a more
 # specific version check, call check_sphinx_version("x.y.z.") from
 # your project's conf.py
-needs_sphinx = '1.2'
+needs_sphinx = '1.3'
 
 
 on_rtd = os.environ.get('READTHEDOCS', None) == 'True'
