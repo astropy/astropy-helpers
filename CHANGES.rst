@@ -21,6 +21,9 @@ astropy-helpers Changelog
 - Fixed ``build_sphinx`` the sphinx extensions to not output a spurious warning
   for sphinx versions > 1.4. [#229]
 
+- Add Python version dependent local sphinx inventories that contain
+  otherwise missing references. [#216]
+
 
 1.1.2 (2016-03-9)
 -----------------
