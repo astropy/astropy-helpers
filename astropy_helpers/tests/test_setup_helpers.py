@@ -16,14 +16,14 @@ def _extension_test_package(tmpdir, request, extension_type='c'):
     """Creates a simple test package with an extension module."""
 
     test_pkg = tmpdir.mkdir('test_pkg')
-    test_pkg.mkdir('_eva_').ensure('__init__.py')
+    test_pkg.mkdir('apyhtest_eva').ensure('__init__.py')
 
     # TODO: It might be later worth making this particular test package into a
     # reusable fixture for other build_ext tests
 
     if extension_type in ('c', 'both'):
         # A minimal C extension for testing
-        test_pkg.join('_eva_', 'unit01.c').write(dedent("""\
+        test_pkg.join('apyhtest_eva', 'unit01.c').write(dedent("""\
             #include <Python.h>
             #ifndef PY3K
             #if PY_MAJOR_VERSION >= 3
@@ -55,7 +55,7 @@ def _extension_test_package(tmpdir, request, extension_type='c'):
 
     if extension_type in ('pyx', 'both'):
         # A minimal Cython extension for testing
-        test_pkg.join('_eva_', 'unit02.pyx').write(dedent("""\
+        test_pkg.join('apyhtest_eva', 'unit02.pyx').write(dedent("""\
             print("Hello cruel angel.")
         """))
 
@@ -67,11 +67,11 @@ def _extension_test_package(tmpdir, request, extension_type='c'):
         extensions = ['unit01.c', 'unit02.pyx']
 
     extensions_list = [
-        "Extension('_eva_.{0}', [join('_eva_', '{1}')])".format(
+        "Extension('apyhtest_eva.{0}', [join('apyhtest_eva', '{1}')])".format(
             os.path.splitext(extension)[0], extension)
         for extension in extensions]
 
-    test_pkg.join('_eva_', 'setup_package.py').write(dedent("""\
+    test_pkg.join('apyhtest_eva', 'setup_package.py').write(dedent("""\
         from setuptools import Extension
         from os.path import join
         def get_extensions():
@@ -85,7 +85,7 @@ def _extension_test_package(tmpdir, request, extension_type='c'):
         from astropy_helpers.setup_helpers import get_package_info
         from astropy_helpers.version_helpers import generate_version_py
 
-        NAME = '_eva_'
+        NAME = 'apyhtest_eva'
         VERSION = '0.1'
         RELEASE = True
 
@@ -107,7 +107,7 @@ def _extension_test_package(tmpdir, request, extension_type='c'):
     sys.path.insert(0, '')
 
     def finalize():
-        cleanup_import('_eva_')
+        cleanup_import('apyhtest_eva')
 
     request.addfinalizer(finalize)
 
@@ -172,15 +172,15 @@ def test_compiler_module(c_extension_test_package):
                    '--record={0}'.format(install_temp.join('record.txt'))])
 
     with install_temp.as_cwd():
-        import _eva_
-        # Make sure we imported the _eva_ package from the correct place
-        dirname = os.path.abspath(os.path.dirname(_eva_.__file__))
-        assert dirname == str(install_temp.join('_eva_'))
+        import apyhtest_eva
+        # Make sure we imported the apyhtest_eva package from the correct place
+        dirname = os.path.abspath(os.path.dirname(apyhtest_eva.__file__))
+        assert dirname == str(install_temp.join('apyhtest_eva'))
 
-        import _eva_._compiler
-        import _eva_.version
-        assert _eva_.version.compiler == _eva_._compiler.compiler
-        assert _eva_.version.compiler != 'unknown'
+        import apyhtest_eva._compiler
+        import apyhtest_eva.version
+        assert apyhtest_eva.version.compiler == apyhtest_eva._compiler.compiler
+        assert apyhtest_eva.version.compiler != 'unknown'
 
 
 def test_no_cython_buildext(c_extension_test_package, monkeypatch):
@@ -205,9 +205,9 @@ def test_no_cython_buildext(c_extension_test_package, monkeypatch):
     sys.path.insert(0, str(test_pkg))
 
     try:
-        import _eva_.unit01
-        dirname = os.path.abspath(os.path.dirname(_eva_.unit01.__file__))
-        assert dirname == str(test_pkg.join('_eva_'))
+        import apyhtest_eva.unit01
+        dirname = os.path.abspath(os.path.dirname(apyhtest_eva.unit01.__file__))
+        assert dirname == str(test_pkg.join('apyhtest_eva'))
     finally:
         sys.path.remove(str(test_pkg))
 
@@ -232,7 +232,7 @@ def test_missing_cython_c_files(pyx_extension_test_package, monkeypatch):
             run_setup('setup.py', ['build_ext', '--inplace'])
 
     msg = ('Could not find C/C++ file '
-           '{0}.(c/cpp)'.format('_eva_/unit02'.replace('/', os.sep)))
+           '{0}.(c/cpp)'.format('apyhtest_eva/unit02'.replace('/', os.sep)))
 
     assert msg in str(exc_info.value)
 

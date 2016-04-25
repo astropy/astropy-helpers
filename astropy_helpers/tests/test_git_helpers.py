@@ -25,7 +25,7 @@ TEST_VERSION_SETUP_PY = """\
 
 from setuptools import setup
 
-NAME = '_eva_'
+NAME = 'apyhtest_eva'
 VERSION = {version!r}
 RELEASE = 'dev' not in VERSION
 
@@ -37,7 +37,7 @@ if not RELEASE:
 
 generate_version_py(NAME, VERSION, RELEASE, False, uses_git=not RELEASE)
 
-setup(name=NAME, version=VERSION, packages=['_eva_'])
+setup(name=NAME, version=VERSION, packages=['apyhtest_eva'])
 """
 
 
@@ -56,7 +56,7 @@ def version_test_package(tmpdir, request):
         test_package = tmpdir.mkdir('test_package')
         test_package.join('setup.py').write(
             TEST_VERSION_SETUP_PY.format(version=version))
-        test_package.mkdir('_eva_').join('__init__.py').write(TEST_VERSION_INIT)
+        test_package.mkdir('apyhtest_eva').join('__init__.py').write(TEST_VERSION_INIT)
         with test_package.as_cwd():
             run_cmd('git', ['init'])
             run_cmd('git', ['add', '--all'])
@@ -68,7 +68,7 @@ def version_test_package(tmpdir, request):
         sys.path.insert(0, '')
 
         def finalize():
-            cleanup_import('_eva_')
+            cleanup_import('apyhtest_eva')
 
         request.addfinalizer(finalize)
 
@@ -97,8 +97,8 @@ def test_update_git_devstr(version_test_package, capsys):
             "\n\n{0}\n\nStderr:\n\n{1}".format(stdout, stderr))
         revcount = int(m.group(1))
 
-        import _eva_
-        assert _eva_.__version__ == version
+        import apyhtest_eva
+        assert apyhtest_eva.__version__ == version
 
         # Make a silly git commit
         with open('.test', 'w'):
@@ -107,14 +107,14 @@ def test_update_git_devstr(version_test_package, capsys):
         run_cmd('git', ['add', '.test'])
         run_cmd('git', ['commit', '-m', 'test'])
 
-        import _eva_.version
-        imp.reload(_eva_.version)
+        import apyhtest_eva.version
+        imp.reload(apyhtest_eva.version)
 
     # Previously this checked packagename.__version__, but in order for that to
     # be updated we also have to re-import _astropy_init which could be tricky.
     # Checking directly that the packagename.version module was updated is
     # sufficient:
-    m = _DEV_VERSION_RE.match(_eva_.version.version)
+    m = _DEV_VERSION_RE.match(apyhtest_eva.version.version)
     assert m
     assert int(m.group(1)) == revcount + 1
 
@@ -126,7 +126,7 @@ def test_update_git_devstr(version_test_package, capsys):
     from astropy_helpers.git_helpers import update_git_devstr
 
     newversion = update_git_devstr(version, path=str(test_pkg))
-    assert newversion == _eva_.version.version
+    assert newversion == apyhtest_eva.version.version
 
 
 def test_version_update_in_other_repos(version_test_package, tmpdir):
@@ -143,8 +143,8 @@ def test_version_update_in_other_repos(version_test_package, tmpdir):
     # Add the path to the test package to sys.path for now
     sys.path.insert(0, str(test_pkg))
     try:
-        import _eva_
-        m = _DEV_VERSION_RE.match(_eva_.__version__)
+        import apyhtest_eva
+        m = _DEV_VERSION_RE.match(apyhtest_eva.__version__)
         assert m
         correct_revcount = int(m.group(1))
 
@@ -154,23 +154,23 @@ def test_version_update_in_other_repos(version_test_package, tmpdir):
             # Create an empty git repo
             run_cmd('git', ['init'])
 
-            import _eva_.version
-            imp.reload(_eva_.version)
-            m = _DEV_VERSION_RE.match(_eva_.version.version)
+            import apyhtest_eva.version
+            imp.reload(apyhtest_eva.version)
+            m = _DEV_VERSION_RE.match(apyhtest_eva.version.version)
             assert m
             assert int(m.group(1)) == correct_revcount
             correct_revcount = int(m.group(1))
 
-            # Add several commits--more than the revcount for the _eva_ package
+            # Add several commits--more than the revcount for the apyhtest_eva package
             for idx in range(correct_revcount + 5):
                 test_filename = '.test' + str(idx)
                 testrepo.ensure(test_filename)
                 run_cmd('git', ['add', test_filename])
                 run_cmd('git', ['commit', '-m', 'A message'])
 
-            import _eva_.version
-            imp.reload(_eva_.version)
-            m = _DEV_VERSION_RE.match(_eva_.version.version)
+            import apyhtest_eva.version
+            imp.reload(apyhtest_eva.version)
+            m = _DEV_VERSION_RE.match(apyhtest_eva.version.version)
             assert m
             assert int(m.group(1)) == correct_revcount
             correct_revcount = int(m.group(1))
@@ -197,14 +197,14 @@ def test_installed_git_version(version_test_package, version, tmpdir, capsys):
         run_setup('setup.py', ['build'])
 
         try:
-            import _eva_
-            githash = _eva_.__githash__
+            import apyhtest_eva
+            githash = apyhtest_eva.__githash__
             assert githash and isinstance(githash, _text_type)
             # Ensure that it does in fact look like a git hash and not some
             # other arbitrary string
             assert re.match(r'[0-9a-f]{40}', githash)
         finally:
-            cleanup_import('_eva_')
+            cleanup_import('apyhtest_eva')
 
         run_setup('setup.py', ['sdist', '--dist-dir=dist', '--formats=gztar'])
 
@@ -218,13 +218,13 @@ def test_installed_git_version(version_test_package, version, tmpdir, capsys):
     tf.extractall(str(build_dir))
 
     with build_dir.as_cwd():
-        pkg_dir = glob.glob('_eva_-*')[0]
+        pkg_dir = glob.glob('apyhtest_eva-*')[0]
         os.chdir(pkg_dir)
         run_setup('setup.py', ['build'])
 
         try:
-            import _eva_
-            loader = pkgutil.get_loader('_eva_')
+            import apyhtest_eva
+            loader = pkgutil.get_loader('apyhtest_eva')
             # Ensure we are importing the 'packagename' that was just unpacked
             # into the build_dir
             if sys.version_info[:2] != (3, 3):
@@ -232,6 +232,6 @@ def test_installed_git_version(version_test_package, version, tmpdir, capsys):
                 # has a bug where get_filename() does not return an absolute
                 # path
                 assert loader.get_filename().startswith(str(build_dir))
-            assert _eva_.__githash__ == githash
+            assert apyhtest_eva.__githash__ == githash
         finally:
-            cleanup_import('_eva_')
+            cleanup_import('apyhtest_eva')
