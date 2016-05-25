@@ -67,7 +67,8 @@ class AstropyBuildSphinx(SphinxBuildDoc):
     def finalize_options(self):
         #Clear out previous sphinx builds, if requested
         if self.clean_docs:
-            dirstorm = [os.path.join(self.source_dir, 'api')]
+            dirstorm = [os.path.join(self.source_dir, 'api'),
+                        os.path.join(self.source_dir, 'generated')]
             if self.build_dir is None:
                 dirstorm.append('docs/_build')
             else:
