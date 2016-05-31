@@ -13,3 +13,4 @@ dict.itervalues py:method -1 2/library/stdtypes.html#dict.itervalues -
 urllib2.urlopen py:function -1 2/library/urllib2.html#urllib2.urlopen -
 # python3
 print() py:function -1 3/library/functions.html#print -
+collections.Mapping py:class -1 3/library/collections.abc.html#collections.abc.Mapping -
