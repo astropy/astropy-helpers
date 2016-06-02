@@ -9,10 +9,6 @@ astropy-helpers Changelog
   class in the generated API docs. Defaults to ``False`` which matches
   the previous behavior. [#215]
 
-
-1.1.3 (unreleased)
-------------------
-
 - Fixed ``build_sphinx`` to recognize builds that succeeded but have output
   *after* the "build succeeded." statement. This only applies when
   ``--warnings-returncode`` is  given (which is primarily relevant for Travis
@@ -23,7 +19,6 @@ astropy-helpers Changelog
 
 - Add Python version dependent local sphinx inventories that contain
   otherwise missing references. [#216]
-
 
 1.1.2 (2016-03-9)
 -----------------
