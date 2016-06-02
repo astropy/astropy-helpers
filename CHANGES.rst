@@ -25,13 +25,6 @@ astropy-helpers Changelog
 1.0.4 (2015-10-02)
 ------------------
 
-- Fixed a crash in ``ah_bootstrap.py`` when astropy-helpers can't be downloaded
-  due to use off the ``--offline`` option, and a local copy is not available.
-
-- Improved support for py.test >= 2.7--running the ``./setup.py test`` command
-  now copies all doc pages into the temporary test directory as well, so that
-  all test files have a "common root directory". [#189]
-
 - Fixed issue with the sphinx documentation css where the line numbers for code
   blocks were not aligned with the code. [#179]
 
@@ -45,6 +38,10 @@ astropy-helpers Changelog
 
 - Quieted warnings about deprecated Numpy API in Cython extensions, when
   building Cython extensions against Numpy >= 1.7. [#183]
+
+- Improved support for py.test >= 2.7--running the ``./setup.py test`` command
+  now copies all doc pages into the temporary test directory as well, so that
+  all test files have a "common root directory". [#189]
 
 
 1.0.3 (2015-07-22)
@@ -89,22 +86,10 @@ astropy-helpers Changelog
   and to return more info.  This will help fix builds of Astropy on less
   common compilers, like Sun C. [#153]
 
-
 1.0.1 (2015-03-04)
 ------------------
 
 - Released in concert with v0.4.8 to address the same issues.
-
-- Improved the ``ah_bootstrap`` script's ability to override existing
-  installations of astropy-helpers with new versions in the context of
-  installing multiple packages simultaneously within the same Python
-  interpreter (e.g. when one package has in its ``setup_requires`` another
-  package that uses a different version of astropy-helpers. [#144]
-
-- Added a workaround to an issue in matplotlib that can, in rare cases, lead
-  to a crash when installing packages that import matplotlib at build time.
-  [#144]
-
 
 0.4.8 (2015-03-04)
 ------------------
@@ -118,7 +103,6 @@ astropy-helpers Changelog
 - Added a workaround to an issue in matplotlib that can, in rare cases, lead
   to a crash when installing packages that import matplotlib at build time.
   [#144]
-
 
 1.0 (2015-02-17)
 ----------------
