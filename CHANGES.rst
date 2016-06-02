@@ -73,6 +73,10 @@ astropy-helpers Changelog
   option, the output from Sphinx is streamed as it runs instead of silently
   buffering until the doc build is complete. [#197]
 
+1.0.7 (unreleased)
+------------------
+
+- Fix missing import in ``astropy_helpers/utils.py``. [#196]
 
 1.0.6 (2015-12-04)
 ------------------
