@@ -158,22 +158,10 @@ astropy-helpers Changelog
   and to return more info.  This will help fix builds of Astropy on less
   common compilers, like Sun C. [#153]
 
-
 1.0.1 (2015-03-04)
 ------------------
 
 - Released in concert with v0.4.8 to address the same issues.
-
-- Improved the ``ah_bootstrap`` script's ability to override existing
-  installations of astropy-helpers with new versions in the context of
-  installing multiple packages simultaneously within the same Python
-  interpreter (e.g. when one package has in its ``setup_requires`` another
-  package that uses a different version of astropy-helpers. [#144]
-
-- Added a workaround to an issue in matplotlib that can, in rare cases, lead
-  to a crash when installing packages that import matplotlib at build time.
-  [#144]
-
 
 0.4.8 (2015-03-04)
 ------------------
