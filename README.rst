@@ -25,8 +25,8 @@ For examples of how to implement ``astropy-helpers`` in a project,
 see the ``setup.py`` and ``setup.cfg`` files of the 
 `Affiliated package template <https://github.com/astropy/package-template>`_.
 
-.. image:: https://travis-ci.org/astropy/astropy-helpers.png
+.. image:: https://travis-ci.org/astropy/astropy-helpers.svg
     :target: https://travis-ci.org/astropy/astropy-helpers
 
-.. image:: https://coveralls.io/repos/astropy/astropy-helpers/badge.png
+.. image:: https://coveralls.io/repos/astropy/astropy-helpers/badge.svg
     :target: https://coveralls.io/r/astropy/astropy-helpers
