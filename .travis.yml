@@ -9,7 +9,6 @@ os:
 
 env:
   matrix:
-    - PYTHON_VERSION=2.6
     - PYTHON_VERSION=2.7
     - PYTHON_VERSION=3.3
     - PYTHON_VERSION=3.4
@@ -20,8 +19,10 @@ env:
 
 matrix:
     include:
+
         - os: linux
           env: PYTHON_VERSION=2.7 SETUPTOOLS_VERSION=20
+
         - os: linux
           env: PYTHON_VERSION=2.7 SETUPTOOLS_VERSION=dev DEBUG=True
                CONDA_DEPENDENCIES='pytest sphinx cython numpy'
