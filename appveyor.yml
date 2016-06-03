@@ -10,7 +10,10 @@ environment:
       PYTHON_ARCH: "64" # needs to be set for CMD_IN_ENV to succeed. If a mix
                         # of 32 bit and 64 bit builds are needed, move this
                         # to the matrix section.
-      CONDA_DEPENDENCIES: "numpy Cython sphinx pytest"
+
+      # babel 2.0 is known to break on Windows:
+      # https://github.com/python-babel/babel/issues/174
+      CONDA_DEPENDENCIES: "numpy Cython sphinx pytest babel!=2.0"
 
   matrix:
       - PYTHON_VERSION: "2.7"
