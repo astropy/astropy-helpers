@@ -33,8 +33,10 @@ install:
     - git config --global user.name "A U Thor"
     - git config --global user.email "author@example.com"
 
-    # Install graphviz
-    - cinst graphviz.portable
+    # For now we skip the installation of the graphviz package because the
+    # graphviz.org website seems to be unresponsive intermittently, which
+    # causes timeouts in downloads.
+    # - cinst graphviz.portable
 
 # Not a .NET project, we build SunPy in the install step instead
 build: false
