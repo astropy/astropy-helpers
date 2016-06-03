@@ -113,9 +113,9 @@ class AstropyTest(Command, object):
         cmd_post = ''  # Commands to run after the test function
 
         if self.coverage:
-           pre, post = self._generate_coverage_commands()
-           cmd_pre += pre
-           cmd_post += post
+            pre, post = self._generate_coverage_commands()
+            cmd_pre += pre
+            cmd_post += post
 
         def get_attr(arg):
             attr = self._test_runner_arg_attr_map.get(arg, arg)

@@ -21,7 +21,6 @@ except ImportError:
     import_machinery = None
 
 
-
 # Python 3.3's importlib caches filesystem reads for faster imports in the
 # general case. But sometimes it's necessary to manually invalidate those
 # caches so that the import system can pick up new generated files.  See

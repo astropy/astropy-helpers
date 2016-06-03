@@ -60,6 +60,8 @@ def should_build_with_cython(package, release=None):
 
 
 _compiler_versions = {}
+
+
 def get_compiler_version(compiler):
     if compiler in _compiler_versions:
         return _compiler_versions[compiler]
@@ -123,7 +125,6 @@ def generate_build_ext_command(packagename, release):
         _help_options = SetuptoolsBuildExt.help_options[:]
 
         force_rebuild = False
-
 
         _broken_compiler_mapping = [
             ('i686-apple-darwin[0-9]*-llvm-gcc-4.2', 'clang')
@@ -437,7 +438,6 @@ def generate_build_ext_command(packagename, release):
                 pyxfn = base + '.pyx'
                 cfn = base + '.c'
                 cppfn = base + '.cpp'
-
 
                 if not os.path.isfile(pyxfn):
                     continue

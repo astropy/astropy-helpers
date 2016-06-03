@@ -73,7 +73,7 @@ def import_object(modname, name):
 
 
 def get_url_base(app):
-    return  'http://github.com/%s/tree/%s/' % (
+    return 'http://github.com/%s/tree/%s/' % (
         app.config.edit_on_github_project,
         app.config.edit_on_github_branch)
 
@@ -132,7 +132,7 @@ def doctree_read(app, doctree):
 
 def html_page_context(app, pagename, templatename, context, doctree):
     if (templatename == 'page.html' and
-        not re.match(app.config.edit_on_github_skip_regex, pagename)):
+            not re.match(app.config.edit_on_github_skip_regex, pagename)):
 
         doc_root = app.config.edit_on_github_doc_root
         if doc_root != '' and not doc_root.endswith('/'):

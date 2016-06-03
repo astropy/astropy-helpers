@@ -54,7 +54,7 @@ def update_git_devstr(version, path=None):
 
         return version_base + '.dev' + devstr
     else:
-        #otherwise it's already the true/release version
+        # otherwise it's already the true/release version
         return version
 
 

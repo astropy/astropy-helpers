@@ -9,10 +9,8 @@ from __future__ import absolute_import, print_function
 import collections
 import os
 import re
-import shutil
 import subprocess
 import sys
-import textwrap
 import traceback
 import warnings
 
@@ -27,7 +25,7 @@ from setuptools import find_packages as _find_packages
 
 from .distutils_helpers import *
 from .version_helpers import get_pkg_version_module
-from .utils import (silence, walk_skip_hidden, import_file, extends_doc,
+from .utils import (walk_skip_hidden, import_file, extends_doc,
                     resolve_name, AstropyDeprecationWarning)
 
 from .commands.build_ext import generate_build_ext_command
@@ -227,8 +225,6 @@ def add_command_hooks(commands, srcdir='.'):
             hook_type = match.group(1)
             cmd_name = match.group(2)
 
-            cmd_cls = dist.get_command_class(cmd_name)
-
             if hook_type not in hooks[cmd_name]:
                 hooks[cmd_name][hook_type] = []
 
@@ -236,7 +232,7 @@ def add_command_hooks(commands, srcdir='.'):
 
     for cmd_name, cmd_hooks in hooks.items():
         commands[cmd_name] = generate_hooked_command(
-                cmd_name, dist.get_command_class(cmd_name), cmd_hooks)
+            cmd_name, dist.get_command_class(cmd_name), cmd_hooks)
 
 
 def generate_hooked_command(cmd_name, cmd_cls, hooks):
@@ -275,7 +271,7 @@ def run_command_hooks(cmd_obj, hook_kind):
                 hook_obj = resolve_name(hook)
             except ImportError as exc:
                 raise DistutilsModuleError(
-                        'cannot find hook {0}: {1}'.format(hook, err))
+                    'cannot find hook {0}: {1}'.format(hook, exc))
         else:
             hook_obj = hook
 
@@ -285,9 +281,9 @@ def run_command_hooks(cmd_obj, hook_kind):
         log.info('running {0} from {1} for {2} command'.format(
                  hook_kind.rstrip('s'), modname, cmd_obj.get_command_name()))
 
-        try :
+        try:
             hook_obj(cmd_obj)
-        except Exception as exc:
+        except Exception:
             log.error('{0} command hook {1} raised an exception: %s\n'.format(
                 hook_obj.__name__, cmd_obj.get_command_name()))
             log.error(traceback.format_exc())
@@ -589,7 +585,8 @@ def pkg_config(packages, default_libraries, executable='pkg-config'):
         output = pipe.communicate()[0].strip()
     except subprocess.CalledProcessError as e:
         lines = [
-            "{0} failed.  This may cause the build to fail below.".format(executable),
+            ("{0} failed. This may cause the build to fail below."
+             .format(executable)),
             "  command: {0}".format(e.cmd),
             "  returncode: {0}".format(e.returncode),
             "  output: {0}".format(e.output)
@@ -705,30 +702,29 @@ class FakeBuildSphinx(Command):
     installed and displays a relevant error message
     """
 
-    #user options inherited from sphinx.setup_command.BuildDoc
+    # user options inherited from sphinx.setup_command.BuildDoc
     user_options = [
-         ('fresh-env', 'E', '' ),
-         ('all-files', 'a', ''),
-         ('source-dir=', 's', ''),
-         ('build-dir=', None, ''),
-         ('config-dir=', 'c', ''),
-         ('builder=', 'b', ''),
-         ('project=', None, ''),
-         ('version=', None, ''),
-         ('release=', None, ''),
-         ('today=', None, ''),
-         ('link-index', 'i', ''),
-     ]
+        ('fresh-env', 'E', ''),
+        ('all-files', 'a', ''),
+        ('source-dir=', 's', ''),
+        ('build-dir=', None, ''),
+        ('config-dir=', 'c', ''),
+        ('builder=', 'b', ''),
+        ('project=', None, ''),
+        ('version=', None, ''),
+        ('release=', None, ''),
+        ('today=', None, ''),
+        ('link-index', 'i', '')]
 
-    #user options appended in astropy.setup_helpers.AstropyBuildSphinx
-    user_options.append(('warnings-returncode', 'w',''))
+    # user options appended in astropy.setup_helpers.AstropyBuildSphinx
+    user_options.append(('warnings-returncode', 'w', ''))
     user_options.append(('clean-docs', 'l', ''))
     user_options.append(('no-intersphinx', 'n', ''))
-    user_options.append(('open-docs-in-browser', 'o',''))
+    user_options.append(('open-docs-in-browser', 'o', ''))
 
     def initialize_options(self):
         try:
             raise RuntimeError("Sphinx must be installed for build_sphinx")
         except:
-            log.error('error : Sphinx must be installed for build_sphinx')
+            log.error('error: Sphinx must be installed for build_sphinx')
             sys.exit(1)

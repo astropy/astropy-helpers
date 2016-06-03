@@ -37,7 +37,6 @@ from .utils import invalidate_caches
 PY3 = sys.version_info[0] == 3
 
 
-
 def _version_split(version):
     """
     Split a version string into major, minor, and bugfix numbers.  If any of
@@ -255,7 +254,7 @@ def generate_version_py(packagename, version, release=None, debug=None,
     version_py = os.path.join(packagename, 'version.py')
 
     if (last_generated_version != version or current_release != release or
-        current_debug != debug):
+            current_debug != debug):
         if '-q' not in sys.argv and '--quiet' not in sys.argv:
             log.set_threshold(log.INFO)
 

@@ -20,6 +20,8 @@ astropy-helpers Changelog
 - Add Python version dependent local sphinx inventories that contain
   otherwise missing references. [#216]
 
+- ``astropy_helpers`` now require Sphinx 1.3 or later. [#226]
+
 1.1.2 (2016-03-9)
 -----------------
 
