@@ -1,7 +1,7 @@
 astropy-helpers Changelog
 =========================
 
-1.0.7 (2016-06-08)
+1.0.7 (2016-06-09)
 ------------------
 
 - Fix missing import in ``astropy_helpers/utils.py``. [#196]
