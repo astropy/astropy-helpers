@@ -8,6 +8,7 @@ import shutil
 import subprocess
 import sys
 import textwrap
+import warnings
 
 from distutils import log
 from distutils.cmd import DistutilsOptionError
@@ -15,15 +16,15 @@ from distutils.cmd import DistutilsOptionError
 import sphinx
 from sphinx.setup_command import BuildDoc as SphinxBuildDoc
 
-from ..utils import minversion
+from ..utils import minversion, AstropyDeprecationWarning
 
 
 PY3 = sys.version_info[0] >= 3
 
 
-class AstropyBuildSphinx(SphinxBuildDoc):
+class AstropyBuildDocs(SphinxBuildDoc):
     """
-    A version of the ``build_sphinx`` command that uses the version of Astropy
+    A version of the ``build_docs`` command that uses the version of Astropy
     that is built by the setup ``build`` command, rather than whatever is
     installed on the system.  To build docs against the installed version, run
     ``make html`` in the ``astropy/docs`` directory.
@@ -112,7 +113,7 @@ class AstropyBuildSphinx(SphinxBuildDoc):
             staticdir = os.path.join(basedir, '_static')
             if os.path.isfile(staticdir):
                 raise DistutilsOptionError(
-                    'Attempted to build_sphinx in a location where' +
+                    'Attempted to build_docs in a location where' +
                     staticdir + 'is a file.  Must be a directory.')
             self.mkpath(staticdir)
 
@@ -198,11 +199,11 @@ class AstropyBuildSphinx(SphinxBuildDoc):
                 if os.environ.get('TRAVIS', None) == 'true':
                     # this means we are in the travis build, so customize
                     # the message appropriately.
-                    msg = ('The build_sphinx travis build FAILED '
+                    msg = ('The build_docs travis build FAILED '
                            'because sphinx issued documentation '
                            'warnings (scroll up to see the warnings).')
                 else:  # standard failure message
-                    msg = ('build_sphinx returning a non-zero exit '
+                    msg = ('build_docs returning a non-zero exit '
                            'code because sphinx issued documentation '
                            'warnings.')
                 log.warn(msg)
@@ -234,5 +235,11 @@ class AstropyBuildSphinx(SphinxBuildDoc):
             sys.exit(retcode)
 
 
-class AstropyBuildDocs(AstropyBuildSphinx):
-    description = 'alias to the build_sphinx command'
+class AstropyBuildSphinx(AstropyBuildDocs):
+    description = 'deprecated alias to the build_docs command'
+
+    def run(self):
+        warnings.warn(
+            'The "build_sphinx" command is now deprecated. Use'
+            '"build_docs" instead.', AstropyDeprecationWarning)
+        super(AstropyBuildSphinx, self).run()
