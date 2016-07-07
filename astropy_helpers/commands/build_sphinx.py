@@ -235,7 +235,7 @@ class AstropyBuildDocs(SphinxBuildDoc):
             sys.exit(retcode)
 
 
-class AstropyBuildSphinx(AstropyBuildDocs):
+class AstropyBuildSphinx(AstropyBuildDocs): # pragma: no cover
     description = 'deprecated alias to the build_docs command'
 
     def run(self):
