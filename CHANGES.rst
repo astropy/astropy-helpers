@@ -22,6 +22,9 @@ astropy-helpers Changelog
 
 - ``astropy_helpers`` now require Sphinx 1.3 or later. [#226]
 
+- ``build_sphinx`` has been deprecated in favor of the ``build_docs`` command.
+  [246]
+
 1.1.2 (2016-03-9)
 -----------------
 
