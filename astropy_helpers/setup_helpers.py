@@ -324,7 +324,7 @@ def update_package_files(srcdir, extensions, package_data, packagenames,
 def get_package_info(srcdir='.', exclude=()):
     """
     Collates all of the information for building all subpackages
-    subpackages and returns a dictionary of keyword arguments that can
+    and returns a dictionary of keyword arguments that can
     be passed directly to `distutils.setup`.
 
     The purpose of this function is to allow subpackages to update the
@@ -372,6 +372,10 @@ def get_package_info(srcdir='.', exclude=()):
 
     # Use the find_packages tool to locate all packages and modules
     packages = filter_packages(find_packages(srcdir, exclude=exclude))
+
+    # Update package_dir if the package lies in a subdirectory
+    if srcdir != '.':
+        package_dir[''] = srcdir
 
     # For each of the setup_package.py modules, extract any
     # information that is needed to install them.  The build options
