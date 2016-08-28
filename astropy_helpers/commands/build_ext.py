@@ -255,12 +255,14 @@ def generate_build_ext_command(packagename, release):
 
             extensions = self.distribution.ext_modules
             if extensions:
+                build_py = self.get_finalized_command('build_py')
+                package_dir = build_py.get_package_dir(packagename)
                 src_path = os.path.relpath(
                     os.path.join(os.path.dirname(__file__), 'src'))
                 shutil.copy(os.path.join(src_path, 'compiler.c'),
-                            os.path.join(self.package_name, '_compiler.c'))
+                            os.path.join(package_dir, '_compiler.c'))
                 ext = Extension(self.package_name + '._compiler',
-                                [os.path.join(self.package_name, '_compiler.c')])
+                                [os.path.join(package_dir, '_compiler.c')])
                 extensions.insert(0, ext)
 
             super(build_ext, self).finalize_options()
@@ -305,7 +307,8 @@ def generate_build_ext_command(packagename, release):
             except (AttributeError, ImportError):
                 cython_version = 'unknown'
             if self.uses_cython and self.uses_cython != cython_version:
-                package_dir = os.path.relpath(packagename)
+                build_py = self.get_finalized_command('build_py')
+                package_dir = build_py.get_package_dir(packagename)
                 cython_py = os.path.join(package_dir, 'cython_version.py')
                 with open(cython_py, 'w') as f:
                     f.write('# Generated file; do not modify\n')
