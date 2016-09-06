@@ -241,7 +241,7 @@ def test_missing_cython_c_files(pyx_extension_test_package, monkeypatch):
 
 
 @pytest.mark.skipif(IS_APPVEYOR, reason='graphviz cannot currently be installed on AppVeyor')
-@pytest.mark.parametrize('mode', ['cli', 'cli-w', 'direct'])
+@pytest.mark.parametrize('mode', ['cli', 'cli-w', 'direct', 'deprecated'])
 def test_build_docs(tmpdir, mode):
     """
     Test for build_docs
@@ -315,6 +315,8 @@ def test_build_docs(tmpdir, mode):
             run_setup('setup.py', ['build_docs'])
         elif mode == 'cli-w':
             run_setup('setup.py', ['build_docs', '-w'])
+        elif mode == 'deprecated':
+            run_setup('setup.py', ['build_sphinx'])
         elif mode == 'direct':  # to check coverage
             with docs_dir.as_cwd():
                 from sphinx import main
