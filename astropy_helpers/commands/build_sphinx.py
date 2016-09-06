@@ -242,4 +242,4 @@ class AstropyBuildSphinx(AstropyBuildDocs): # pragma: no cover
         warnings.warn(
             'The "build_sphinx" command is now deprecated. Use'
             '"build_docs" instead.', AstropyDeprecationWarning)
-        super(AstropyBuildSphinx, self).run()
+        AstropyBuildDocs.run(self)
