@@ -8,7 +8,6 @@ import sys
 import textwrap
 
 from distutils import log, ccompiler, sysconfig
-from distutils.cmd import Command
 from distutils.core import Extension
 from distutils.ccompiler import get_default_compiler
 from setuptools.command.build_ext import build_ext as SetuptoolsBuildExt
@@ -48,7 +47,7 @@ def should_build_with_cython(package, release=None):
     # from the repository
     have_cython = False
     try:
-        import Cython
+        import Cython  # noqa
         have_cython = True
     except ImportError:
         pass
@@ -255,8 +254,8 @@ def generate_build_ext_command(packagename, release):
             if extensions:
                 src_path = os.path.relpath(
                     os.path.join(os.path.dirname(__file__), 'src'))
-                shutil.copy2(os.path.join(src_path, 'compiler.c'),
-                             os.path.join(self.package_name, '_compiler.c'))
+                shutil.copy(os.path.join(src_path, 'compiler.c'),
+                            os.path.join(self.package_name, '_compiler.c'))
                 ext = Extension(self.package_name + '._compiler',
                                 [os.path.join(self.package_name, '_compiler.c')])
                 extensions.insert(0, ext)
