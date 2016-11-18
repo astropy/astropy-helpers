@@ -1,7 +1,7 @@
 astropy-helpers Changelog
 =========================
 
-1.2 (unreleased)
+1.2 (2016-06-18)
 ----------------
 
 - Added sphinx configuration value ``automodsumm_inherited_members``.
