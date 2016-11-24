@@ -16,3 +16,10 @@ concurrent.futures.Future py:class -1 3/library/concurrent.futures.html#concurre
 concurrent.futures.ThreadPoolExecutor py:class -1 3/library/concurrent.futures.html#concurrent.futures.ThreadPoolExecutor -
 queue.Queue py:class -1 3/library/queue.html#queue.Queue -
 print() py:function -1 3/library/functions.html#print -
+# python3 only collections.abc
+collections.Generator py:class -1 3/library/collections.abc.html#collections.abc.Generator -
+collections.ByteString py:class -1 3/library/collections.abc.html#collections.abc.ByteString -
+collections.Awaitable py:class -1 3/library/collections.abc.html#collections.abc.Awaitable -
+collections.Coroutine py:class -1 3/library/collections.abc.html#collections.abc.Coroutine -
+collections.AsyncIterable py:class -1 3/library/collections.abc.html#collections.abc.AsyncIterable -
+collections.AsyncIterator py:class -1 3/library/collections.abc.html#collections.abc.AsyncIterator -
