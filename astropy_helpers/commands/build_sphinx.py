@@ -206,7 +206,7 @@ class AstropyBuildDocs(SphinxBuildDoc):
                     msg = ('build_docs returning a non-zero exit '
                            'code because sphinx issued documentation '
                            'warnings.')
-                log.warn(msg)
+                log.warning(msg)
 
         else:
             proc = subprocess.Popen([sys.executable], stdin=subprocess.PIPE)
@@ -220,10 +220,10 @@ class AstropyBuildDocs(SphinxBuildDoc):
                     fileurl = 'file://' + pathname2url(index_path)
                     webbrowser.open(fileurl)
                 else:
-                    log.warn('open-docs-in-browser option was given, but '
+                    log.warning('open-docs-in-browser option was given, but '
                              'the builder is not html! Ignoring.')
         else:
-            log.warn('Sphinx Documentation subprocess failed with return '
+            log.warning('Sphinx Documentation subprocess failed with return '
                      'code ' + str(proc.returncode))
             retcode = proc.returncode
 

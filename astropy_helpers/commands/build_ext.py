@@ -350,7 +350,7 @@ def generate_build_ext_command(packagename, release):
 
                         cannot be found or executed.
                         """.format(compiler=c_compiler))
-                    log.warn(msg)
+                    log.warning(msg)
                     sys.exit(1)
 
                 for broken, fixed in self._broken_compiler_mapping:
@@ -368,7 +368,7 @@ def generate_build_ext_command(packagename, release):
                             where <command> is the command you ran.
                             """.format(compiler=c_compiler, version=version,
                                        pkg=self.package_name, fixed=fixed))
-                        log.warn(msg)
+                        log.warning(msg)
                         sys.exit(1)
 
                 # If C compiler is set via CC, and isn't broken, we are good to go. We
@@ -411,7 +411,7 @@ def generate_build_ext_command(packagename, release):
 
                             CC=clang python setup.py <command>
                         """.format(compiler=c_compiler))
-                    log.warn(msg)
+                    log.warning(msg)
                     sys.exit(1)
 
                 for broken, fixed in self._broken_compiler_mapping:
