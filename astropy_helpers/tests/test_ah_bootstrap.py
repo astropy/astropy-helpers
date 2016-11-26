@@ -3,7 +3,6 @@
 import glob
 import os
 import textwrap
-import sys
 
 from distutils.version import StrictVersion
 
