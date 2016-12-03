@@ -1,8 +1,13 @@
 from __future__ import division, absolute_import, print_function
 
-import sys, re, inspect, textwrap, pydoc
+import sys
+import re
+import inspect
+import textwrap
+import pydoc
 import sphinx
 import collections
+
 from .docscrape import NumpyDocString, FunctionDoc, ClassDoc
 
 if sys.version_info[0] >= 3:
@@ -46,12 +51,12 @@ class SphinxDocString(NumpyDocString):
     def _str_extended_summary(self):
         return self['Extended Summary'] + ['']
 
-    def _str_returns(self):
+    def _str_returns(self, name='Returns'):
         out = []
-        if self['Returns']:
-            out += self._str_field_list('Returns')
+        if self[name]:
+            out += self._str_field_list(name)
             out += ['']
-            for param, param_type, desc in self['Returns']:
+            for param, param_type, desc in self[name]:
                 if param_type:
                     out += self._str_indent(['**%s** : %s' % (param.strip(),
                                                               param_type)])
@@ -130,7 +135,7 @@ class SphinxDocString(NumpyDocString):
                 maxlen_0 = max(3, max([len(x[0]) for x in others]))
                 hdr = sixu("=")*maxlen_0 + sixu("  ") + sixu("=")*10
                 fmt = sixu('%%%ds  %%s  ') % (maxlen_0,)
-                out += ['', hdr]
+                out += ['', '', hdr]
                 for param, param_type, desc in others:
                     desc = sixu(" ").join(x.strip() for x in desc).strip()
                     if param_type:
@@ -171,7 +176,7 @@ class SphinxDocString(NumpyDocString):
         if len(idx) == 0:
             return out
 
-        out += ['.. index:: %s' % idx.get('default','')]
+        out += ['.. index:: %s' % idx.get('default', '')]
         for section, references in idx.items():
             if section == 'default':
                 continue
@@ -192,9 +197,9 @@ class SphinxDocString(NumpyDocString):
             # Latex collects all references to a separate bibliography,
             # so we need to insert links to it
             if sphinx.__version__ >= "0.6":
-                out += ['.. only:: latex','']
+                out += ['.. only:: latex', '']
             else:
-                out += ['.. latexonly::','']
+                out += ['.. latexonly::', '']
             items = []
             for line in self['References']:
                 m = re.match(r'.. \[([a-z0-9._-]+)\]', line, re.I)
@@ -224,7 +229,8 @@ class SphinxDocString(NumpyDocString):
         out += self._str_summary()
         out += self._str_extended_summary()
         out += self._str_param_list('Parameters')
-        out += self._str_returns()
+        out += self._str_returns('Returns')
+        out += self._str_returns('Yields')
         for param_list in ('Other Parameters', 'Raises', 'Warns'):
             out += self._str_param_list(param_list)
         out += self._str_warnings()
@@ -234,24 +240,28 @@ class SphinxDocString(NumpyDocString):
         out += self._str_examples()
         for param_list in ('Attributes', 'Methods'):
             out += self._str_member_list(param_list)
-        out = self._str_indent(out,indent)
+        out = self._str_indent(out, indent)
         return '\n'.join(out)
+
 
 class SphinxFunctionDoc(SphinxDocString, FunctionDoc):
     def __init__(self, obj, doc=None, config={}):
         self.load_config(config)
         FunctionDoc.__init__(self, obj, doc=doc, config=config)
 
+
 class SphinxClassDoc(SphinxDocString, ClassDoc):
     def __init__(self, obj, doc=None, func_doc=None, config={}):
         self.load_config(config)
         ClassDoc.__init__(self, obj, doc=doc, func_doc=None, config=config)
+
 
 class SphinxObjDoc(SphinxDocString):
     def __init__(self, obj, doc=None, config={}):
         self._f = obj
         self.load_config(config)
         SphinxDocString.__init__(self, doc, config=config)
+
 
 def get_doc_object(obj, what=None, doc=None, config={}):
     if what is None:
