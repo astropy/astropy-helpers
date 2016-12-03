@@ -48,6 +48,7 @@ _module_state = {
 
 try:
     import sphinx
+    from .commands.build_sphinx import AstropyBuildSphinx, AstropyBuildDocs
     _module_state['have_sphinx'] = True
 except ValueError as e:
     # This can occur deep in the bowels of Sphinx's imports by way of docutils
@@ -136,9 +137,7 @@ def register_commands(package, version, release, srcdir='.'):
     if _module_state['registered_commands'] is not None:
         return _module_state['registered_commands']
 
-    if _module_state['have_sphinx']:
-        from .commands.build_sphinx import AstropyBuildSphinx, AstropyBuildDocs
-    else:
+    if not _module_state['have_sphinx']:
         AstropyBuildSphinx = AstropyBuildDocs = FakeBuildSphinx
 
     _module_state['registered_commands'] = registered_commands = {
