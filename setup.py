@@ -10,7 +10,7 @@ from astropy_helpers.version_helpers import generate_version_py
 NAME = 'astropy_helpers'
 VERSION = '1.3.dev'
 RELEASE = 'dev' not in VERSION
-DOWNLOAD_BASE_URL = 'http://pypi.python.org/packages/source/a/astropy-helpers'
+DOWNLOAD_BASE_URL = 'http://pypi.io/packages/source/a/astropy-helpers'
 
 generate_version_py(NAME, VERSION, RELEASE, False, uses_git=not RELEASE)
 
