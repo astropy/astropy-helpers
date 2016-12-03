@@ -1,4 +1,3 @@
-import os
 import contextlib
 import shutil
 import stat
@@ -11,8 +10,6 @@ from setuptools import Distribution
 from ..setup_helpers import get_package_info, register_commands
 from ..commands import build_ext
 from . import *
-
-IS_APPVEYOR = os.environ.get('APPVEYOR', 'False') == 'True'
 
 
 def _extension_test_package(tmpdir, request, extension_type='c'):
@@ -240,7 +237,6 @@ def test_missing_cython_c_files(pyx_extension_test_package, monkeypatch):
     assert msg in str(exc_info.value)
 
 
-@pytest.mark.skipif(IS_APPVEYOR, reason='graphviz cannot currently be installed on AppVeyor')
 @pytest.mark.parametrize('mode', ['cli', 'cli-w', 'direct', 'deprecated'])
 def test_build_docs(tmpdir, mode):
     """

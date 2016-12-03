@@ -36,10 +36,8 @@ install:
     - git config --global user.name "A U Thor"
     - git config --global user.email "author@example.com"
 
-    # For now we skip the installation of the graphviz package because the
-    # graphviz.org website seems to be unresponsive intermittently, which
-    # causes timeouts in downloads.
-    # - cinst graphviz.portable
+    # Install graphviz
+    - cinst graphviz.portable
 
 # Not a .NET project, we build the package in the install step instead
 build: false

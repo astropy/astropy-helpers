@@ -187,7 +187,7 @@ class AstropyBuildDocs(SphinxBuildDoc):
             retcode = 1
             with proc.stdout:
                 for line in iter(proc.stdout.readline, b''):
-                    line = line.strip(b'\n')
+                    line = line.strip(b'\r\n')
                     print(line.decode('utf-8'))
                     if 'build succeeded.' == line.decode('utf-8'):
                         retcode = 0
