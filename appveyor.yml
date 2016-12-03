@@ -41,7 +41,7 @@ install:
     # causes timeouts in downloads.
     # - cinst graphviz.portable
 
-# Not a .NET project, we build SunPy in the install step instead
+# Not a .NET project, we build the package in the install step instead
 build: false
 
 test_script:
