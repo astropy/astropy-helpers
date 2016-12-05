@@ -1,12 +1,16 @@
 astropy-helpers
 ===============
 
+* Stable versions: https://pypi.org/project/astropy-helpers/
+* Development version, issue tracker: https://github.com/astropy/astropy-helpers
+
 This project provides a Python package, ``astropy_helpers``, which includes
 many build, installation, and documentation-related tools used by the Astropy
 project, but packaged separately for use by other projects that wish to
 leverage this work.  The motivation behind this package and details of its
 implementation are in the accepted 
 `Astropy Proposal for Enhancement (APE) 4 <https://github.com/astropy/astropy-APEs/blob/master/APE4.rst>`_.
+
 
 ``astropy_helpers`` includes a special "bootstrap" module called
 ``ah_bootstrap.py`` which is intended to be used by a project's setup.py in

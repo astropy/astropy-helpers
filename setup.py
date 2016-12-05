@@ -29,7 +29,7 @@ setup(
     author='The Astropy Developers',
     author_email='astropy.team@gmail.com',
     license='BSD',
-    url='http://astropy.org',
+    url=' https://github.com/astropy/astropy-helpers',
     long_description=open('README.rst').read(),
     download_url='{0}/astropy-helpers-{1}.tar.gz'.format(DOWNLOAD_BASE_URL,
                                                          VERSION),
