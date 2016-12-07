@@ -729,7 +729,9 @@ class FakeBuildSphinx(Command):
 
     def initialize_options(self):
         try:
-            raise RuntimeError("Sphinx must be installed for build_sphinx")
+            raise RuntimeError("Sphinx and its dependencies must be installed "
+                               "for build_docs.")
         except:
-            log.error('error: Sphinx must be installed for build_sphinx')
+            log.error('error: Sphinx and its dependencies must be installed '
+                      'for build_docs.')
             sys.exit(1)
