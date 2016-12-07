@@ -19,7 +19,6 @@ import sphinx
 from distutils.version import LooseVersion
 
 
-
 # -- General configuration ----------------------------------------------------
 
 # The version check in Sphinx itself can only compare the major and
@@ -281,7 +280,7 @@ html_last_updated_fmt = '%d %b %Y'
 
 # For "manual" documents, if this is true, then toplevel headings are parts,
 # not chapters.
-latex_use_parts = True
+latex_toplevel_sectioning = 'part'
 
 # If true, show page references after internal links.
 #latex_show_pagerefs = False
@@ -289,8 +288,10 @@ latex_use_parts = True
 # If true, show URL addresses after external links.
 #latex_show_urls = False
 
+latex_elements = {}
+
 # Additional stuff for the LaTeX preamble.
-latex_preamble = r"""
+latex_elements['preamble'] = r"""
 % Use a more modern-looking monospace font
 \usepackage{inconsolata}
 
