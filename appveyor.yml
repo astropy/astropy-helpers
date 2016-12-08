@@ -43,5 +43,5 @@ install:
 build: false
 
 test_script:
-  - "%CMD_IN_ENV% py.test"
+  - "%CMD_IN_ENV% py.test astropy_helpers"
 

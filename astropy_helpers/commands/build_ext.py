@@ -191,7 +191,10 @@ def generate_build_ext_command(packagename, release):
                 # We need to decide late on whether or not to use Cython's
                 # build_ext (since Cython may not be available earlier in the
                 # setup.py if it was brought in via setup_requires)
-                from Cython.Distutils import build_ext as base_cls
+                try:
+                    from Cython.Distutils.old_build_ext import old_build_ext as base_cls
+                except ImportError:
+                    from Cython.Distutils import build_ext as base_cls
             else:
                 base_cls = SetuptoolsBuildExt
 

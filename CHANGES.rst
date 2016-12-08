@@ -7,6 +7,10 @@ astropy-helpers Changelog
 - ``build_sphinx`` has been deprecated in favor of the ``build_docs`` command.
   [#246]
 
+- Force the use of Cython's old ``build_ext`` command. A new ``build_ext``
+  command was added in Cython 0.25, but it does not work with astropy-helpers
+  currently.  [#261]
+
 
 1.2 (2016-06-18)
 ----------------
