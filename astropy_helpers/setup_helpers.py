@@ -133,11 +133,16 @@ def get_debug_option(packagename):
 
 
 def register_commands(package, version, release, srcdir='.'):
+
     if _module_state['registered_commands'] is not None:
         return _module_state['registered_commands']
 
     if _module_state['have_sphinx']:
-        from .commands.build_sphinx import AstropyBuildSphinx, AstropyBuildDocs
+        try:
+            from .commands.build_sphinx import (AstropyBuildSphinx,
+                                                AstropyBuildDocs)
+        except ImportError:
+            AstropyBuildSphinx = AstropyBuildDocs = FakeBuildSphinx
     else:
         AstropyBuildSphinx = AstropyBuildDocs = FakeBuildSphinx
 
@@ -724,7 +729,9 @@ class FakeBuildSphinx(Command):
 
     def initialize_options(self):
         try:
-            raise RuntimeError("Sphinx must be installed for build_sphinx")
+            raise RuntimeError("Sphinx and its dependencies must be installed "
+                               "for build_docs.")
         except:
-            log.error('error: Sphinx must be installed for build_sphinx')
+            log.error('error: Sphinx and its dependencies must be installed '
+                      'for build_docs.')
             sys.exit(1)
