@@ -4,7 +4,7 @@ omit =
    astropy_helpers/commands/_test_compat.py
    astropy_helpers/compat/*
    astropy_helpers/*/setup_package.py
-   /tmp/*
+   */test_pkg/*
 
 [report]
 exclude_lines =
