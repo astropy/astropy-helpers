@@ -5,6 +5,8 @@ omit =
    astropy_helpers/compat/*
    astropy_helpers/*/setup_package.py
    astropy_helpers/extern/*
+   astropy_helpers/extern/*/*
+   astropy_helpers/tests/*
    */test_pkg/*
 
 [report]
