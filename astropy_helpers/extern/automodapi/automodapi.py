@@ -1,13 +1,5 @@
 # Licensed under a 3-clause BSD style license - see LICENSE.rst
 """
-This sphinx extension adds a tools to simplify generating the API
-documentation for Astropy packages and affiliated packages.
-
-.. _automodapi:
-
-========================
-automodapi directive
-========================
 This directive takes a single argument that must be a module or package. It
 will produce a block of documentation that includes the docstring for the
 package, an :ref:`automodsumm` directive, and an :ref:`automod-diagram` if
@@ -137,9 +129,10 @@ Class Inheritance Diagram
     :private-bases:
     :parts: 1
     {allowedpkgnms}
+    {skip}
 """
 
-_automodapirex = re.compile(r'^(?:\s*\.\.\s+automodapi::\s*)([A-Za-z0-9_.]+)'
+_automodapirex = re.compile(r'^(?:\.\.\s+automodapi::\s*)([A-Za-z0-9_.]+)'
                             r'\s*$((?:\n\s+:[a-zA-Z_\-]+:.*$)*)',
                             flags=re.MULTILINE)
 # the last group of the above regex is intended to go into finall with the below
@@ -274,7 +267,7 @@ def automodapi_replace(sourcestr, app, dotoctree=True, docname=None,
                         modhds=h1 * len(modnm),
                         pkgormod='Package' if ispkg else 'Module',
                         pkgormodhds=h1 * (8 if ispkg else 7),
-                        automoduleline=automodline))
+                        automoduleline=automodline))  # noqa
             else:
                 newstrs.append(automod_templ_modheader.format(
                     modname='',
@@ -313,10 +306,17 @@ def automodapi_replace(sourcestr, app, dotoctree=True, docname=None,
 
             if inhdiag and hascls:
                 # add inheritance diagram if any classes are in the module
-                newstrs.append(automod_templ_inh.format(
+                if toskip:
+                    clsskip = ':skip: ' + ','.join(toskip)
+                else:
+                    clsskip = ''
+                diagram_entry = automod_templ_inh.format(
                     modname=modnm,
                     clsinhsechds=h2 * 25,
-                    allowedpkgnms=allowedpkgnms))
+                    allowedpkgnms=allowedpkgnms,
+                    skip=clsskip)
+                diagram_entry = diagram_entry.replace('    \n', '')
+                newstrs.append(diagram_entry)
 
             newstrs.append(spl[grp * 3 + 3])
 
@@ -381,8 +381,9 @@ def process_automodapi(app, docname, source):
 
 
 def setup(app):
-    # need automodsumm for automodapi
-    app.setup_extension('astropy_helpers.sphinx.ext.automodsumm')
+
+    app.setup_extension('sphinx.ext.autosummary')
+    app.setup_extension('sphinx_automodapi.automodsumm')
 
     app.connect('source-read', process_automodapi)
 
