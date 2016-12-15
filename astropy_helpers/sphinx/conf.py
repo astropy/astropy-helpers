@@ -135,15 +135,11 @@ extensions = [
     'sphinx.ext.coverage',
     'sphinx.ext.inheritance_diagram',
     'sphinx.ext.viewcode',
-    'astropy_helpers.sphinx.ext.numpydoc',
-    'astropy_helpers.sphinx.ext.astropyautosummary',
-    'astropy_helpers.sphinx.ext.autodoc_enhancements',
-    'astropy_helpers.sphinx.ext.automodsumm',
-    'astropy_helpers.sphinx.ext.automodapi',
+    'astropy_helpers.extern.numpydoc',
+    'astropy_helpers.extern.automodapi.automodapi',
     'astropy_helpers.sphinx.ext.tocdepthfix',
     'astropy_helpers.sphinx.ext.doctest',
-    'astropy_helpers.sphinx.ext.changelog_links',
-    'astropy_helpers.sphinx.ext.smart_resolver']
+    'astropy_helpers.sphinx.ext.changelog_links']
 
 
 if on_rtd:
