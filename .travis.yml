@@ -54,7 +54,7 @@ install:
     # pip tries to remove the previous version of setuptools before the
     # installation is complete, which causes issues. Instead, we just install
     # setuptools manually.
-    - if [[ $SETUPTOOLS_VERSION == dev ]]; then git clone http://github.com/pypa/setuptools.git; cd setuptools; python setup.py install; cd ..; fi
+    - if [[ $SETUPTOOLS_VERSION == dev ]]; then git clone http://github.com/pypa/setuptools.git; cd setuptools; python bootstrap.py; python setup.py install; cd ..; fi
 
 before_script:
     # Some of the tests use git commands that require a user to be configured
