@@ -1,7 +1,7 @@
 astropy-helpers Changelog
 =========================
 
-1.3 (2016-12-11)
+1.3 (2016-12-16)
 ----------------
 
 - ``build_sphinx`` has been deprecated in favor of the ``build_docs`` command.
