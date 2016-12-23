@@ -22,7 +22,9 @@ env:
     - PYTHON_VERSION=2.7
     - PYTHON_VERSION=3.3
     - PYTHON_VERSION=3.4
-    - PYTHON_VERSION=3.5 EVENT_TYPE='push pull_request cron'
+    - PYTHON_VERSION=3.5
+    - PYTHON_VERSION=3.6 EVENT_TYPE='push pull_request cron'
+
   global:
     - CONDA_DEPENDENCIES="setuptools pytest sphinx cython numpy"
     - PIP_DEPENDENCIES="coveralls pytest-cov"
