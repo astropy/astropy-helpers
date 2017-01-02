@@ -137,6 +137,7 @@ extensions = [
     'sphinx.ext.viewcode',
     'astropy_helpers.extern.numpydoc',
     'astropy_helpers.extern.automodapi.automodapi',
+    'astropy_helpers.extern.automodapi.smart_resolver',
     'astropy_helpers.sphinx.ext.tocdepthfix',
     'astropy_helpers.sphinx.ext.doctest',
     'astropy_helpers.sphinx.ext.changelog_links']
