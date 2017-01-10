@@ -11,6 +11,21 @@ leverage this work.  The motivation behind this package and details of its
 implementation are in the accepted 
 `Astropy Proposal for Enhancement (APE) 4 <https://github.com/astropy/astropy-APEs/blob/master/APE4.rst>`_.
 
+The ``astropy_helpers.extern`` sub-module includes modules developed elsewhere
+that are bundled here for convenience. At the moment, this consists of the
+following two sphinx extensions:
+
+* `numpydoc <https://github.com/numpy/numpydoc>`_, a Sphinx extension
+  developed as part of the Numpy project. This is used to parse docstrings
+  in Numpy format
+
+* `sphinx-automodapi <https://github.com/astropy/sphinx-automodapi>`_, a Sphinx
+  developed as part of the Astropy project. This used to be developed directly
+  in ``astropy-helpers`` but is now a standalone package.
+
+Issues with these sub-modules should be reported in their respective repositories,
+and we will regularly update the bundled versions to reflect the latest released
+versions.
 
 ``astropy_helpers`` includes a special "bootstrap" module called
 ``ah_bootstrap.py`` which is intended to be used by a project's setup.py in
