@@ -1,17 +1,5 @@
 # Licensed under a 3-clause BSD style license - see LICENSE.rst
 """
-This sphinx extension adds two directives for summarizing the public
-members of a module or package.
-
-These directives are primarily for use with the `automodapi`_ extension,
-but can be used independently.
-
-.. _automodsumm:
-
-=======================
-automodsumm directive
-=======================
-
 This directive will produce an "autosummary"-style table for public
 attributes of a specified module. See the `sphinx.ext.autosummary`_ extension
 for details on this process. The main difference from the `autosummary`_
@@ -73,9 +61,8 @@ This extension also adds two sphinx configuration options:
 
 .. _automod-diagram:
 
-===========================
 automod-diagram directive
-===========================
+=========================
 
 This directive will produce an inheritance diagram like that of the
 `sphinx.ext.inheritance_diagram`_ extension.
@@ -94,23 +81,11 @@ import inspect
 import os
 import re
 
-from distutils.version import LooseVersion
-
-import sphinx
 from sphinx.ext.autosummary import Autosummary
 from sphinx.ext.inheritance_diagram import InheritanceDiagram
 from docutils.parsers.rst.directives import flag
 
-from .utils import find_mod_objs
-from .astropyautosummary import AstropyAutosummary
-
-
-# Don't use AstropyAutosummary with newer versions of Sphinx
-# See https://github.com/astropy/astropy-helpers/pull/129
-if LooseVersion(sphinx.__version__) < LooseVersion('1.2.0'):
-    BaseAutosummary = AstropyAutosummary
-else:
-    BaseAutosummary = Autosummary
+from .utils import find_mod_objs, cleanup_whitespace
 
 
 def _str_list_converter(argument):
@@ -124,7 +99,7 @@ def _str_list_converter(argument):
         return [s.strip() for s in argument.split(',')]
 
 
-class Automodsumm(BaseAutosummary):
+class Automodsumm(Autosummary):
     required_arguments = 1
     optional_arguments = 0
     final_argument_whitespace = False
@@ -152,7 +127,7 @@ class Automodsumm(BaseAutosummary):
             return self.warnings
 
         try:
-            # set self.content to trick the Autosummary internals.
+            # set self.content to trick the autosummary internals.
             # Be sure to respect functions-only and classes-only.
             funconly = 'functions-only' in self.options
             clsonly = 'classes-only' in self.options
@@ -191,6 +166,7 @@ class Automodsumm(BaseAutosummary):
             # sphinx doesn't necessarily recognize this fact.  So we just force
             # it internally, and that seems to fix things
             env.temp_data['py:module'] = modname
+            env.ref_context['py:module'] = modname
 
             # can't use super because Sphinx/docutils has trouble return
             # super(Autosummary,self).run()
@@ -210,6 +186,7 @@ class Automoddiagram(InheritanceDiagram):
 
     option_spec = dict(InheritanceDiagram.option_spec)
     option_spec['allowed-package-names'] = _str_list_converter
+    option_spec['skip'] = _str_list_converter
 
     def run(self):
         try:
@@ -222,8 +199,14 @@ class Automoddiagram(InheritanceDiagram):
             self.warn("Couldn't import module " + self.arguments[0])
             return self.warnings
 
+        # Check if some classes should be skipped
+        skip = self.options.get('skip', [])
+
         clsnms = []
         for n, o in zip(nms, objs):
+
+            if n.split('.')[-1] in skip:
+                continue
 
             if inspect.isclass(o):
                 clsnms.append(n)
@@ -308,12 +291,14 @@ def automodsumm_to_autosummary_lines(fn, app):
     fullfn = os.path.join(app.builder.env.srcdir, fn)
 
     with open(fullfn) as fr:
-        if 'astropy_helpers.sphinx.ext.automodapi' in app._extensions:
-            from astropy_helpers.sphinx.ext.automodapi import automodapi_replace
+        # Note: we use __name__ here instead of just writing the module name in
+        #       case this extension is bundled into another package
+        from . import automodapi
+        if automodapi.__name__ in app._extensions:
             # Must do the automodapi on the source to get the automodsumm
             # that might be in there
             docname = os.path.splitext(fn)[0]
-            filestr = automodapi_replace(fr.read(), app, True, docname, False)
+            filestr = automodapi.automodapi_replace(fr.read(), app, True, docname, False)
         else:
             filestr = fr.read()
 
@@ -332,7 +317,7 @@ def automodsumm_to_autosummary_lines(fn, app):
     # loop over all automodsumms in this document
     for i, (i1, i2, modnm, ops, rem) in enumerate(zip(indent1s, indent2s, mods,
                                                       opssecs, remainders)):
-        allindent = i1 + ('' if i2 is None else i2)
+        allindent = i1 + ('    ' if i2 is None else i2)
 
         # filter out functions-only and classes-only options if present
         oplines = ops.split('\n')
@@ -448,12 +433,13 @@ def generate_automodsumm_docs(lines, srcfn, suffix='.rst', warn=None,
 
     # write
     for name, path, template_name, inherited_mem in sorted(items):
+
         if path is None:
             # The corresponding autosummary:: directive did not have
             # a :toctree: option
             continue
 
-        path = os.path.abspath(path)
+        path = os.path.abspath(os.path.join(base_path, path))
         ensuredir(path)
 
         try:
@@ -484,7 +470,7 @@ def generate_automodsumm_docs(lines, srcfn, suffix='.rst', warn=None,
             if template_name is not None:
                 template = template_env.get_template(template_name)
             else:
-                tmplstr = 'autosummary/%s.rst'
+                tmplstr = 'autosummary_core/%s.rst'
                 try:
                     template = template_env.get_template(tmplstr % doc.objtype)
                 except TemplateNotFound:
@@ -582,7 +568,7 @@ def generate_automodsumm_docs(lines, srcfn, suffix='.rst', warn=None,
             ns['name'] = parts[-1]
 
             ns['objtype'] = doc.objtype
-            ns['underline'] = len(name) * '='
+            ns['underline'] = len(obj_name) * '='
 
             # We now check whether a file for reference footnotes exists for
             # the module being documented. We first check if the
@@ -614,15 +600,19 @@ def generate_automodsumm_docs(lines, srcfn, suffix='.rst', warn=None,
                 ns['referencefile'] = os.path.join(*ref_file_rel_segments)
 
             rendered = template.render(**ns)
-            f.write(rendered)
+            f.write(cleanup_whitespace(rendered))
         finally:
             f.close()
 
 
 def setup(app):
-    # need our autosummary and autodoc fixes
-    app.setup_extension('astropy_helpers.sphinx.ext.astropyautosummary')
-    app.setup_extension('astropy_helpers.sphinx.ext.autodoc_enhancements')
+
+    # need autodoc fixes
+    # Note: we use __name__ here instead of just writing the module name in
+    #       case this extension is bundled into another package
+    from . import autodoc_enhancements
+    app.setup_extension(autodoc_enhancements.__name__)
+
     # need inheritance-diagram for automod-diagram
     app.setup_extension('sphinx.ext.inheritance_diagram')
 

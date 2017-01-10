@@ -97,7 +97,7 @@ def setup(app):
 
     app.add_autodoc_attrgetter(type, type_object_attrgetter)
 
-    if sphinx.version_info < (1,4,2):
+    if sphinx.version_info < (1, 4, 2):
         # this is a really ugly hack to supress a warning that sphinx 1.4
         # generates when overriding an existing directive (which is *desired*
         # behavior here).  As of sphinx v1.4.2, this has been fixed:
@@ -122,4 +122,10 @@ def setup(app):
             app._warning = _oldwarn
             app._warncount = _oldwarncount
     else:
-        app.add_autodocumenter(AttributeDocumenter)
+        suppress_warnigns_orig = app.config.suppress_warnings[:]
+        if 'app.add_directive' not in app.config.suppress_warnings:
+            app.config.suppress_warnings.append('app.add_directive')
+        try:
+            app.add_autodocumenter(AttributeDocumenter)
+        finally:
+            app.config.suppress_warnings = suppress_warnigns_orig

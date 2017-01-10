@@ -1,13 +1,5 @@
 # Licensed under a 3-clause BSD style license - see LICENSE.rst
 """
-This sphinx extension adds a tools to simplify generating the API
-documentation for Astropy packages and affiliated packages.
-
-.. _automodapi:
-
-========================
-automodapi directive
-========================
 This directive takes a single argument that must be a module or package. It
 will produce a block of documentation that includes the docstring for the
 package, an :ref:`automodsumm` directive, and an :ref:`automod-diagram` if
@@ -137,9 +129,10 @@ Class Inheritance Diagram
     :private-bases:
     :parts: 1
     {allowedpkgnms}
+    {skip}
 """
 
-_automodapirex = re.compile(r'^(?:\s*\.\.\s+automodapi::\s*)([A-Za-z0-9_.]+)'
+_automodapirex = re.compile(r'^(?:\.\.\s+automodapi::\s*)([A-Za-z0-9_.]+)'
                             r'\s*$((?:\n\s+:[a-zA-Z_\-]+:.*$)*)',
                             flags=re.MULTILINE)
 # the last group of the above regex is intended to go into finall with the below
@@ -187,15 +180,17 @@ def automodapi_replace(sourcestr, app, dotoctree=True, docname=None,
     spl = _automodapirex.split(sourcestr)
     if len(spl) > 1:  # automodsumm is in this document
 
+        # Use app.srcdir because api folder should be inside source folder not
+        # at folder where sphinx is run.
+
         if dotoctree:
             toctreestr = ':toctree: '
-            dirnm = app.config.automodapi_toctreedirnm
-            if not dirnm.endswith("/"):
-                dirnm += "/"
-            if docname is not None:
-                toctreestr += '../' * docname.count('/') + dirnm
+            api_dir = os.path.join(app.srcdir, app.config.automodapi_toctreedirnm)
+            if docname is None:
+                doc_path = '.'
             else:
-                toctreestr += dirnm
+                doc_path = os.path.join(app.srcdir, docname)
+            toctreestr += os.path.relpath(api_dir, os.path.dirname(doc_path))
         else:
             toctreestr = ''
 
@@ -274,7 +269,7 @@ def automodapi_replace(sourcestr, app, dotoctree=True, docname=None,
                         modhds=h1 * len(modnm),
                         pkgormod='Package' if ispkg else 'Module',
                         pkgormodhds=h1 * (8 if ispkg else 7),
-                        automoduleline=automodline))
+                        automoduleline=automodline))  # noqa
             else:
                 newstrs.append(automod_templ_modheader.format(
                     modname='',
@@ -313,10 +308,17 @@ def automodapi_replace(sourcestr, app, dotoctree=True, docname=None,
 
             if inhdiag and hascls:
                 # add inheritance diagram if any classes are in the module
-                newstrs.append(automod_templ_inh.format(
+                if toskip:
+                    clsskip = ':skip: ' + ','.join(toskip)
+                else:
+                    clsskip = ''
+                diagram_entry = automod_templ_inh.format(
                     modname=modnm,
                     clsinhsechds=h2 * 25,
-                    allowedpkgnms=allowedpkgnms))
+                    allowedpkgnms=allowedpkgnms,
+                    skip=clsskip)
+                diagram_entry = diagram_entry.replace('    \n', '')
+                newstrs.append(diagram_entry)
 
             newstrs.append(spl[grp * 3 + 3])
 
@@ -381,8 +383,13 @@ def process_automodapi(app, docname, source):
 
 
 def setup(app):
-    # need automodsumm for automodapi
-    app.setup_extension('astropy_helpers.sphinx.ext.automodsumm')
+
+    app.setup_extension('sphinx.ext.autosummary')
+
+    # Note: we use __name__ here instead of just writing the module name in
+    #       case this extension is bundled into another package
+    from . import automodsumm
+    app.setup_extension(automodsumm.__name__)
 
     app.connect('source-read', process_automodapi)
 
