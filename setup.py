@@ -10,7 +10,6 @@ from astropy_helpers.version_helpers import generate_version_py
 NAME = 'astropy_helpers'
 VERSION = '2.0.dev'
 RELEASE = 'dev' not in VERSION
-DOWNLOAD_BASE_URL = 'http://pypi.io/packages/source/a/astropy-helpers'
 
 generate_version_py(NAME, VERSION, RELEASE, False, uses_git=not RELEASE)
 
@@ -31,8 +30,6 @@ setup(
     license='BSD',
     url=' https://github.com/astropy/astropy-helpers',
     long_description=open('README.rst').read(),
-    download_url='{0}/astropy-helpers-{1}.tar.gz'.format(DOWNLOAD_BASE_URL,
-                                                         VERSION),
     classifiers=[
         'Development Status :: 5 - Production/Stable',
         'Intended Audience :: Developers',
