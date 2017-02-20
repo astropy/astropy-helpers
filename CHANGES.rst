@@ -5,6 +5,13 @@ astropy-helpers Changelog
 ----------------
 
 
+1.3.1 (unreleased)
+------------------
+
+- Fixed the missing button to hide output in documentation code
+  blocks. [#287]
+
+
 1.3 (2016-12-16)
 ----------------
 
