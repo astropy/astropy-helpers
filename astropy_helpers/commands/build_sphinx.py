@@ -70,6 +70,9 @@ class AstropyBuildDocs(SphinxBuildDoc):
         self.warnings_returncode = False
 
     def finalize_options(self):
+        
+        SphinxBuildDoc.finalize_options(self)
+        
         # Clear out previous sphinx builds, if requested
         if self.clean_docs:
             dirstorm = [os.path.join(self.source_dir, 'api'),
@@ -86,8 +89,7 @@ class AstropyBuildDocs(SphinxBuildDoc):
                 else:
                     log.info('Not cleaning directory ' + d + ' because '
                              'not present or not a directory')
-
-        SphinxBuildDoc.finalize_options(self)
+        
 
     def run(self):
         # TODO: Break this method up into a few more subroutines and
