@@ -237,7 +237,7 @@ def test_missing_cython_c_files(pyx_extension_test_package, monkeypatch):
     assert msg in str(exc_info.value)
 
 
-@pytest.mark.parametrize('mode', ['cli', 'cli-w', 'direct', 'deprecated'])
+@pytest.mark.parametrize('mode', ['cli', 'cli-w', 'direct', 'deprecated', 'cli-l'])
 def test_build_docs(tmpdir, mode):
     """
     Test for build_docs
@@ -311,6 +311,8 @@ def test_build_docs(tmpdir, mode):
             run_setup('setup.py', ['build_docs'])
         elif mode == 'cli-w':
             run_setup('setup.py', ['build_docs', '-w'])
+        elif mode == 'cli-l':
+            run_setup('setup.py', ['build_docs', '-l'])
         elif mode == 'deprecated':
             run_setup('setup.py', ['build_sphinx'])
         elif mode == 'direct':  # to check coverage
