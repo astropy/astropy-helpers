@@ -43,18 +43,24 @@ def check_sphinx_version(expected_version):
 
 # Configuration for intersphinx: refer to the Python standard library.
 intersphinx_mapping = {
-    'python': ('http://docs.python.org/3/', None),
+    'python': ('http://docs.python.org/3/',
+               (None, 'http://data.astropy.org/intersphinx/python3.inv')),
     'pythonloc': ('http://docs.python.org/',
                   path.abspath(path.join(path.dirname(__file__),
                                          'local/python3_local_links.inv'))),
-    'numpy': ('http://docs.scipy.org/doc/numpy/', None),
-    'scipy': ('http://docs.scipy.org/doc/scipy/reference/', None),
-    'matplotlib': ('http://matplotlib.org/', None),
+    'numpy': ('http://docs.scipy.org/doc/numpy/',
+              (None, 'http://data.astropy.org/intersphinx/numpy.inv')),
+    'scipy': ('http://docs.scipy.org/doc/scipy/reference/',
+              (None, 'http://data.astropy.org/intersphinx/scipy.inv')),
+    'matplotlib': ('http://matplotlib.org/',
+                   (None, 'http://data.astropy.org/intersphinx/matplotlib.inv')),
     'astropy': ('http://docs.astropy.org/en/stable/', None),
     'h5py': ('http://docs.h5py.org/en/latest/', None)}
 
 if sys.version_info[0] == 2:
-    intersphinx_mapping['python'] = ('http://docs.python.org/2/', None)
+    intersphinx_mapping['python'] = (
+        'http://docs.python.org/2/',
+        (None, 'http://data.astropy.org/intersphinx/python2.inv')),
     intersphinx_mapping['pythonloc'] = (
         'http://docs.python.org/',
         path.abspath(path.join(path.dirname(__file__),
