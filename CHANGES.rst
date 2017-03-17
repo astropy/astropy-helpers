@@ -7,6 +7,9 @@ astropy-helpers Changelog
 - Fixed the missing button to hide output in documentation code
   blocks. [#287]
 
+- Add alternative location for various intersphinx inventories to fall back
+  to. [#293]
+
 
 1.3 (2016-12-16)
 ----------------
