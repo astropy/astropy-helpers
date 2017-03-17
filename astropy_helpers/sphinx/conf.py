@@ -60,7 +60,7 @@ intersphinx_mapping = {
 if sys.version_info[0] == 2:
     intersphinx_mapping['python'] = (
         'http://docs.python.org/2/',
-        (None, 'http://data.astropy.org/intersphinx/python2.inv')),
+        (None, 'http://data.astropy.org/intersphinx/python2.inv'))
     intersphinx_mapping['pythonloc'] = (
         'http://docs.python.org/',
         path.abspath(path.join(path.dirname(__file__),
