@@ -1,11 +1,13 @@
 astropy-helpers Changelog
 =========================
 
-1.3.1 (unreleased)
+1.3.1 (2017-03-18)
 ------------------
 
 - Fixed the missing button to hide output in documentation code
   blocks. [#287]
+
+- Fixed bug when ``build_docs`` when running with the clean (-l) option. [#289]
 
 - Add alternative location for various intersphinx inventories to fall back
   to. [#293]
