@@ -4,6 +4,7 @@ astropy-helpers Changelog
 2.0 (unreleased)
 ----------------
 
+- Add support for package that lies in a subdirectory. [#249]
 
 1.3.2 (unreleased)
 ------------------

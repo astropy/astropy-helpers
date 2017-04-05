@@ -218,7 +218,7 @@ def _generate_git_header(packagename, version, githash):
 
 
 def generate_version_py(packagename, version, release=None, debug=None,
-                        uses_git=True):
+                        uses_git=True, srcdir='.'):
     """Regenerate the version.py module if necessary."""
 
     try:
@@ -251,7 +251,7 @@ def generate_version_py(packagename, version, release=None, debug=None,
         # Likewise, keep whatever the current value is, if it exists
         debug = bool(current_debug)
 
-    version_py = os.path.join(packagename, 'version.py')
+    version_py = os.path.join(srcdir, packagename, 'version.py')
 
     if (last_generated_version != version or current_release != release or
             current_debug != debug):
