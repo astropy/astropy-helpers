@@ -43,7 +43,7 @@ def check_sphinx_version(expected_version):
 
 # Configuration for intersphinx: refer to the Python standard library.
 intersphinx_mapping = {
-    'python': ('http://docs.python.org/3/',
+    'python': ('https://docs.python.org/3/',
                (None, 'http://data.astropy.org/intersphinx/python3.inv')),
     'pythonloc': ('http://docs.python.org/',
                   path.abspath(path.join(path.dirname(__file__),
@@ -59,7 +59,7 @@ intersphinx_mapping = {
 
 if sys.version_info[0] == 2:
     intersphinx_mapping['python'] = (
-        'http://docs.python.org/2/',
+        'https://docs.python.org/2/',
         (None, 'http://data.astropy.org/intersphinx/python2.inv'))
     intersphinx_mapping['pythonloc'] = (
         'http://docs.python.org/',
