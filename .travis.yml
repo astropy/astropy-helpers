@@ -39,11 +39,13 @@ matrix:
         - os: linux
           env: PYTHON_VERSION=2.7 SETUPTOOLS_VERSION=dev DEBUG=True
                CONDA_DEPENDENCIES='pytest sphinx cython numpy'
+               EVENT_TYPE='push pull_request cron'
 
     allow_failures:
         - os: linux
           env: PYTHON_VERSION=2.7 SETUPTOOLS_VERSION=dev DEBUG=True
                CONDA_DEPENDENCIES='pytest sphinx cython numpy'
+               EVENT_TYPE='push pull_request cron'
 
 before_install:
     - if [[ $TRAVIS_OS_NAME == osx ]]; then brew update; brew install graphviz; fi
