@@ -6,6 +6,8 @@ astropy-helpers Changelog
 
 - Add support for package that lies in a subdirectory. [#249]
 
+- Removing ``compat.subprocess``. [#298]
+
 1.3.2 (unreleased)
 ------------------
 
