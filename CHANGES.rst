@@ -8,6 +8,9 @@ astropy-helpers Changelog
 
 - Removing ``compat.subprocess``. [#298]
 
+- Python 3.3 is no longer suppored. [#300]
+
+
 1.3.2 (unreleased)
 ------------------
 
