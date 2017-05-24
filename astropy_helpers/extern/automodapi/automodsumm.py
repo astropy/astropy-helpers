@@ -107,7 +107,7 @@ class Automodsumm(Autosummary):
     option_spec = dict(Autosummary.option_spec)
     option_spec['functions-only'] = flag
     option_spec['classes-only'] = flag
-    option_spec['no-functions-or-classes'] = flag
+    option_spec['global-variables-only'] = flag
     option_spec['skip'] = _str_list_converter
     option_spec['allowed-package-names'] = _str_list_converter
     option_spec['inherited-members'] = flag
@@ -132,7 +132,7 @@ class Automodsumm(Autosummary):
             # Be sure to respect functions-only and classes-only.
             funconly = 'functions-only' in self.options
             clsonly = 'classes-only' in self.options
-            otheronly = 'no-functions-or-classes' in self.options
+            varonly = 'global-variables-only' in self.options
 
             skipnames = []
             if 'skip' in self.options:
@@ -156,7 +156,7 @@ class Automodsumm(Autosummary):
                 for nm, obj in zip(localnames, objs):
                     if nm not in skipnames and inspect.isclass(obj):
                         cont.append(nm)
-            elif otheronly:
+            elif varonly:
                 cont = []
                 for nm, obj in zip(localnames, objs):
                     if nm not in skipnames and not (inspect.isclass(obj) or
@@ -330,7 +330,7 @@ def automodsumm_to_autosummary_lines(fn, app):
         oplines = ops.split('\n')
         toskip = []
         allowedpkgnms = []
-        funcsonly = clssonly = otheronly = False
+        funcsonly = clssonly = varsonly = False
         for i, ln in reversed(list(enumerate(oplines))):
             if ':functions-only:' in ln:
                 funcsonly = True
@@ -338,8 +338,8 @@ def automodsumm_to_autosummary_lines(fn, app):
             if ':classes-only:' in ln:
                 clssonly = True
                 del oplines[i]
-            if ':no-functions-or-classes:' in ln:
-                otheronly = True
+            if ':global-variables-only:' in ln:
+                varsonly = True
                 del oplines[i]
             if ':skip:' in ln:
                 toskip.extend(_str_list_converter(ln.replace(':skip:', '')))
@@ -370,7 +370,7 @@ def automodsumm_to_autosummary_lines(fn, app):
                 continue
             if clssonly and not inspect.isclass(obj):
                 continue
-            if otheronly and (inspect.isclass(obj) or inspect.isroutine(obj)):
+            if varsonly and (inspect.isclass(obj) or inspect.isroutine(obj)):
                 continue
             newlines.append(allindent + nm)
         newlines.append('')

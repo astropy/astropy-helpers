@@ -127,7 +127,7 @@ Functions
 """
 
 automod_templ_other = """
-Other variables
+Global variables
 {otherhds}
 
 .. automodsumm:: {modname}
