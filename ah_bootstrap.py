@@ -151,6 +151,211 @@ CFG_OPTIONS = [
 ]
 
 
+def check_submodule(path, use_git=True, offline=False):
+    """
+    Check if the given path is a git submodule.
+
+    See the docstrings for ``_check_submodule_using_git`` and
+    ``_check_submodule_no_git`` for further details.
+    """
+
+    if (path is None or
+            (os.path.exists(path) and not os.path.isdir(path))):
+        return False
+
+    if use_git:
+        return _check_submodule_using_git(path, offline)
+    else:
+        return _check_submodule_no_git(path)
+
+
+def _check_submodule_using_git(path, offline):
+    """
+    Check if the given path is a git submodule.  If so, attempt to initialize
+    and/or update the submodule if needed.
+
+    This function makes calls to the ``git`` command in subprocesses.  The
+    ``_check_submodule_no_git`` option uses pure Python to check if the given
+    path looks like a git submodule, but it cannot perform updates.
+    """
+
+    cmd = ['git', 'submodule', 'status', '--', path]
+
+    try:
+        log.info('Running `{0}`; use the --no-git option to disable git '
+                 'commands'.format(' '.join(cmd)))
+        returncode, stdout, stderr = run_cmd(cmd)
+    except _CommandNotFound:
+        # The git command simply wasn't found; this is most likely the
+        # case on user systems that don't have git and are simply
+        # trying to install the package from PyPI or a source
+        # distribution.  Silently ignore this case and simply don't try
+        # to use submodules
+        return False
+
+    stderr = stderr.strip()
+
+    if returncode != 0 and stderr:
+        # Unfortunately the return code alone cannot be relied on, as
+        # earlier versions of git returned 0 even if the requested submodule
+        # does not exist
+
+        # This is a warning that occurs in perl (from running git submodule)
+        # which only occurs with a malformatted locale setting which can
+        # happen sometimes on OSX.  See again
+        # https://github.com/astropy/astropy/issues/2749
+        perl_warning = ('perl: warning: Falling back to the standard locale '
+                        '("C").')
+        if not stderr.strip().endswith(perl_warning):
+            # Some other unknown error condition occurred
+            log.warn('git submodule command failed '
+                     'unexpectedly:\n{0}'.format(stderr))
+            return False
+
+    # Output of `git submodule status` is as follows:
+    #
+    # 1: Status indicator: '-' for submodule is uninitialized, '+' if
+    # submodule is initialized but is not at the commit currently indicated
+    # in .gitmodules (and thus needs to be updated), or 'U' if the
+    # submodule is in an unstable state (i.e. has merge conflicts)
+    #
+    # 2. SHA-1 hash of the current commit of the submodule (we don't really
+    # need this information but it's useful for checking that the output is
+    # correct)
+    #
+    # 3. The output of `git describe` for the submodule's current commit
+    # hash (this includes for example what branches the commit is on) but
+    # only if the submodule is initialized.  We ignore this information for
+    # now
+    _git_submodule_status_re = re.compile(
+        '^(?P<status>[+-U ])(?P<commit>[0-9a-f]{40}) '
+        '(?P<submodule>\S+)( .*)?$')
+
+    # The stdout should only contain one line--the status of the
+    # requested submodule
+    m = _git_submodule_status_re.match(stdout)
+    if m:
+        # Yes, the path *is* a git submodule
+        _update_submodule(m.group('submodule'), m.group('status'), offline)
+        return True
+    else:
+        log.warn(
+            'Unexpected output from `git submodule status`:\n{0}\n'
+            'Will attempt import from {1!r} regardless.'.format(
+                stdout, path))
+        return False
+
+
+def _check_submodule_no_git(path):
+    """
+    Like ``_check_submodule_using_git``, but simply parses the .gitmodules file
+    to determine if the supplied path is a git submodule, and does not exec any
+    subprocesses.
+
+    This can only determine if a path is a submodule--it does not perform
+    updates, etc.  This function may need to be updated if the format of the
+    .gitmodules file is changed between git versions.
+    """
+
+    gitmodules_path = os.path.abspath('.gitmodules')
+
+    if not os.path.isfile(gitmodules_path):
+        return False
+
+    # This is a minimal reader for gitconfig-style files.  It handles a few of
+    # the quirks that make gitconfig files incompatible with ConfigParser-style
+    # files, but does not support the full gitconfig syntax (just enough
+    # needed to read a .gitmodules file).
+    gitmodules_fileobj = io.StringIO()
+
+    # Must use io.open for cross-Python-compatible behavior wrt unicode
+    with io.open(gitmodules_path) as f:
+        for line in f:
+            # gitconfig files are more flexible with leading whitespace; just
+            # go ahead and remove it
+            line = line.lstrip()
+
+            # comments can start with either # or ;
+            if line and line[0] in (':', ';'):
+                continue
+
+            gitmodules_fileobj.write(line)
+
+    gitmodules_fileobj.seek(0)
+
+    cfg = RawConfigParser()
+
+    try:
+        cfg.readfp(gitmodules_fileobj)
+    except Exception as exc:
+        log.warn('Malformatted .gitmodules file: {0}\n'
+                 '{1} cannot be assumed to be a git submodule.'.format(
+                     exc, path))
+        return False
+
+    for section in cfg.sections():
+        if not cfg.has_option(section, 'path'):
+            continue
+
+        submodule_path = cfg.get(section, 'path').rstrip(os.sep)
+
+        if submodule_path == path.rstrip(os.sep):
+            return True
+
+    return False
+
+
+def _update_submodule(submodule, status, offline):
+    if status == ' ':
+        # The submodule is up to date; no action necessary
+        return
+    elif status == '-':
+        if offline:
+            raise _AHBootstrapSystemExit(
+                "Cannot initialize the {0} submodule in --offline mode; "
+                "this requires being able to clone the submodule from an "
+                "online repository.".format(submodule))
+        cmd = ['update', '--init']
+        action = 'Initializing'
+    elif status == '+':
+        cmd = ['update']
+        action = 'Updating'
+        if offline:
+            cmd.append('--no-fetch')
+    elif status == 'U':
+        raise _AHBoostrapSystemExit(
+            'Error: Submodule {0} contains unresolved merge conflicts.  '
+            'Please complete or abandon any changes in the submodule so that '
+            'it is in a usable state, then try again.'.format(submodule))
+    else:
+        log.warn('Unknown status {0!r} for git submodule {1!r}.  Will '
+                 'attempt to use the submodule as-is, but try to ensure '
+                 'that the submodule is in a clean state and contains no '
+                 'conflicts or errors.\n{2}'.format(status, submodule,
+                                                    _err_help_msg))
+        return
+
+    err_msg = None
+    cmd = ['git', 'submodule'] + cmd + ['--', submodule]
+    log.warn('{0} {1} submodule with: `{2}`'.format(
+        action, submodule, ' '.join(cmd)))
+
+    try:
+        log.info('Running `{0}`; use the --no-git option to disable git '
+                 'commands'.format(' '.join(cmd)))
+        returncode, stdout, stderr = run_cmd(cmd)
+    except OSError as e:
+        err_msg = str(e)
+    else:
+        if returncode != 0:
+            err_msg = stderr
+
+    if err_msg is not None:
+        log.warn('An unexpected error occurred updating the git submodule '
+                 '{0!r}:\n{1}\n{2}'.format(submodule, err_msg,
+                                           _err_help_msg))
+
+
 class _Bootstrapper(object):
     """
     Bootstrapper implementation.  See ``use_astropy_helpers`` for parameter
@@ -540,199 +745,8 @@ class _Bootstrapper(object):
         See the docstrings for ``_check_submodule_using_git`` and
         ``_check_submodule_no_git`` for further details.
         """
+        return check_submodule(self.path, self.use_git, self.offline)
 
-        if (self.path is None or
-                (os.path.exists(self.path) and not os.path.isdir(self.path))):
-            return False
-
-        if self.use_git:
-            return self._check_submodule_using_git()
-        else:
-            return self._check_submodule_no_git()
-
-    def _check_submodule_using_git(self):
-        """
-        Check if the given path is a git submodule.  If so, attempt to initialize
-        and/or update the submodule if needed.
-
-        This function makes calls to the ``git`` command in subprocesses.  The
-        ``_check_submodule_no_git`` option uses pure Python to check if the given
-        path looks like a git submodule, but it cannot perform updates.
-        """
-
-        cmd = ['git', 'submodule', 'status', '--', self.path]
-
-        try:
-            log.info('Running `{0}`; use the --no-git option to disable git '
-                     'commands'.format(' '.join(cmd)))
-            returncode, stdout, stderr = run_cmd(cmd)
-        except _CommandNotFound:
-            # The git command simply wasn't found; this is most likely the
-            # case on user systems that don't have git and are simply
-            # trying to install the package from PyPI or a source
-            # distribution.  Silently ignore this case and simply don't try
-            # to use submodules
-            return False
-
-        stderr = stderr.strip()
-
-        if returncode != 0 and stderr:
-            # Unfortunately the return code alone cannot be relied on, as
-            # earlier versions of git returned 0 even if the requested submodule
-            # does not exist
-
-            # This is a warning that occurs in perl (from running git submodule)
-            # which only occurs with a malformatted locale setting which can
-            # happen sometimes on OSX.  See again
-            # https://github.com/astropy/astropy/issues/2749
-            perl_warning = ('perl: warning: Falling back to the standard locale '
-                            '("C").')
-            if not stderr.strip().endswith(perl_warning):
-                # Some other unknown error condition occurred
-                log.warn('git submodule command failed '
-                         'unexpectedly:\n{0}'.format(stderr))
-                return False
-
-        # Output of `git submodule status` is as follows:
-        #
-        # 1: Status indicator: '-' for submodule is uninitialized, '+' if
-        # submodule is initialized but is not at the commit currently indicated
-        # in .gitmodules (and thus needs to be updated), or 'U' if the
-        # submodule is in an unstable state (i.e. has merge conflicts)
-        #
-        # 2. SHA-1 hash of the current commit of the submodule (we don't really
-        # need this information but it's useful for checking that the output is
-        # correct)
-        #
-        # 3. The output of `git describe` for the submodule's current commit
-        # hash (this includes for example what branches the commit is on) but
-        # only if the submodule is initialized.  We ignore this information for
-        # now
-        _git_submodule_status_re = re.compile(
-            '^(?P<status>[+-U ])(?P<commit>[0-9a-f]{40}) '
-            '(?P<submodule>\S+)( .*)?$')
-
-        # The stdout should only contain one line--the status of the
-        # requested submodule
-        m = _git_submodule_status_re.match(stdout)
-        if m:
-            # Yes, the path *is* a git submodule
-            self._update_submodule(m.group('submodule'), m.group('status'))
-            return True
-        else:
-            log.warn(
-                'Unexpected output from `git submodule status`:\n{0}\n'
-                'Will attempt import from {1!r} regardless.'.format(
-                    stdout, self.path))
-            return False
-
-    def _check_submodule_no_git(self):
-        """
-        Like ``_check_submodule_using_git``, but simply parses the .gitmodules file
-        to determine if the supplied path is a git submodule, and does not exec any
-        subprocesses.
-
-        This can only determine if a path is a submodule--it does not perform
-        updates, etc.  This function may need to be updated if the format of the
-        .gitmodules file is changed between git versions.
-        """
-
-        gitmodules_path = os.path.abspath('.gitmodules')
-
-        if not os.path.isfile(gitmodules_path):
-            return False
-
-        # This is a minimal reader for gitconfig-style files.  It handles a few of
-        # the quirks that make gitconfig files incompatible with ConfigParser-style
-        # files, but does not support the full gitconfig syntax (just enough
-        # needed to read a .gitmodules file).
-        gitmodules_fileobj = io.StringIO()
-
-        # Must use io.open for cross-Python-compatible behavior wrt unicode
-        with io.open(gitmodules_path) as f:
-            for line in f:
-                # gitconfig files are more flexible with leading whitespace; just
-                # go ahead and remove it
-                line = line.lstrip()
-
-                # comments can start with either # or ;
-                if line and line[0] in (':', ';'):
-                    continue
-
-                gitmodules_fileobj.write(line)
-
-        gitmodules_fileobj.seek(0)
-
-        cfg = RawConfigParser()
-
-        try:
-            cfg.readfp(gitmodules_fileobj)
-        except Exception as exc:
-            log.warn('Malformatted .gitmodules file: {0}\n'
-                     '{1} cannot be assumed to be a git submodule.'.format(
-                         exc, self.path))
-            return False
-
-        for section in cfg.sections():
-            if not cfg.has_option(section, 'path'):
-                continue
-
-            submodule_path = cfg.get(section, 'path').rstrip(os.sep)
-
-            if submodule_path == self.path.rstrip(os.sep):
-                return True
-
-        return False
-
-    def _update_submodule(self, submodule, status):
-        if status == ' ':
-            # The submodule is up to date; no action necessary
-            return
-        elif status == '-':
-            if self.offline:
-                raise _AHBootstrapSystemExit(
-                    "Cannot initialize the {0} submodule in --offline mode; "
-                    "this requires being able to clone the submodule from an "
-                    "online repository.".format(submodule))
-            cmd = ['update', '--init']
-            action = 'Initializing'
-        elif status == '+':
-            cmd = ['update']
-            action = 'Updating'
-            if self.offline:
-                cmd.append('--no-fetch')
-        elif status == 'U':
-            raise _AHBoostrapSystemExit(
-                'Error: Submodule {0} contains unresolved merge conflicts.  '
-                'Please complete or abandon any changes in the submodule so that '
-                'it is in a usable state, then try again.'.format(submodule))
-        else:
-            log.warn('Unknown status {0!r} for git submodule {1!r}.  Will '
-                     'attempt to use the submodule as-is, but try to ensure '
-                     'that the submodule is in a clean state and contains no '
-                     'conflicts or errors.\n{2}'.format(status, submodule,
-                                                        _err_help_msg))
-            return
-
-        err_msg = None
-        cmd = ['git', 'submodule'] + cmd + ['--', submodule]
-        log.warn('{0} {1} submodule with: `{2}`'.format(
-            action, submodule, ' '.join(cmd)))
-
-        try:
-            log.info('Running `{0}`; use the --no-git option to disable git '
-                     'commands'.format(' '.join(cmd)))
-            returncode, stdout, stderr = run_cmd(cmd)
-        except OSError as e:
-            err_msg = str(e)
-        else:
-            if returncode != 0:
-                err_msg = stderr
-
-        if err_msg is not None:
-            log.warn('An unexpected error occurred updating the git submodule '
-                     '{0!r}:\n{1}\n{2}'.format(submodule, err_msg,
-                                               _err_help_msg))
 
 class _CommandNotFound(OSError):
     """
