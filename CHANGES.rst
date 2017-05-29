@@ -16,9 +16,10 @@ astropy-helpers Changelog
   astropy-helpers under astropy_helpers.extern.automodapi for convenience.
   [#278, #303]
 
-1.3.2 (unreleased)
+1.3.2 (2017-05-29)
 ------------------
 
+- Fix compatibility with Sphinx 1.6. [#304]
 
 1.3.1 (2017-03-18)
 ------------------
@@ -76,7 +77,7 @@ astropy-helpers Changelog
 ------------------
 
 - Fixed crash in build with ``AttributeError: cython_create_listing`` with
-  older versions of setuptools. [#209]
+  older versions of setuptools. [#209, #210]
 
 
 1.1 (2015-12-10)
@@ -142,7 +143,7 @@ astropy-helpers Changelog
 ------------------
 
 - Fixed issue with the sphinx documentation css where the line numbers for code
-  blocks were not aligned with the code. [#179]
+  blocks were not aligned with the code. [#179, #180]
 
 - Fixed crash that could occur when trying to build Cython extension modules
   when Cython isn't installed. Normally this still results in a failed build,
@@ -153,11 +154,11 @@ astropy-helpers Changelog
   found. [#182]
 
 - Quieted warnings about deprecated Numpy API in Cython extensions, when
-  building Cython extensions against Numpy >= 1.7. [#183]
+  building Cython extensions against Numpy >= 1.7. [#183, #186]
 
 - Improved support for py.test >= 2.7--running the ``./setup.py test`` command
   now copies all doc pages into the temporary test directory as well, so that
-  all test files have a "common root directory". [#189]
+  all test files have a "common root directory". [#189, #190]
 
 
 1.0.3 (2015-07-22)
@@ -293,15 +294,15 @@ astropy-helpers Changelog
 
 - Fixed an issue on Python 3 where importing a package using astropy-helper's
   generated version.py module would crash when the current working directory
-  is an empty git repository. [#114]
+  is an empty git repository. [#114, #137]
 
 - Fixed an issue where the "revision count" appended to .dev versions by
   the generated version.py did not accurately reflect the revision count for
   the package it belongs to, and could be invalid if the current working
-  directory is an unrelated git repository. [#107]
+  directory is an unrelated git repository. [#107, #137]
 
 - Likewise, fixed a confusing warning message that could occur in the same
-  circumstances as the above issue. [#121]
+  circumstances as the above issue. [#121, #137]
 
 
 0.4.4 (2014-12-31)
