@@ -308,7 +308,12 @@ def automodsumm_to_autosummary_lines(fn, app):
     fullfn = os.path.join(app.builder.env.srcdir, fn)
 
     with open(fullfn) as fr:
-        if 'astropy_helpers.sphinx.ext.automodapi' in app._extensions:
+        try:
+            extensions = app.extensions
+        except AttributeError:   # Sphinx <1.6
+            extensions = app._extensions
+
+        if 'astropy_helpers.sphinx.ext.automodapi' in extensions:
             from astropy_helpers.sphinx.ext.automodapi import automodapi_replace
             # Must do the automodapi on the source to get the automodsumm
             # that might be in there

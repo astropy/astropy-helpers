@@ -32,6 +32,8 @@ env:
 
 matrix:
     include:
+        - os: linux
+          env: PYTHON_VERSION=3.6 SPHINX_VERSION=1.6
 
         - os: linux
           env: PYTHON_VERSION=2.7 SETUPTOOLS_VERSION=20
