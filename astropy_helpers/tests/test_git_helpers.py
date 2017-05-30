@@ -8,6 +8,7 @@ import tarfile
 
 import pytest
 
+from . import reset_setup_helpers, reset_distutils_log, fix_hide_setuptools  # noqa
 from . import run_cmd, run_setup, cleanup_import
 
 

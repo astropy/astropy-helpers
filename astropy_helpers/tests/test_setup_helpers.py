@@ -12,6 +12,8 @@ from setuptools import Distribution
 
 from ..setup_helpers import get_package_info, register_commands
 from ..commands import build_ext
+
+from . import reset_setup_helpers, reset_distutils_log, fix_hide_setuptools  # noqa
 from . import run_setup, cleanup_import
 
 
