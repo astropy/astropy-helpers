@@ -1,7 +1,10 @@
-import contextlib
-import shutil
-import stat
+import os
 import sys
+import stat
+import shutil
+import contextlib
+
+import pytest
 
 from textwrap import dedent
 
@@ -9,7 +12,9 @@ from setuptools import Distribution
 
 from ..setup_helpers import get_package_info, register_commands
 from ..commands import build_ext
-from . import *
+
+from . import reset_setup_helpers, reset_distutils_log, fix_hide_setuptools  # noqa
+from . import run_setup, cleanup_import
 
 
 def _extension_test_package(tmpdir, request, extension_type='c'):

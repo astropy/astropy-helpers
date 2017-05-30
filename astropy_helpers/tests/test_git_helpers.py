@@ -6,7 +6,10 @@ import re
 import sys
 import tarfile
 
-from . import *
+import pytest
+
+from . import reset_setup_helpers, reset_distutils_log, fix_hide_setuptools  # noqa
+from . import run_cmd, run_setup, cleanup_import
 
 
 PY3 = sys.version_info[0] == 3
@@ -14,7 +17,7 @@ PY3 = sys.version_info[0] == 3
 if PY3:
     _text_type = str
 else:
-    _text_type = unicode
+    _text_type = unicode  # noqa
 
 
 _DEV_VERSION_RE = re.compile(r'\d+\.\d+(?:\.\d+)?\.dev(\d+)')

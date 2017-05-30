@@ -18,7 +18,7 @@ learn that they need Astropy to run it.
 # astropy.tests (at least on older versions) that can cause these imports to
 # fail
 try:
-    import astropy
+    import astropy  # noqa
     try:
         from astropy.tests.command import AstropyTest
     except Exception:

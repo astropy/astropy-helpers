@@ -143,8 +143,7 @@ def html_page_context(app, pagename, templatename, context, doctree):
         page_message = app.config.edit_on_github_page_message
 
         context['edit_on_github'] = url + doc_root + doc_path
-        context['edit_on_github_page_message'] = (
-            app.config.edit_on_github_page_message)
+        context['edit_on_github_page_message'] = page_message
 
 
 def setup(app):
