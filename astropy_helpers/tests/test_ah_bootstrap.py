@@ -4,7 +4,7 @@ import glob
 import os
 import textwrap
 
-from distutils.version import StrictVersion
+from distutils.version import LooseVersion
 
 import setuptools
 from setuptools.package_index import PackageIndex
@@ -57,7 +57,10 @@ print(filename)
 # The behavior checked in some of the tests depends on the version of
 # setuptools
 try:
-    SETUPTOOLS_VERSION = StrictVersion(setuptools.__version__).version
+    # We need to use LooseVersion here instead of StrictVersion since developer
+    # versions of setuptools ('35.0.2.post20170530') don't satisfy the
+    # StrictVersion criteria even though they satisfy PEP440
+    SETUPTOOLS_VERSION = LooseVersion(setuptools.__version__).version
 except:
     # Broken setuptools? ¯\_(ツ)_/¯
     SETUPTOOLS_VERSION = (0, 0, 0)

@@ -24,9 +24,13 @@ env:
     - PYTHON_VERSION=3.4
     - PYTHON_VERSION=3.5
     - PYTHON_VERSION=3.6 EVENT_TYPE='push pull_request cron'
+    - PYTHON_VERSION=2.7 SETUPTOOLS_VERSION=dev DEBUG=True
+      CONDA_DEPENDENCIES='sphinx cython numpy packaging six appdirs'
+      EVENT_TYPE='push pull_request cron'
+    - PYTHON_VERSION=2.7 SETUPTOOLS_VERSION=20
 
   global:
-    - CONDA_DEPENDENCIES="setuptools pytest sphinx cython numpy"
+    - CONDA_DEPENDENCIES="setuptools sphinx cython numpy"
     - PIP_DEPENDENCIES="coveralls pytest-cov"
     - EVENT_TYPE='push pull_request'
 
@@ -34,18 +38,6 @@ matrix:
     include:
         - os: linux
           env: PYTHON_VERSION=3.6 SPHINX_VERSION=1.6
-
-        - os: linux
-          env: PYTHON_VERSION=2.7 SETUPTOOLS_VERSION=20
-
-        - os: linux
-          env: PYTHON_VERSION=2.7 SETUPTOOLS_VERSION=dev DEBUG=True
-               CONDA_DEPENDENCIES='pytest sphinx cython numpy'
-
-    allow_failures:
-        - os: linux
-          env: PYTHON_VERSION=2.7 SETUPTOOLS_VERSION=dev DEBUG=True
-               CONDA_DEPENDENCIES='pytest sphinx cython numpy'
 
 before_install:
     - if [[ $TRAVIS_OS_NAME == osx ]]; then brew update; brew install graphviz; fi
