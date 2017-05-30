@@ -13,8 +13,9 @@ astropy-helpers Changelog
 - The 'automodapi' Sphinx extension (and associated dependencies) has now
   been moved to a standalone package which can be found at
   https://github.com/astropy/sphinx-automodapi - this is now bundled in
-  astropy-helpers under astropy_helpers.extern.automodapi for convenience.
-  [#278, #303]
+  astropy-helpers under astropy_helpers.extern.automodapi for
+  convenience. Version shipped with astropy-helpers is v0.5.
+  [#278, #303, #309]
 
 1.3.2 (2017-05-29)
 ------------------
