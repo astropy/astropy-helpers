@@ -3,7 +3,7 @@ from __future__ import (absolute_import, division, print_function,
 
 import warnings
 
-from .commands.test import AstropyTest
+from .commands.test import AstropyTest  # noqa
 
 
 # Leaving this module here for now, but really it needn't exist

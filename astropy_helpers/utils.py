@@ -28,12 +28,13 @@ except ImportError:
 if sys.version_info[:2] >= (3, 3):
     from importlib import invalidate_caches
 else:
-    invalidate_caches = lambda: None
+    def invalidate_caches():
+        return None
 
 
 # Python 2/3 compatibility
 if sys.version_info[0] < 3:
-    string_types = (str, unicode)
+    string_types = (str, unicode)  # noqa
 else:
     string_types = (str,)
 

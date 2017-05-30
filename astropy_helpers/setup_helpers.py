@@ -23,7 +23,9 @@ from distutils.command.sdist import sdist as DistutilsSdist
 
 from setuptools import find_packages as _find_packages
 
-from .distutils_helpers import *
+from .distutils_helpers import (add_command_option, get_compiler_option,
+                                get_dummy_distribution, get_distutils_build_option,
+                                get_distutils_build_or_install_option)
 from .version_helpers import get_pkg_version_module
 from .utils import (walk_skip_hidden, import_file, extends_doc,
                     resolve_name, AstropyDeprecationWarning)
@@ -37,17 +39,15 @@ from .commands.test import AstropyTest
 
 # These imports are not used in this module, but are included for backwards
 # compat with older versions of this module
-from .utils import get_numpy_include_path, write_if_different
-from .commands.build_ext import should_build_with_cython, get_compiler_version
+from .utils import get_numpy_include_path, write_if_different  # noqa
+from .commands.build_ext import should_build_with_cython, get_compiler_version  # noqa
 
-_module_state = {
-    'registered_commands': None,
-    'have_sphinx': False,
-    'package_cache': None,
-}
+_module_state = {'registered_commands': None,
+                 'have_sphinx': False,
+                 'package_cache': None}
 
 try:
-    import sphinx
+    import sphinx  # noqa
     _module_state['have_sphinx'] = True
 except ValueError as e:
     # This can occur deep in the bowels of Sphinx's imports by way of docutils
@@ -666,8 +666,8 @@ def use_system_library(library):
         `True` if the build should use the system copy of the library.
     """
     return (
-        get_distutils_build_or_install_option('use_system_{0}'.format(library))
-        or get_distutils_build_or_install_option('use_system_libraries'))
+        get_distutils_build_or_install_option('use_system_{0}'.format(library)) or
+        get_distutils_build_or_install_option('use_system_libraries'))
 
 
 @extends_doc(_find_packages)
