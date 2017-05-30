@@ -35,18 +35,13 @@ matrix:
         - os: linux
           env: PYTHON_VERSION=2.7 SETUPTOOLS_VERSION=20
 
+        # Note that setuptools dev requires packaging and six to be installed
         - os: linux
           env: PYTHON_VERSION=3.6 SPHINX_VERSION='>1.6'
 
         - os: linux
           env: PYTHON_VERSION=2.7 SETUPTOOLS_VERSION=dev DEBUG=True
-               CONDA_DEPENDENCIES='pytest sphinx cython numpy'
-               EVENT_TYPE='push pull_request cron'
-
-    allow_failures:
-        - os: linux
-          env: PYTHON_VERSION=2.7 SETUPTOOLS_VERSION=dev DEBUG=True
-               CONDA_DEPENDENCIES='pytest sphinx cython numpy'
+               CONDA_DEPENDENCIES='pytest sphinx cython numpy packaging six'
                EVENT_TYPE='push pull_request cron'
 
 before_install:
