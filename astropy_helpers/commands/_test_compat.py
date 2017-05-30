@@ -145,7 +145,7 @@ class AstropyTest(Command, object):
         running the tests.
         """
         try:
-            import astropy
+            import astropy  # noqa
         except ImportError:
             raise ImportError(
                 "The 'test' command requires the astropy package to be "
@@ -235,7 +235,7 @@ class AstropyTest(Command, object):
                 "--coverage can not be used with --parallel")
 
         try:
-            import coverage
+            import coverage  # noqa
         except ImportError:
             raise ImportError(
                 "--coverage requires that the coverage package is "
@@ -296,7 +296,7 @@ class AstropyTest(Command, object):
             if not hasattr(pkg, 'test'):
                 raise ImportError(
                     'package {0} does not have a {0}.test() function as '
-                    'required by the Astropy test runner'.format(package_name))
+                    'required by the Astropy test runner'.format(self.package_name))
 
             argspec = inspect.getargspec(pkg.test)
             return argspec.args

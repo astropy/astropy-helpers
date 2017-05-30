@@ -11,7 +11,7 @@ from setuptools.package_index import PackageIndex
 
 import pytest
 
-from . import *
+from . import run_cmd, run_setup, testpackage
 from ..utils import silence
 
 
@@ -74,7 +74,7 @@ def test_bootstrap_from_submodule(tmpdir, testpackage, capsys):
     orig_repo = tmpdir.mkdir('orig')
 
     # Ensure ah_bootstrap is imported from the local directory
-    import ah_bootstrap
+    import ah_bootstrap  # noqa
 
     with orig_repo.as_cwd():
         run_cmd('git', ['init'])
@@ -155,7 +155,7 @@ def test_check_submodule_no_git(tmpdir, testpackage):
     orig_repo = tmpdir.mkdir('orig')
 
     # Ensure ah_bootstrap is imported from the local directory
-    import ah_bootstrap
+    import ah_bootstrap  # noqa
 
     with orig_repo.as_cwd():
         run_cmd('git', ['init'])
@@ -201,7 +201,7 @@ def test_bootstrap_from_directory(tmpdir, testpackage, capsys):
     entirety bundled directly in the source package and not in an archive.
     """
 
-    import ah_bootstrap
+    import ah_bootstrap  # noqa
 
     source = tmpdir.mkdir('source')
     testpackage.copy(source.join('_astropy_helpers_test_'))
@@ -235,7 +235,7 @@ def test_bootstrap_from_archive(tmpdir, testpackage, capsys):
     orig_repo = tmpdir.mkdir('orig')
 
     # Ensure ah_bootstrap is imported from the local directory
-    import ah_bootstrap
+    import ah_bootstrap  # noqa
 
     # Make a source distribution of the test package
     with silence():
@@ -288,7 +288,7 @@ def test_download_if_needed(tmpdir, testpackage, capsys):
     source = tmpdir.mkdir('source')
 
     # Ensure ah_bootstrap is imported from the local directory
-    import ah_bootstrap
+    import ah_bootstrap  # noqa
 
     # Make a source distribution of the test package
     with silence():
@@ -368,7 +368,7 @@ def test_upgrade(tmpdir, capsys):
     # Monkey with the PackageIndex in ah_bootstrap so that it is initialized
     # with the test upgrade packages, and so that it does not actually go out
     # to the internet to look for anything
-    import ah_bootstrap
+    import ah_bootstrap  # noqa
 
     class FakePackageIndex(PackageIndex):
         def __init__(self, *args, **kwargs):
