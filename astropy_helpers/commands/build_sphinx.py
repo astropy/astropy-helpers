@@ -158,7 +158,20 @@ class AstropyBuildDocs(SphinxBuildDoc):
             else:
                 subproccode[i] = repr(val)
         subproccode = ''.join(subproccode)
-
+        
+        optcode = textwrap.dedent("""
+        
+        class Namespace(object): pass
+        self = Namespace()
+        self.pdb = {pdb!r}
+        self.verbosity = {verbosity!r}
+        self.traceback = {traceback!r}
+        
+        """).format(pdb=self.pdb, verbosity=self.verbosity,
+                    traceback=self.traceback)
+        
+        subproccode = optcode + subproccode
+        
         # This is a quick gross hack, but it ensures that the code grabbed from
         # SphinxBuildDoc.run will work in Python 2 if it uses the print
         # function

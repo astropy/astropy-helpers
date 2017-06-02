@@ -242,7 +242,7 @@ def test_missing_cython_c_files(pyx_extension_test_package, monkeypatch):
     assert msg in str(exc_info.value)
 
 
-@pytest.mark.parametrize('mode', ['cli', 'cli-w', 'direct', 'deprecated', 'cli-l'])
+@pytest.mark.parametrize('mode', ['cli', 'cli-w', 'direct', 'deprecated', 'cli-l', 'cli-error'])
 def test_build_docs(tmpdir, mode):
     """
     Test for build_docs
@@ -275,7 +275,6 @@ def test_build_docs(tmpdir, mode):
     autosummary.join('module.rst').write('{% extends "autosummary_core/module.rst" %}')
 
     docs_dir = test_pkg.join('docs')
-
     docs_dir.join('conf.py').write(dedent("""\
         import sys
         sys.path.append("../")
@@ -285,6 +284,11 @@ def test_build_docs(tmpdir, mode):
             from astropy_helpers.sphinx.conf import *
         exclude_patterns.append('_templates')
     """))
+    
+    if mode == 'cli-error':
+        docs_dir.join('conf.py').write(dedent("""
+        raise ValueError("TestException")
+        """))
 
     docs_dir.join('index.rst').write(dedent("""\
         .. automodapi:: mypackage

@@ -17,6 +17,9 @@ astropy-helpers Changelog
   convenience. Version shipped with astropy-helpers is v0.5.
   [#278, #303, #309]
 
+- Fix ``build_docs`` error catching, so it doesn't hide Sphinx errors. [#292]
+
+
 1.3.2 (2017-05-29)
 ------------------
 
