@@ -97,7 +97,7 @@ except:
 # later cause the TemporaryDirectory class defined in it to stop working when
 # used later on by setuptools
 try:
-    import setuptools.py31compat
+    import setuptools.py31compat   # noqa
 except ImportError:
     pass
 
@@ -702,7 +702,7 @@ class _Bootstrapper(object):
             if self.offline:
                 cmd.append('--no-fetch')
         elif status == 'U':
-            raise _AHBoostrapSystemExit(
+            raise _AHBootstrapSystemExit(
                 'Error: Submodule {0} contains unresolved merge conflicts.  '
                 'Please complete or abandon any changes in the submodule so that '
                 'it is in a usable state, then try again.'.format(submodule))
@@ -763,7 +763,7 @@ def run_cmd(cmd):
             msg = 'Command not found: `{0}`'.format(' '.join(cmd))
             raise _CommandNotFound(msg, cmd)
         else:
-            raise _AHBoostrapSystemExit(
+            raise _AHBootstrapSystemExit(
                 'An unexpected error occurred when running the '
                 '`{0}` command:\n{1}'.format(' '.join(cmd), str(e)))
 
