@@ -230,11 +230,7 @@ def test_installed_git_version(version_test_package, version, tmpdir, capsys):
             loader = pkgutil.get_loader('apyhtest_eva')
             # Ensure we are importing the 'packagename' that was just unpacked
             # into the build_dir
-            if sys.version_info[:2] != (3, 3):
-                # Skip this test on Python 3.3 wherein the SourceFileLoader
-                # has a bug where get_filename() does not return an absolute
-                # path
-                assert loader.get_filename().startswith(str(build_dir))
+            assert loader.get_filename().startswith(str(build_dir))
             assert apyhtest_eva.__githash__ == githash
         finally:
             cleanup_import('apyhtest_eva')
