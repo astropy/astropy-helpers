@@ -19,10 +19,7 @@ learn that they need Astropy to run it.
 # fail
 try:
     import astropy  # noqa
-    try:
-        from astropy.tests.command import AstropyTest
-    except Exception:
-        from ._test_compat import AstropyTest
+    from astropy.tests.command import AstropyTest
 except Exception:
     # No astropy at all--provide the dummy implementation
     from ._dummy import _DummyCommand
