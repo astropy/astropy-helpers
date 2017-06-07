@@ -42,7 +42,7 @@ before_install:
 install:
 
     - git clone git://github.com/astropy/ci-helpers.git
-    - source ci-helpers/travis/setup_conda_$TRAVIS_OS_NAME.sh
+    - source ci-helpers/travis/setup_conda.sh
 
     # We cannot install the developer version of setuptools using pip because
     # pip tries to remove the previous version of setuptools before the
