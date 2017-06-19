@@ -91,6 +91,17 @@ except:
     use_setuptools()
 
 
+# typing as a dependency for 1.6.1+ Sphinx causes issues when imported after
+# initializing submodule with ah_boostrap.py
+# See discussion and references in
+# https://github.com/astropy/astropy-helpers/issues/302
+
+try:
+    import typing   # noqa
+except ImportError:
+    pass
+
+
 # Note: The following import is required as a workaround to
 # https://github.com/astropy/astropy-helpers/issues/89; if we don't import this
 # module now, it will get cleaned up after `run_setup` is called, but that will
