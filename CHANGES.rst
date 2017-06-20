@@ -19,11 +19,8 @@ astropy-helpers Changelog
 
 - Fix ``build_docs`` error catching, so it doesn't hide Sphinx errors. [#292]
 
+- Fix compatibility with Sphinx 1.6. [#318]
 
-1.3.2 (2017-05-29)
-------------------
-
-- Fix compatibility with Sphinx 1.6. [#304]
 
 1.3.1 (2017-03-18)
 ------------------
