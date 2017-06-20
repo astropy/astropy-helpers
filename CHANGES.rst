@@ -1,7 +1,7 @@
 astropy-helpers Changelog
 =========================
 
-1.3.2 (2017-05-29)
+1.3.2 (unreleased)
 ------------------
 
 - Fix compatibility with Sphinx 1.6. [#304]
