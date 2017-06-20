@@ -1,6 +1,10 @@
 astropy-helpers Changelog
 =========================
 
+3.0 (unreleased)
+----------------
+
+
 2.0 (unreleased)
 ----------------
 
