@@ -37,7 +37,8 @@ matrix:
       env: PYTHON_VERSION=3.6 SPHINX_VERSION='>1.6'
 
     - os: linux
-      env: PYTHON_VERSION=3.6 SPHINX_VERSION='dev'
+      env: PYTHON_VERSION=3.6 PIP_DEPENDENCIES='git+https://github.com/sphinx-doc/sphinx.git#egg=sphinx coveralls pytest-cov'
+           CONDA_DEPENDENCIES="setuptools cython numpy"
 
 before_install:
     - if [[ $TRAVIS_OS_NAME == osx ]]; then brew update; brew install graphviz; fi
@@ -52,8 +53,6 @@ install:
     # installation is complete, which causes issues. Instead, we just install
     # setuptools manually.
     - if [[ $SETUPTOOLS_VERSION == dev ]]; then git clone http://github.com/pypa/setuptools.git; cd setuptools; python bootstrap.py; python setup.py install; cd ..; fi
-
-    - if [[ $SPHINX_VERSION == dev ]]; then pip install git+https://github.com/sphinx-doc/sphinx.git#egg=sphinx --upgrade; fi
 
 before_script:
     # Some of the tests use git commands that require a user to be configured
