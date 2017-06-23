@@ -11,7 +11,7 @@ tests.
 """
 import re
 from docutils.nodes import literal_block
-from sphinx.util.compat import Directive
+from docutils.parsers.rst import Directive
 
 
 class DoctestSkipDirective(Directive):
