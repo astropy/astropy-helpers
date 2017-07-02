@@ -17,6 +17,9 @@ astropy-helpers Changelog
   convenience. Version shipped with astropy-helpers is v0.5.
   [#278, #303, #309]
 
+- The ``numpydoc`` Sphinx extension has now been moved to
+  ``astropy_helpers.extern``. [#278]
+
 - Fix ``build_docs`` error catching, so it doesn't hide Sphinx errors. [#292]
 
 - Fix compatibility with Sphinx 1.6. [#318]
