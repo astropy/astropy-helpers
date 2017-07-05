@@ -18,8 +18,8 @@ astropy-helpers Changelog
   been moved to a standalone package which can be found at
   https://github.com/astropy/sphinx-automodapi - this is now bundled in
   astropy-helpers under astropy_helpers.extern.automodapi for
-  convenience. Version shipped with astropy-helpers is v0.5.
-  [#278, #303, #309]
+  convenience. Version shipped with astropy-helpers is v0.6.
+  [#278, #303, #309, #323]
 
 - Fix ``build_docs`` error catching, so it doesn't hide Sphinx errors. [#292]
 
