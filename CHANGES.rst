@@ -1,7 +1,7 @@
 astropy-helpers Changelog
 =========================
 
-2.0 (2017-06-26)
+2.0 (2017-07-06)
 ----------------
 
 - Add support for package that lies in a subdirectory. [#249]
