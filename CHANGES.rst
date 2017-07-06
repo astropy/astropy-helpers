@@ -7,6 +7,12 @@ astropy-helpers Changelog
 - Nothing changed yet.
 
 
+2.0.1 (unreleased)
+------------------
+
+- Nothing changed yet.
+
+
 2.0 (2017-07-06)
 ----------------
 
