@@ -4,15 +4,17 @@ astropy-helpers Changelog
 3.0 (unreleased)
 ----------------
 
+- Nothing changed yet.
 
-2.0 (unreleased)
+
+2.0 (2017-07-06)
 ----------------
 
 - Add support for package that lies in a subdirectory. [#249]
 
 - Removing ``compat.subprocess``. [#298]
 
-- Python 3.3 is no longer suppored. [#300]
+- Python 3.3 is no longer supported. [#300]
 
 - The 'automodapi' Sphinx extension (and associated dependencies) has now
   been moved to a standalone package which can be found at
@@ -21,9 +23,14 @@ astropy-helpers Changelog
   convenience. Version shipped with astropy-helpers is v0.6.
   [#278, #303, #309, #323]
 
+- The ``numpydoc`` Sphinx extension has now been moved to
+  ``astropy_helpers.extern``. [#278]
+
 - Fix ``build_docs`` error catching, so it doesn't hide Sphinx errors. [#292]
 
 - Fix compatibility with Sphinx 1.6. [#318]
+
+- Updating ez_setup.py to the last version before it's removal. [#321]
 
 
 1.3.1 (2017-03-18)
