@@ -70,9 +70,9 @@ class AstropyBuildDocs(SphinxBuildDoc):
         self.warnings_returncode = False
 
     def finalize_options(self):
-        
+
         SphinxBuildDoc.finalize_options(self)
-        
+
         # Clear out previous sphinx builds, if requested
         if self.clean_docs:
             dirstorm = [os.path.join(self.source_dir, 'api'),
@@ -89,7 +89,7 @@ class AstropyBuildDocs(SphinxBuildDoc):
                 else:
                     log.info('Not cleaning directory ' + d + ' because '
                              'not present or not a directory')
-        
+
 
     def run(self):
         # TODO: Break this method up into a few more subroutines and
@@ -158,20 +158,21 @@ class AstropyBuildDocs(SphinxBuildDoc):
             else:
                 subproccode[i] = repr(val)
         subproccode = ''.join(subproccode)
-        
+
         optcode = textwrap.dedent("""
-        
+
         class Namespace(object): pass
         self = Namespace()
         self.pdb = {pdb!r}
         self.verbosity = {verbosity!r}
         self.traceback = {traceback!r}
-        
-        """).format(pdb=self.pdb, verbosity=self.verbosity,
-                    traceback=self.traceback)
-        
+
+        """).format(pdb=getattr(self, 'pdb', False),
+                    verbosity=getattr(self, 'verbosity', 0),
+                    traceback=getattr(self, 'traceback', False))
+
         subproccode = optcode + subproccode
-        
+
         # This is a quick gross hack, but it ensures that the code grabbed from
         # SphinxBuildDoc.run will work in Python 2 if it uses the print
         # function
