@@ -1,7 +1,7 @@
 astropy-helpers Changelog
 *************************
 
-2.0.1 (unreleased)
+2.0.1 (2017-07-28)
 ------------------
 
 - Fix compatibility with Sphinx <1.5. [#326]
