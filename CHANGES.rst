@@ -4,7 +4,8 @@ astropy-helpers Changelog
 3.0 (unreleased)
 ----------------
 
-- Nothing changed yet.
+- Removing deprecated _test_compat making astropy a hard dependency for
+  packages wishing to use the astropy tests machinery. [#314]
 
 
 2.0.1 (unreleased)
