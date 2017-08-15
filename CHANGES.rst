@@ -11,7 +11,7 @@ astropy-helpers Changelog
 2.0.2 (unreleased)
 ------------------
 
-- Nothing changed yet.
+- Address warnings that occur during testing. [#330]
 
 
 2.0.1 (2017-07-28)
