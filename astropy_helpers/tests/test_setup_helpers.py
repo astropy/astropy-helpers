@@ -2,6 +2,7 @@ import os
 import sys
 import stat
 import shutil
+import warnings
 import contextlib
 
 import pytest
@@ -12,6 +13,7 @@ from setuptools import Distribution
 
 from ..setup_helpers import get_package_info, register_commands
 from ..commands import build_ext
+from ..utils import AstropyDeprecationWarning
 
 from . import reset_setup_helpers, reset_distutils_log, fix_hide_setuptools  # noqa
 from . import run_setup, cleanup_import
@@ -323,7 +325,8 @@ def test_build_docs(tmpdir, mode):
         elif mode == 'cli-l':
             run_setup('setup.py', ['build_docs', '-l'])
         elif mode == 'deprecated':
-            run_setup('setup.py', ['build_sphinx'])
+            with pytest.warns(AstropyDeprecationWarning):
+                run_setup('setup.py', ['build_sphinx'])
         elif mode == 'direct':  # to check coverage
             with docs_dir.as_cwd():
                 from sphinx import main
