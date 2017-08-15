@@ -37,10 +37,10 @@ from astropy_helpers.version_helpers import generate_version_py
 
 if not RELEASE:
     VERSION += get_git_devstr(False)
-    # This workaround is required to account for the fact that when we test
-    # installation of this package in test_installed_git_version (even with
-    # development versions), in which case get_git_devstr will not work
-    # since we will be outside of a git repository.
+    # This workaround is required to account for the fact that we test
+    # installation of this package in test_installed_git_version even with
+    # development versions. In these cases get_git_devstr does not work since
+    # it is called from outside of a git repository.
     if VERSION.endswith('.dev'):
         VERSION = VERSION.replace('.dev', '')
 
@@ -80,6 +80,7 @@ def version_test_package(tmpdir, request):
             cleanup_import('apyhtest_eva')
 
         request.addfinalizer(finalize)
+
         return test_package
 
     return make_test_package
