@@ -543,3 +543,65 @@ def test_adjust_compiler(monkeypatch, tmpdir):
 
         assert len(log.messages) == 1
         assert 'The C compiler used to compile Python' in log.messages[0]
+
+
+def test_invalid_package_exclusion(tmpdir, capsys):
+
+    module_name = 'foobar'
+    setup_header = dedent("""\
+        from os.path import join
+        from setuptools import setup, Extension
+        from astropy_helpers.setup_helpers import register_commands, \\
+            get_package_info, add_exclude_packages
+
+        NAME = {module_name!r}
+        VERSION = 0.1
+        RELEASE = True
+
+    """.format(module_name=module_name))
+
+    setup_footer = dedent("""\
+        setup(
+            name=NAME,
+            version=VERSION,
+            cmdclass=cmdclassd,
+            **package_info
+        )
+    """)
+
+    # Test error when using add_package_excludes out of order
+    error_commands = dedent("""\
+        cmdclassd = register_commands(NAME, VERSION, RELEASE)
+        package_info = get_package_info()
+        add_exclude_packages(['tests*'])
+
+    """)
+
+    error_pkg = tmpdir.mkdir('error_pkg')
+    error_pkg.join('setup.py').write(
+        setup_header + error_commands + setup_footer)
+
+    with error_pkg.as_cwd():
+        try:
+            with pytest.raises(RuntimeError):
+                run_setup('setup.py', ['build'])
+        finally:
+            cleanup_import(module_name)
+
+    # Test warning when using deprecated exclude parameter
+    warn_commands =  dedent("""\
+        cmdclassd = register_commands(NAME, VERSION, RELEASE)
+        package_info = get_package_info(exclude=['test*'])
+
+    """)
+
+    warn_pkg = tmpdir.mkdir('warn_pkg')
+    warn_pkg.join('setup.py').write(
+        setup_header + warn_commands + setup_footer)
+
+    with warn_pkg.as_cwd():
+        try:
+            with pytest.warns(AstropyDeprecationWarning):
+                run_setup('setup.py', ['build'])
+        finally:
+            cleanup_import(module_name)
