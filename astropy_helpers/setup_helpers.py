@@ -34,7 +34,6 @@ from .commands.build_ext import generate_build_ext_command
 from .commands.build_py import AstropyBuildPy
 from .commands.install import AstropyInstall
 from .commands.install_lib import AstropyInstallLib
-from .commands.register import AstropyRegister
 from .commands.test import AstropyTest
 
 # These imports are not used in this module, but are included for backwards
@@ -167,7 +166,6 @@ def register_commands(package, version, release, srcdir='.'):
         'install': AstropyInstall,
         'install_lib': AstropyInstallLib,
 
-        'register': AstropyRegister,
         'build_sphinx': AstropyBuildSphinx,
         'build_docs': AstropyBuildDocs
     }
