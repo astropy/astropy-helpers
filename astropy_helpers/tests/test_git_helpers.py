@@ -242,9 +242,13 @@ def test_installed_git_version(version_test_package, version, tmpdir, capsys):
 
 def test_get_git_devstr(tmpdir):
     dirpath = str(tmpdir)
+    warn_msg = "No git repository present at"
+    # Verify as much as possible, but avoid dealing with paths on windows
+    if not sys.platform.startswith('win'):
+        warn_msg += " '{}'".format(dirpath)
+
     with catch_warnings(record=True) as w:
         devstr = get_git_devstr(path=dirpath)
         assert devstr == '0'
         assert len(w) == 1
-        assert str(w[0].message).startswith(
-            "No git repository present at '{}'".format(dirpath))
+        assert str(w[0].message).startswith(warn_msg)
