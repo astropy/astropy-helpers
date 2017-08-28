@@ -90,8 +90,6 @@ def get_git_devstr(sha=False, show_warning=True, path=None):
 
     if path is None:
         path = os.getcwd()
-        if not _get_repo_path(path, levels=0):
-            return ''
 
     if not os.path.isdir(path):
         path = os.path.abspath(os.path.dirname(path))
@@ -135,7 +133,12 @@ def get_git_devstr(sha=False, show_warning=True, path=None):
 
     returncode, stdout, stderr = run_git(cmd)
 
-    if not sha and returncode == 129:
+    if not sha and returncode == 128:
+        # git returns 128 if the command is not run from within a git
+        # repository tree. In this case, a warning is produced above but we
+        # return the default dev version of '0'.
+        return '0'
+    elif not sha and returncode == 129:
         # git returns 129 if a command option failed to parse; in
         # particular this could happen in git versions older than 1.7.2
         # where the --count option is not supported

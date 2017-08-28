@@ -7,9 +7,11 @@ import sys
 import tarfile
 
 import pytest
+from warnings import catch_warnings
 
 from . import reset_setup_helpers, reset_distutils_log, fix_hide_setuptools  # noqa
 from . import run_cmd, run_setup, cleanup_import
+from astropy_helpers.git_helpers import get_git_devstr
 
 
 PY3 = sys.version_info[0] == 3
@@ -37,12 +39,6 @@ from astropy_helpers.version_helpers import generate_version_py
 
 if not RELEASE:
     VERSION += get_git_devstr(False)
-    # This workaround is required to account for the fact that we test
-    # installation of this package in test_installed_git_version even with
-    # development versions. In these cases get_git_devstr does not work since
-    # it is called from outside of a git repository.
-    if VERSION.endswith('.dev'):
-        VERSION = VERSION.replace('.dev', '')
 
 generate_version_py(NAME, VERSION, RELEASE, False, uses_git=not RELEASE)
 
@@ -229,7 +225,9 @@ def test_installed_git_version(version_test_package, version, tmpdir, capsys):
     with build_dir.as_cwd():
         pkg_dir = glob.glob('apyhtest_eva-*')[0]
         os.chdir(pkg_dir)
-        run_setup('setup.py', ['build'])
+
+        with catch_warnings(record=True) as w:
+            run_setup('setup.py', ['build'])
 
         try:
             import apyhtest_eva
@@ -240,3 +238,12 @@ def test_installed_git_version(version_test_package, version, tmpdir, capsys):
             assert apyhtest_eva.__githash__ == githash
         finally:
             cleanup_import('apyhtest_eva')
+
+
+def test_get_git_devstr(tmpdir):
+    with catch_warnings(record=True) as w:
+        devstr = get_git_devstr(path=tmpdir)
+        assert devstr == '0'
+        assert len(w) == 1
+        assert str(w[0].message).startswith(
+            "No git repository present at local('{}')".format(tmpdir))
