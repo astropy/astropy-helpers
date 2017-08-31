@@ -26,6 +26,14 @@ class DoctestSkipDirective(Directive):
         return [literal_block(code, code)]
 
 
+class DoctestOmitDirective(Directive):
+    has_content = True
+
+    def run(self):
+        # Simply do not add any content when this directive is encountered
+        return []
+
+
 class DoctestRequiresDirective(DoctestSkipDirective):
     # This is silly, but we really support an unbounded number of
     # optional arguments
@@ -38,6 +46,7 @@ def setup(app):
     app.add_directive('doctest-skip', DoctestSkipDirective)
     app.add_directive('doctest-skip-all', DoctestSkipDirective)
     app.add_directive('doctest', DoctestSkipDirective)
+    app.add_directive('testsetup', DoctestOmitDirective)
 
     return {'parallel_read_safe': True,
             'parallel_write_safe': True}
