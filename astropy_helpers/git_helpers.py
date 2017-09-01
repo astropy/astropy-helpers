@@ -158,7 +158,9 @@ def get_git_devstr(sha=False, show_warning=True, path=None):
         return _decode_stdio(stdout).strip()
 
 
-def _get_repo_path(pathname, levels=None):
+# This function is tested but it is only ever executed within a subprocess when
+# creating a fake package, so it doesn't get picked up by coverage metrics.
+def _get_repo_path(pathname, levels=None): # pragma: no cover
     """
     Given a file or directory name, determine the root of the git repository
     this path is under.  If given, this won't look any higher than ``levels``
