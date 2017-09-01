@@ -1,6 +1,5 @@
 import os
 import sys
-import six
 import stat
 import shutil
 import warnings
@@ -18,6 +17,10 @@ from ..utils import AstropyDeprecationWarning
 
 from . import reset_setup_helpers, reset_distutils_log, fix_hide_setuptools  # noqa
 from . import run_setup, cleanup_import
+
+
+# Determine whether we're in a PY2 environment without using six
+USING_PY2 = sys.version_info < (3,0,0)
 
 
 def _extension_test_package(tmpdir, request, extension_type='c'):
@@ -181,7 +184,7 @@ def test_compiler_module(c_extension_test_package):
                        '--record={0}'.format(install_temp.join('record.txt'))])
         # Skip this portion of the test on windows systems with Py 2.7 since
         # it is known to produce additional warnings.
-        if not (six.PY2 or sys.platform.startswith('win')):
+        if not (USING_PY2 or sys.platform.startswith('win')):
             # Warning expected from get_git_devstr, called by generate_version_py
             assert len(w) == 1
             assert str(w[0].message).startswith("No git repository present at")
@@ -218,7 +221,7 @@ def test_no_cython_buildext(c_extension_test_package, monkeypatch):
         with warnings.catch_warnings(record=True) as w:
             run_setup('setup.py', ['build_ext', '--inplace'])
         # Warning expected from get_git_devstr, called by generate_version_py
-        if not six.PY2:
+        if not USING_PY2:
             assert len(w) == 1
             assert str(w[0].message).startswith("No git repository present at")
 
@@ -252,7 +255,7 @@ def test_missing_cython_c_files(pyx_extension_test_package, monkeypatch):
             with warnings.catch_warnings(record=True) as w:
                 run_setup('setup.py', ['build_ext', '--inplace'])
             # Warning expected from get_git_devstr, called by generate_version_py
-            if not six.PY2:
+            if not USING_PY2:
                 assert len(w) == 1
                 assert str(w[0].message).startswith(
                     "No git repository present at")
