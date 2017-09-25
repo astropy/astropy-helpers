@@ -13,7 +13,10 @@ astropy-helpers Changelog
 2.0.2 (unreleased)
 ------------------
 
-- Nothing changed yet.
+- The function ``get_git_devstr`` now returns ``'0'`` instead of ``None`` when
+  no git repository is present. This allows generation of development version
+  strings that are in a format that ``setuptools`` expects (e.g. "1.1.3.dev0"
+  instead of "1.1.3.dev"). [#330]
 
 
 2.0.1 (2017-07-28)

@@ -7,9 +7,11 @@ import sys
 import tarfile
 
 import pytest
+from warnings import catch_warnings
 
 from . import reset_setup_helpers, reset_distutils_log, fix_hide_setuptools  # noqa
 from . import run_cmd, run_setup, cleanup_import
+from astropy_helpers.git_helpers import get_git_devstr
 
 
 PY3 = sys.version_info[0] == 3
@@ -223,7 +225,9 @@ def test_installed_git_version(version_test_package, version, tmpdir, capsys):
     with build_dir.as_cwd():
         pkg_dir = glob.glob('apyhtest_eva-*')[0]
         os.chdir(pkg_dir)
-        run_setup('setup.py', ['build'])
+
+        with catch_warnings(record=True) as w:
+            run_setup('setup.py', ['build'])
 
         try:
             import apyhtest_eva
@@ -234,3 +238,17 @@ def test_installed_git_version(version_test_package, version, tmpdir, capsys):
             assert apyhtest_eva.__githash__ == githash
         finally:
             cleanup_import('apyhtest_eva')
+
+
+def test_get_git_devstr(tmpdir):
+    dirpath = str(tmpdir)
+    warn_msg = "No git repository present at"
+    # Verify as much as possible, but avoid dealing with paths on windows
+    if not sys.platform.startswith('win'):
+        warn_msg += " '{}'".format(dirpath)
+
+    with catch_warnings(record=True) as w:
+        devstr = get_git_devstr(path=dirpath)
+        assert devstr == '0'
+        assert len(w) == 1
+        assert str(w[0].message).startswith(warn_msg)

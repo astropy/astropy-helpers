@@ -90,8 +90,6 @@ def get_git_devstr(sha=False, show_warning=True, path=None):
 
     if path is None:
         path = os.getcwd()
-        if not _get_repo_path(path, levels=0):
-            return ''
 
     if not os.path.isdir(path):
         path = os.path.abspath(os.path.dirname(path))
@@ -135,7 +133,12 @@ def get_git_devstr(sha=False, show_warning=True, path=None):
 
     returncode, stdout, stderr = run_git(cmd)
 
-    if not sha and returncode == 129:
+    if not sha and returncode == 128:
+        # git returns 128 if the command is not run from within a git
+        # repository tree. In this case, a warning is produced above but we
+        # return the default dev version of '0'.
+        return '0'
+    elif not sha and returncode == 129:
         # git returns 129 if a command option failed to parse; in
         # particular this could happen in git versions older than 1.7.2
         # where the --count option is not supported
@@ -155,7 +158,9 @@ def get_git_devstr(sha=False, show_warning=True, path=None):
         return _decode_stdio(stdout).strip()
 
 
-def _get_repo_path(pathname, levels=None):
+# This function is tested but it is only ever executed within a subprocess when
+# creating a fake package, so it doesn't get picked up by coverage metrics.
+def _get_repo_path(pathname, levels=None): # pragma: no cover
     """
     Given a file or directory name, determine the root of the git repository
     this path is under.  If given, this won't look any higher than ``levels``
