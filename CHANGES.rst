@@ -18,6 +18,8 @@ astropy-helpers Changelog
   strings that are in a format that ``setuptools`` expects (e.g. "1.1.3.dev0"
   instead of "1.1.3.dev"). [#330]
 
+- It is now possible to override generated timestamps to make builds
+  reproducible by setting the ``SOURCE_DATE_EPOCH`` environment variable [#341]
 
 2.0.1 (2017-07-28)
 ------------------
