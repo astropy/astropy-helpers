@@ -19,10 +19,6 @@ from . import reset_setup_helpers, reset_distutils_log, fix_hide_setuptools  # n
 from . import run_setup, cleanup_import
 
 
-# Determine whether we're in a PY2 environment without using six
-USING_PY2 = sys.version_info < (3,0,0)
-
-
 def _extension_test_package(tmpdir, request, extension_type='c'):
     """Creates a simple test package with an extension module."""
 
@@ -220,10 +216,9 @@ def test_no_cython_buildext(c_extension_test_package, monkeypatch):
     with test_pkg.as_cwd():
         with warnings.catch_warnings(record=True) as w:
             run_setup('setup.py', ['build_ext', '--inplace'])
-        # Warning expected from get_git_devstr, called by generate_version_py
-        if not USING_PY2:
-            assert len(w) == 1
-            assert str(w[0].message).startswith("No git repository present at")
+
+        assert len(w) == 1
+        assert str(w[0].message).startswith("No git repository present at")
 
     sys.path.insert(0, str(test_pkg))
 
@@ -254,11 +249,10 @@ def test_missing_cython_c_files(pyx_extension_test_package, monkeypatch):
         with pytest.raises(SystemExit) as exc_info:
             with warnings.catch_warnings(record=True) as w:
                 run_setup('setup.py', ['build_ext', '--inplace'])
-            # Warning expected from get_git_devstr, called by generate_version_py
-            if not USING_PY2:
-                assert len(w) == 1
-                assert str(w[0].message).startswith(
-                    "No git repository present at")
+
+            assert len(w) == 1
+            assert str(w[0].message).startswith(
+                "No git repository present at")
 
     msg = ('Could not find C/C++ file '
            '{0}.(c/cpp)'.format('apyhtest_eva/unit02'.replace('/', os.sep)))

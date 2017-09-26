@@ -68,13 +68,6 @@ except SyntaxError:
     pass
 
 
-PY3 = sys.version_info[0] >= 3
-
-
-# This adds a new keyword to the setup() function
-Distribution.skip_2to3 = []
-
-
 def adjust_compiler(package):
     """
     This function detects broken compilers and switches to another.  If
@@ -725,10 +718,7 @@ def filter_packages(packagenames):
     installed on the current version of Python.
     """
 
-    if PY3:
-        exclude = '_py2'
-    else:
-        exclude = '_py3'
+    exclude = '_py2'
 
     return [x for x in packagenames if not x.endswith(exclude)]
 

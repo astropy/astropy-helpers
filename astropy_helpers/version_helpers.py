@@ -35,8 +35,6 @@ from . import git_helpers
 from .distutils_helpers import is_distutils_display_option
 from .utils import invalidate_caches
 
-PY3 = sys.version_info[0] == 3
-
 
 def _version_split(version):
     """
@@ -201,14 +199,7 @@ def _generate_git_header(packagename, version, githash):
             break
     git_helpers_py = '\n'.join(source_lines[idx + 1:])
 
-    if PY3:
-        verstr = version
-    else:
-        # In Python 2 don't pass in a unicode string; otherwise verstr will
-        # be represented with u'' syntax which breaks on Python 3.x with x
-        # < 3.  This is only an issue when developing on multiple Python
-        # versions at once
-        verstr = version.encode('utf8')
+    verstr = version
 
     new_githash = git_helpers.get_git_devstr(sha=True, show_warning=False)
 
