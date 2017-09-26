@@ -15,7 +15,6 @@ import traceback
 import warnings
 
 from distutils import log
-from distutils.dist import Distribution
 from distutils.errors import DistutilsOptionError, DistutilsModuleError
 from distutils.core import Extension
 from distutils.core import Command
@@ -31,7 +30,6 @@ from .utils import (walk_skip_hidden, import_file, extends_doc,
                     resolve_name, AstropyDeprecationWarning)
 
 from .commands.build_ext import generate_build_ext_command
-from .commands.build_py import AstropyBuildPy
 from .commands.install import AstropyInstall
 from .commands.install_lib import AstropyInstallLib
 from .commands.test import AstropyTest
@@ -161,9 +159,6 @@ def register_commands(package, version, release, srcdir='.'):
         # The exact form of the build_ext command depends on whether or not
         # we're building a release version
         'build_ext': generate_build_ext_command(package, release),
-
-        # We have a custom build_py to generate the default configuration file
-        'build_py': AstropyBuildPy,
 
         # Since install can (in some circumstances) be run without
         # first building, we also need to override install and
