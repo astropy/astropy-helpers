@@ -69,13 +69,7 @@ class _DummyCommandMeta(type):
         raise DistutilsArgError(cls.error_msg)
 
 
-if sys.version_info[0] < 3:
-    exec(dedent("""
-        class _DummyCommand(Command, object):
-            __metaclass__ = _DummyCommandMeta
-    """))
-else:
-    exec(dedent("""
+exec(dedent("""
         class _DummyCommand(Command, object, metaclass=_DummyCommandMeta):
             pass
     """))
