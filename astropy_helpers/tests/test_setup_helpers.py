@@ -178,12 +178,10 @@ def test_compiler_module(c_extension_test_package):
                        '--single-version-externally-managed',
                        '--install-lib={0}'.format(install_temp),
                        '--record={0}'.format(install_temp.join('record.txt'))])
-        # Skip this portion of the test on windows systems with Py 2.7 since
-        # it is known to produce additional warnings.
-        if not (USING_PY2 or sys.platform.startswith('win')):
-            # Warning expected from get_git_devstr, called by generate_version_py
-            assert len(w) == 1
-            assert str(w[0].message).startswith("No git repository present at")
+
+        # Warning expected from get_git_devstr, called by generate_version_py
+        assert len(w) == 1
+        assert str(w[0].message).startswith("No git repository present at")
 
     with install_temp.as_cwd():
         import apyhtest_eva
