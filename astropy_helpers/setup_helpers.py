@@ -341,8 +341,7 @@ def get_package_info(srcdir='.', exclude=()):
     packages in ``srcdir`` and locating a ``setup_package.py`` module.
     This module can contain the following functions:
     ``get_extensions()``, ``get_package_data()``,
-    ``get_build_options()``, ``get_external_libraries()``,
-    and ``requires_2to3()``.
+    ``get_build_options()``, and ``get_external_libraries()``.
 
     Each of those functions take no arguments.
 
@@ -361,17 +360,11 @@ def get_package_info(srcdir='.', exclude=()):
 
     - ``get_entry_points()`` returns a dict formatted as required by
       the ``entry_points`` argument to ``setup()``.
-
-    - ``requires_2to3()`` should return `True` when the source code
-      requires `2to3` processing to run on Python 3.x.  If
-      ``requires_2to3()`` is missing, it is assumed to return `True`.
-
     """
     ext_modules = []
     packages = []
     package_data = {}
     package_dir = {}
-    skip_2to3 = []
 
     if exclude:
         warnings.warn(
@@ -400,13 +393,6 @@ def get_package_info(srcdir='.', exclude=()):
             libraries = setuppkg.get_external_libraries()
             for library in libraries:
                 add_external_library(library)
-        if hasattr(setuppkg, 'requires_2to3'):
-            requires_2to3 = setuppkg.requires_2to3()
-        else:
-            requires_2to3 = True
-        if not requires_2to3:
-            skip_2to3.append(
-                os.path.dirname(setuppkg.__file__))
 
     for setuppkg in iter_setup_packages(srcdir, packages):
         # get_extensions must include any Cython extensions by their .pyx
@@ -440,7 +426,6 @@ def get_package_info(srcdir='.', exclude=()):
         'packages': packages,
         'package_dir': package_dir,
         'package_data': package_data,
-        'skip_2to3': skip_2to3
         }
 
 

@@ -21,19 +21,6 @@ class AstropyBuildPy(SetuptoolsBuildPy):
 
         SetuptoolsBuildPy.finalize_options(self)
 
-    def run_2to3(self, files, doctests=False):
-        # Filter the files to exclude things that shouldn't be 2to3'd
-        skip_2to3 = self.distribution.skip_2to3
-        filtered_files = []
-        for filename in files:
-            for package in skip_2to3:
-                if filename[len(self.build_lib) + 1:].startswith(package):
-                    break
-            else:
-                filtered_files.append(filename)
-
-        SetuptoolsBuildPy.run_2to3(self, filtered_files, doctests)
-
     def run(self):
         # first run the normal build_py
         SetuptoolsBuildPy.run(self)
