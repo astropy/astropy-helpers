@@ -25,6 +25,7 @@ import imp
 import os
 import pkgutil
 import sys
+import time
 
 from distutils import log
 
@@ -142,7 +143,8 @@ githash = "{githash}"
 
 def _get_version_py_str(packagename, version, githash, release, debug,
                         uses_git=True):
-    timestamp = datetime.datetime.now()
+    epoch = int(os.environ.get('SOURCE_DATE_EPOCH', time.time()))
+    timestamp = datetime.datetime.utcfromtimestamp(epoch)
     major, minor, bugfix = _version_split(version)
 
     if packagename.lower() == 'astropy':
