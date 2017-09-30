@@ -15,4 +15,8 @@ def fix_toc_entries(app, doctree):
 
 
 def setup(app):
+
     app.connect('doctree-read', fix_toc_entries)
+
+    return {'parallel_read_safe': True,
+            'parallel_write_safe': True}

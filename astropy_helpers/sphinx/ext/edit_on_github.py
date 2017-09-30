@@ -147,6 +147,7 @@ def html_page_context(app, pagename, templatename, context, doctree):
 
 
 def setup(app):
+
     app.add_config_value('edit_on_github_project', 'REQUIRED', True)
     app.add_config_value('edit_on_github_branch', 'master', True)
     app.add_config_value('edit_on_github_source_root', 'lib', True)
@@ -162,3 +163,6 @@ def setup(app):
 
     app.connect('doctree-read', doctree_read)
     app.connect('html-page-context', html_page_context)
+
+    return {'parallel_read_safe': True,
+            'parallel_write_safe': True}
