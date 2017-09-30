@@ -149,12 +149,10 @@ extensions = [
     'astropy_helpers.sphinx.ext.changelog_links']
 
 
-if on_rtd:
-    extensions.append('sphinx.ext.mathjax')
-elif LooseVersion(sphinx.__version__) < LooseVersion('1.4'):
+if not on_rtd and LooseVersion(sphinx.__version__) < LooseVersion('1.4'):
     extensions.append('sphinx.ext.pngmath')
 else:
-    extensions.append('sphinx.ext.imgmath')
+    extensions.append('sphinx.ext.mathjax')
 
 
 # Above, we use a patched version of viewcode rather than 'sphinx.ext.viewcode'
