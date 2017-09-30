@@ -21,6 +21,8 @@ astropy-helpers Changelog
 - It is now possible to override generated timestamps to make builds
   reproducible by setting the ``SOURCE_DATE_EPOCH`` environment variable [#341]
 
+- Mark Sphinx extensions as parallel-safe. [#344]
+
 2.0.1 (2017-07-28)
 ------------------
 
