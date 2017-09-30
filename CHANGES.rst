@@ -7,13 +7,13 @@ astropy-helpers Changelog
 - Removing deprecated _test_compat making astropy a hard dependency for
   packages wishing to use the astropy tests machinery. [#314]
 
-- Update numpydoc to v0.7. [#343]
-
 - Removing unused 'register' command since packages should be uploaded
   with twine and get registered automatically. [#332]
 
 2.0.2 (unreleased)
 ------------------
+
+- Update numpydoc to v0.7. [#343]
 
 - The function ``get_git_devstr`` now returns ``'0'`` instead of ``None`` when
   no git repository is present. This allows generation of development version
