@@ -9,6 +9,7 @@ import re
 import pydoc
 from warnings import warn
 import collections
+import copy
 import sys
 
 
@@ -90,37 +91,39 @@ class Reader(object):
 
 class ParseError(Exception):
     def __str__(self):
-        message = self.message
+        message = self.args[0]
         if hasattr(self, 'docstring'):
             message = "%s in %r" % (message, self.docstring)
         return message
 
 
 class NumpyDocString(collections.Mapping):
+    sections = {
+        'Signature': '',
+        'Summary': [''],
+        'Extended Summary': [],
+        'Parameters': [],
+        'Returns': [],
+        'Yields': [],
+        'Raises': [],
+        'Warns': [],
+        'Other Parameters': [],
+        'Attributes': [],
+        'Methods': [],
+        'See Also': [],
+        'Notes': [],
+        'Warnings': [],
+        'References': '',
+        'Examples': '',
+        'index': {}
+    }
+
     def __init__(self, docstring, config={}):
         orig_docstring = docstring
         docstring = textwrap.dedent(docstring).split('\n')
 
         self._doc = Reader(docstring)
-        self._parsed_data = {
-            'Signature': '',
-            'Summary': [''],
-            'Extended Summary': [],
-            'Parameters': [],
-            'Returns': [],
-            'Yields': [],
-            'Raises': [],
-            'Warns': [],
-            'Other Parameters': [],
-            'Attributes': [],
-            'Methods': [],
-            'See Also': [],
-            'Notes': [],
-            'Warnings': [],
-            'References': '',
-            'Examples': '',
-            'index': {}
-            }
+        self._parsed_data = copy.deepcopy(self.sections)
 
         try:
             self._parse()
@@ -327,6 +330,21 @@ class NumpyDocString(collections.Mapping):
             if not section.startswith('..'):
                 section = (s.capitalize() for s in section.split(' '))
                 section = ' '.join(section)
+                if self.get(section):
+                    if hasattr(self, '_obj'):
+                        # we know where the docs came from:
+                        try:
+                            filename = inspect.getsourcefile(self._obj)
+                        except TypeError:
+                            filename = None
+                        msg = ("The section %s appears twice in "
+                               "the docstring of %s in %s." %
+                               (section, self._obj, filename))
+                        raise ValueError(msg)
+                    else:
+                        msg = ("The section %s appears twice" % section)
+                        raise ValueError(msg)
+
             if section in ('Parameters', 'Returns', 'Yields', 'Raises',
                            'Warns', 'Other Parameters', 'Attributes',
                            'Methods'):

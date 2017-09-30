@@ -13,6 +13,8 @@ astropy-helpers Changelog
 2.0.2 (unreleased)
 ------------------
 
+- Update numpydoc to v0.7. [#343]
+
 - The function ``get_git_devstr`` now returns ``'0'`` instead of ``None`` when
   no git repository is present. This allows generation of development version
   strings that are in a format that ``setuptools`` expects (e.g. "1.1.3.dev0"
