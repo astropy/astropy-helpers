@@ -33,6 +33,10 @@ class DoctestRequiresDirective(DoctestSkipDirective):
 
 
 def setup(app):
+
     app.add_directive('doctest-requires', DoctestRequiresDirective)
     app.add_directive('doctest-skip', DoctestSkipDirective)
     app.add_directive('doctest-skip-all', DoctestSkipDirective)
+
+    return {'parallel_read_safe': True,
+            'parallel_write_safe': True}

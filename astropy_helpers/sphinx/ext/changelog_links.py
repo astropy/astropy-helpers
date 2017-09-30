@@ -72,7 +72,11 @@ def setup_patterns_rexes(app):
 
 
 def setup(app):
+
     app.connect('doctree-resolved', process_changelog_links)
     app.connect('builder-inited', setup_patterns_rexes)
     app.add_config_value('github_issues_url', None, True)
     app.add_config_value('changelog_links_docpattern', ['.*changelog.*', 'whatsnew/.*'], True)
+
+    return {'parallel_read_safe': True,
+            'parallel_write_safe': True}
