@@ -7,6 +7,9 @@ astropy-helpers Changelog
 - Removing deprecated _test_compat making astropy a hard dependency for
   packages wishing to use the astropy tests machinery. [#314]
 
+- Added new helper function add_openmp_flags_if_available that can add
+  OpenMP compilation flags to a C/Cython extension if needed. [#346]
+
 - Removing unused 'register' command since packages should be uploaded
   with twine and get registered automatically. [#332]
 
