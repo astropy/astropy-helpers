@@ -33,6 +33,7 @@
 from __future__ import absolute_import, print_function
 
 import os
+import glob
 import tempfile
 import subprocess
 
@@ -84,9 +85,11 @@ def add_openmp_flags_if_available(extension):
         with open('test_openmp.c', 'w') as f:
             f.write(CCODE)
 
+        os.mkdir('objects')
+
         # Compile, link, and run test program
-        ccompiler.compile(['test_openmp.c'], output_dir='.', extra_postargs=[compile_flag])
-        ccompiler.link_executable(['test_openmp.o'], 'test_openmp', extra_postargs=[link_flag])
+        ccompiler.compile(['test_openmp.c'], output_dir='objects', extra_postargs=[compile_flag])
+        ccompiler.link_executable(glob.glob(os.path.join('objects', '*')), 'test_openmp', extra_postargs=[link_flag])
         output = subprocess.check_output('./test_openmp').decode('utf-8').splitlines()
 
         if 'nthreads=' in output[0]:
