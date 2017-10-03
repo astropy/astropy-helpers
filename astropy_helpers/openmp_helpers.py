@@ -71,9 +71,11 @@ def add_openmp_flags_if_available(extension):
     start_dir = os.path.abspath('.')
 
     if get_compiler_option() == 'msvc':
-        flag = '-openmp'
+        compile_flag = '-openmp'
+        link_flag = ''
     else:
-        flag = '-fopenmp'
+        compile_flag = '-fopenmp'
+        link_flag = '-fopenmp'
 
     try:
 
@@ -83,8 +85,8 @@ def add_openmp_flags_if_available(extension):
             f.write(CCODE)
 
         # Compile, link, and run test program
-        ccompiler.compile(['test_openmp.c'], output_dir='.', extra_postargs=[flag])
-        ccompiler.link_executable(['test_openmp.o'], 'test_openmp', extra_postargs=[flag])
+        ccompiler.compile(['test_openmp.c'], output_dir='.', extra_postargs=[compile_flag])
+        ccompiler.link_executable(['test_openmp.o'], 'test_openmp', extra_postargs=[link_flag])
         output = subprocess.check_output('./test_openmp').decode('utf-8').splitlines()
 
         if 'nthreads=' in output[0]:
@@ -109,10 +111,9 @@ def add_openmp_flags_if_available(extension):
         os.chdir(start_dir)
 
     if using_openmp:
-        log.info("Compiling Cython extension with OpenMP support (using {0} flag)".format(flag))
-        extension.extra_compile_args.append(flag)
-        if get_compiler_option() != 'msvc':
-            extension.extra_link_args.append(flag)
+        log.info("Compiling Cython extension with OpenMP support")
+        extension.extra_compile_args.append(compile_flag)
+        extension.extra_link_args.append(link_flag)
     else:
         log.warn("Cannot compile Cython extension with OpenMP, reverting to non-parallel code")
 
