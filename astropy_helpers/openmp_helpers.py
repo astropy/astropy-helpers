@@ -39,7 +39,7 @@ import subprocess
 from distutils import log
 from distutils.ccompiler import new_compiler
 from distutils.sysconfig import customize_compiler
-from distutils.errors import CompileError
+from distutils.errors import CompileError, LinkError
 
 from .setup_helpers import get_compiler_option
 
@@ -100,7 +100,7 @@ def add_openmp_flags_if_available(extension):
                      "program (output was {0})".format(output))
             using_openmp = False
 
-    except CompileError:
+    except (CompileError, LinkError):
 
         using_openmp = False
 
@@ -111,7 +111,8 @@ def add_openmp_flags_if_available(extension):
     if using_openmp:
         log.info("Compiling Cython extension with OpenMP support (using {0} flag)".format(flag))
         extension.extra_compile_args.append(flag)
-        extension.extra_link_args.append(flag)
+        if get_compiler_option() != 'msvc':
+            extension.extra_link_args.append(flag)
     else:
         log.warn("Cannot compile Cython extension with OpenMP, reverting to non-parallel code")
 
