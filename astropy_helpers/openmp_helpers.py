@@ -1,8 +1,18 @@
 # This module defines functions that can be used to check whether OpenMP is
-# available and if so what flags to use.
-
-# This file includes code adapted from astroscrappy, originally released under
-# the following license:
+# available and if so what flags to use. To use this, import the
+# add_openmp_flags_if_available function in a setup_package.py file where you
+# are defining your extensions:
+#
+#     from astropy_helpers.openmp_helpers import add_openmp_flags_if_available
+#
+# then call it with a single extension as the only argument:
+#
+#     add_openmp_flags_if_available(extension)
+#
+# this will add the OpenMP flags if available.
+#
+# This file includes code heavily adapted from astroscrappy, originally released
+# under the following license:
 #
 # Copyright (c) 2015, Curtis McCully
 # All rights reserved.
