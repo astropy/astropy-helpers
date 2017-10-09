@@ -25,6 +25,8 @@ astropy-helpers Changelog
 
 - Mark Sphinx extensions as parallel-safe. [#344]
 
+- Switch to using mathjax instead of imgmath for local builds. [#342]
+
 2.0.1 (2017-07-28)
 ------------------
 
