@@ -149,19 +149,10 @@ extensions = [
     'astropy_helpers.sphinx.ext.changelog_links']
 
 
-if on_rtd:
-    extensions.append('sphinx.ext.mathjax')
-elif LooseVersion(sphinx.__version__) < LooseVersion('1.4'):
+if not on_rtd and LooseVersion(sphinx.__version__) < LooseVersion('1.4'):
     extensions.append('sphinx.ext.pngmath')
 else:
-    extensions.append('sphinx.ext.imgmath')
-
-
-# Above, we use a patched version of viewcode rather than 'sphinx.ext.viewcode'
-# This can be changed to the sphinx version once the following issue is fixed
-# in sphinx:
-# https://bitbucket.org/birkenfeld/sphinx/issue/623/
-# extension-viewcode-fails-with-function
+    extensions.append('sphinx.ext.mathjax')
 
 try:
     import matplotlib.sphinxext.plot_directive
