@@ -10,13 +10,6 @@ os:
 # Setting sudo to false opts in to Travis-CI container-based builds.
 sudo: false
 
-# The apt packages below are needed for sphinx builds, which can no longer
-# be installed with sudo apt-get.
-addons:
-    apt:
-        packages:
-            - graphviz
-
 env:
   matrix:
     - PYTHON_VERSION=2.7 EVENT_TYPE='push pull_request cron'
@@ -46,9 +39,6 @@ matrix:
       env: PYTHON_VERSION=3.5 SPHINX_VERSION='<1.5'
     - os: linux
       env: PYTHON_VERSION=3.6 SPHINX_VERSION='<1.6'
-
-before_install:
-    - if [[ $TRAVIS_OS_NAME == osx ]]; then brew update; brew install graphviz; fi
 
 install:
 
