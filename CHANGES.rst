@@ -13,6 +13,9 @@ astropy-helpers Changelog
 2.0.2 (unreleased)
 ------------------
 
+- Added new helper function add_openmp_flags_if_available that can add
+  OpenMP compilation flags to a C/Cython extension if needed. [#346]
+
 - Update numpydoc to v0.7. [#343]
 
 - The function ``get_git_devstr`` now returns ``'0'`` instead of ``None`` when
