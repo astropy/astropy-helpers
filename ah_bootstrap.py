@@ -16,7 +16,8 @@ When this module is imported or otherwise executed it automatically calls a
 main function that attempts to read the project's setup.cfg file, which it
 checks for a configuration section called ``[ah_bootstrap]`` the presences of
 that section, and options therein, determine the next step taken:  If it
-contains an option called ``auto_use`` with a value of ``True``, it will
+contains an option called ``auto_use`` with a value of ``True`` and setup.py,
+was not run with the ``--disable-ah-bootstrap`` option, it will
 automatically call the main function of this module called
 `use_astropy_helpers` (see that function's docstring for full details).
 Otherwise no further action is taken (however,
@@ -286,6 +287,10 @@ class _Bootstrapper(object):
         if '--offline' in argv:
             config['offline'] = True
             argv.remove('--offline')
+
+        if '--disable-ah-bootstrap' in argv:
+            config['auto_use'] = False
+            argv.remove('auto_use')
 
         return config
 
