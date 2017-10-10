@@ -308,7 +308,7 @@ def test_build_docs(tmpdir, mode):
             from astropy_helpers.sphinx.conf import *
         exclude_patterns.append('_templates')
     """))
-    
+
     if mode == 'cli-error':
         docs_dir.join('conf.py').write(dedent("""
         raise ValueError("TestException")
@@ -316,6 +316,7 @@ def test_build_docs(tmpdir, mode):
 
     docs_dir.join('index.rst').write(dedent("""\
         .. automodapi:: mypackage
+           :no-inheritance-diagram:
     """))
 
     test_pkg.join('setup.py').write(dedent("""\
