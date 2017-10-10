@@ -72,7 +72,7 @@ def add_openmp_flags_if_available(extension):
         # Compile, link, and run test program
         ccompiler.compile(['test_openmp.c'], output_dir='objects', extra_postargs=[compile_flag])
         ccompiler.link_executable(glob.glob(os.path.join('objects', '*')), 'test_openmp', extra_postargs=[link_flag])
-        output = subprocess.check_output('./test_openmp').decode(sys.stdout.encoding).splitlines()
+        output = subprocess.check_output('./test_openmp').decode(sys.stdout.encoding or 'utf-8').splitlines()
 
         if 'nthreads=' in output[0]:
             nthreads = int(output[0].strip().split('=')[1])
