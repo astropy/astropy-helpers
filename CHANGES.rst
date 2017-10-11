@@ -30,6 +30,10 @@ astropy-helpers Changelog
 
 - Switch to using mathjax instead of imgmath for local builds. [#342]
 
+- Deprecate ``exclude`` parameter of various functions in setup_helpers since
+  it could not work as intended. Add new function ``add_exclude_packages`` to
+  provide intended behavior. [#331]
+
 2.0.1 (2017-07-28)
 ------------------
 

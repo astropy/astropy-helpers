@@ -43,7 +43,9 @@ from .commands.build_ext import should_build_with_cython, get_compiler_version  
 
 _module_state = {'registered_commands': None,
                  'have_sphinx': False,
-                 'package_cache': None}
+                 'package_cache': None,
+                 'exclude_packages': set(),
+                 'excludes_too_late': False}
 
 try:
     import sphinx  # noqa
@@ -129,6 +131,16 @@ def get_debug_option(packagename):
         build_ext_cmd.force_rebuild = True
 
     return debug
+
+
+def add_exclude_packages(excludes):
+
+    if _module_state['excludes_too_late']:
+        raise RuntimeError(
+            "add_package_excludes must be called before all other setup helper "
+            "functions in order to properly handle excluded packages")
+
+    _module_state['exclude_packages'].add(set(excludes))
 
 
 def register_commands(package, version, release, srcdir='.'):
@@ -367,6 +379,13 @@ def get_package_info(srcdir='.', exclude=()):
     package_data = {}
     package_dir = {}
     skip_2to3 = []
+
+    if exclude:
+        warnings.warn(
+            "Use of the exclude parameter is no longer supported since it does "
+            "not work as expected. Use add_exclude_packages instead. Note that "
+            "it must be called prior to any other calls from setup helpers.",
+            AstropyDeprecationWarning)
 
     # Use the find_packages tool to locate all packages and modules
     packages = filter_packages(find_packages(srcdir, exclude=exclude))
@@ -680,10 +699,21 @@ def find_packages(where='.', exclude=(), invalidate_cache=False):
     from previous ``find_packages`` calls, and repeat the package search.
     """
 
+    if exclude:
+        warnings.warn(
+            "Use of the exclude parameter is no longer supported since it does "
+            "not work as expected. Use add_exclude_packages instead. Note that "
+            "it must be called prior to any other calls from setup helpers.",
+            AstropyDeprecationWarning)
+
+    # Calling add_exclude_packages after this point will have no effect
+    _module_state['excludes_too_late'] = True
+
     if not invalidate_cache and _module_state['package_cache'] is not None:
         return _module_state['package_cache']
 
-    packages = _find_packages(where=where, exclude=exclude)
+    packages = _find_packages(
+        where=where, exclude=list(_module_state['exclude_packages']))
     _module_state['package_cache'] = packages
 
     return packages
