@@ -26,6 +26,14 @@ class DoctestSkipDirective(Directive):
         return [literal_block(code, code)]
 
 
+class DoctestOmitDirective(Directive):
+    has_content = True
+
+    def run(self):
+        # Simply do not add any content when this directive is encountered
+        return []
+
+
 class DoctestRequiresDirective(DoctestSkipDirective):
     # This is silly, but we really support an unbounded number of
     # optional arguments
@@ -37,6 +45,12 @@ def setup(app):
     app.add_directive('doctest-requires', DoctestRequiresDirective)
     app.add_directive('doctest-skip', DoctestSkipDirective)
     app.add_directive('doctest-skip-all', DoctestSkipDirective)
+    app.add_directive('doctest', DoctestSkipDirective)
+    # Code blocks that use this directive will not appear in the generated
+    # documentation. This is intended to hide boilerplate code that is only
+    # useful for testing documentation using doctest, but does not actually
+    # belong in the documentation itself.
+    app.add_directive('testsetup', DoctestOmitDirective)
 
     return {'parallel_read_safe': True,
             'parallel_write_safe': True}
