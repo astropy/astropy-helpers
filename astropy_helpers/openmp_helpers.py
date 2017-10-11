@@ -29,6 +29,17 @@ from .setup_helpers import get_compiler_option
 __all__ = ['add_openmp_flags_if_available']
 
 
+CCODE = """
+#include <omp.h>
+#include <stdio.h>
+int main(void) {
+  #pragma omp parallel
+  printf("nthreads=%d\\n", omp_get_num_threads());
+  return 0;
+}
+"""
+
+
 def add_openmp_flags_if_available(extension):
     """
     Add OpenMP compilation flags, if available (if not a warning will be
@@ -41,15 +52,6 @@ def add_openmp_flags_if_available(extension):
     customize_compiler(ccompiler)
 
     tmp_dir = tempfile.mkdtemp()
-
-    CCODE = """
-    #include <omp.h>
-    #include <stdio.h>
-    int main() {
-    #pragma omp parallel
-    printf("nthreads=%d\\n", omp_get_num_threads());
-    }
-    """
 
     start_dir = os.path.abspath('.')
 
