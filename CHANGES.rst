@@ -25,6 +25,9 @@ astropy-helpers Changelog
   it could not work as intended. Add new function ``add_exclude_packages`` to
   provide intended behavior. [#331]
 
+- Allow custom Sphinx doctest extension to recognize and process standard
+  doctest directives ``testsetup`` and ``doctest``. [#335]
+
 2.0.1 (2017-07-28)
 ------------------
 
