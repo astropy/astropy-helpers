@@ -20,8 +20,8 @@ following two sphinx extensions:
   in Numpy format
 
 * `sphinx-automodapi <https://github.com/astropy/sphinx-automodapi>`_, a Sphinx
-  developed as part of the Astropy project. This used to be developed directly
-  in ``astropy-helpers`` but is now a standalone package.
+  extension developed as part of the Astropy project. This used to be developed
+  directly in ``astropy-helpers`` but is now a standalone package.
 
 Issues with these sub-modules should be reported in their respective repositories,
 and we will regularly update the bundled versions to reflect the latest released
