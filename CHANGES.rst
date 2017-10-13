@@ -1,7 +1,7 @@
 astropy-helpers Changelog
 *************************
 
-2.0.2 (unreleased)
+2.0.2 (2017-10-13)
 ------------------
 
 - Added new helper function add_openmp_flags_if_available that can add
