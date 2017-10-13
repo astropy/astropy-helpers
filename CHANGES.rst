@@ -11,6 +11,12 @@ astropy-helpers Changelog
   with twine and get registered automatically. [#332]
 
 
+2.0.3 (unreleased)
+------------------
+
+- Nothing changed yet.
+
+
 2.0.2 (2017-10-13)
 ------------------
 
@@ -37,6 +43,7 @@ astropy-helpers Changelog
 
 - Allow custom Sphinx doctest extension to recognize and process standard
   doctest directives ``testsetup`` and ``doctest``. [#335]
+
 
 2.0.1 (2017-07-28)
 ------------------
