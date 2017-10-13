@@ -10,7 +10,8 @@ astropy-helpers Changelog
 - Removing unused 'register' command since packages should be uploaded
   with twine and get registered automatically. [#332]
 
-2.0.2 (unreleased)
+
+2.0.2 (2017-10-13)
 ------------------
 
 - Added new helper function add_openmp_flags_if_available that can add
