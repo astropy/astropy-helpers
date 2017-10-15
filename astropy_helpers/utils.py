@@ -308,8 +308,8 @@ def extends_doc(extended_func):
     function, and appends to it (along with a newline) the docstring of the
     wrapper function.
 
-    Example
-    -------
+    Examples
+    --------
 
         >>> def foo():
         ...     '''Hello.'''
@@ -345,7 +345,7 @@ def deprecated(since, message='', name='', alternative='', pending=False,
     To mark an attribute as deprecated, use `deprecated_attribute`.
 
     Parameters
-    ------------
+    ----------
     since : str
         The release at which this API became deprecated.  This is
         required.
