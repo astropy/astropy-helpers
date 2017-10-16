@@ -214,7 +214,7 @@ def add_command_hooks(commands, srcdir='.'):
         else:
             return cmdcls.__name__
 
-    packages = filter_packages(find_packages(srcdir))
+    packages = find_packages(srcdir)
     dist = get_dummy_distribution()
 
     hooks = collections.defaultdict(dict)
@@ -369,7 +369,7 @@ def get_package_info(srcdir='.', exclude=()):
             AstropyDeprecationWarning)
 
     # Use the find_packages tool to locate all packages and modules
-    packages = filter_packages(find_packages(srcdir, exclude=exclude))
+    packages = find_packages(srcdir, exclude=exclude)
 
     # Update package_dir if the package lies in a subdirectory
     if srcdir != '.':
@@ -690,17 +690,6 @@ def find_packages(where='.', exclude=(), invalidate_cache=False):
     _module_state['package_cache'] = packages
 
     return packages
-
-
-def filter_packages(packagenames):
-    """
-    Removes some packages from the package list that shouldn't be
-    installed on the current version of Python.
-    """
-
-    exclude = '_py2'
-
-    return [x for x in packagenames if not x.endswith(exclude)]
 
 
 class FakeBuildSphinx(Command):
