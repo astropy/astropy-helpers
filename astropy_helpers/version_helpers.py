@@ -116,6 +116,7 @@ except ImportError:
 _FROZEN_VERSION_PY_WITH_GIT_HEADER = """
 {git_helpers}
 
+
 _packagename = "{packagename}"
 _last_generated_version = "{verstr}"
 _last_githash = "{githash}"
