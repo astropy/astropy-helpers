@@ -69,7 +69,5 @@ class _DummyCommandMeta(type):
         raise DistutilsArgError(cls.error_msg)
 
 
-exec(dedent("""
-        class _DummyCommand(Command, object, metaclass=_DummyCommandMeta):
-            pass
-    """))
+class _DummyCommand(Command, object, metaclass=_DummyCommandMeta):
+    pass
