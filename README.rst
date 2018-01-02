@@ -4,11 +4,21 @@ astropy-helpers
 * Stable versions: https://pypi.org/project/astropy-helpers/
 * Development version, issue tracker: https://github.com/astropy/astropy-helpers
 
+
+.. warning::
+
+    Please note that version ``v3.0`` and later of ``astropy-helpers`` does
+    require Python >=3.5. If you wish to maintain Python2 support for your
+    package that uses ``astropy-helpers``, then do not upgrade the helpers t
+    o ``v3.0+``. We will still provide Python2.7 compatible releases on the
+    ``v2.0.x`` branch during the lifetime of the ``astropy`` core package
+    LTS of ``v2.0.x``.
+
 This project provides a Python package, ``astropy_helpers``, which includes
 many build, installation, and documentation-related tools used by the Astropy
 project, but packaged separately for use by other projects that wish to
 leverage this work.  The motivation behind this package and details of its
-implementation are in the accepted 
+implementation are in the accepted
 `Astropy Proposal for Enhancement (APE) 4 <https://github.com/astropy/astropy-APEs/blob/master/APE4.rst>`_.
 
 The ``astropy_helpers.extern`` sub-module includes modules developed elsewhere
@@ -41,7 +51,7 @@ version numbers. Hence, the initial release is 0.4, in parallel with Astropy
 v0.4, which will be the first version  of Astropy to use ``astropy-helpers``.
 
 For examples of how to implement ``astropy-helpers`` in a project,
-see the ``setup.py`` and ``setup.cfg`` files of the 
+see the ``setup.py`` and ``setup.cfg`` files of the
 `Affiliated package template <https://github.com/astropy/package-template>`_.
 
 .. image:: https://travis-ci.org/astropy/astropy-helpers.svg
