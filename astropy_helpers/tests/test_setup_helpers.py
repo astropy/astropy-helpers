@@ -19,10 +19,6 @@ from . import reset_setup_helpers, reset_distutils_log, fix_hide_setuptools  # n
 from . import run_setup, cleanup_import
 
 
-# Determine whether we're in a PY2 environment without using six
-USING_PY2 = sys.version_info < (3,0,0)
-
-
 def _extension_test_package(tmpdir, request, extension_type='c'):
     """Creates a simple test package with an extension module."""
 
@@ -182,12 +178,10 @@ def test_compiler_module(c_extension_test_package):
                        '--single-version-externally-managed',
                        '--install-lib={0}'.format(install_temp),
                        '--record={0}'.format(install_temp.join('record.txt'))])
-        # Skip this portion of the test on windows systems with Py 2.7 since
-        # it is known to produce additional warnings.
-        if not (USING_PY2 or sys.platform.startswith('win')):
-            # Warning expected from get_git_devstr, called by generate_version_py
-            assert len(w) == 1
-            assert str(w[0].message).startswith("No git repository present at")
+
+        # Warning expected from get_git_devstr, called by generate_version_py
+        assert len(w) == 1
+        assert str(w[0].message).startswith("No git repository present at")
 
     with install_temp.as_cwd():
         import apyhtest_eva
@@ -220,10 +214,9 @@ def test_no_cython_buildext(c_extension_test_package, monkeypatch):
     with test_pkg.as_cwd():
         with warnings.catch_warnings(record=True) as w:
             run_setup('setup.py', ['build_ext', '--inplace'])
-        # Warning expected from get_git_devstr, called by generate_version_py
-        if not USING_PY2:
-            assert len(w) == 1
-            assert str(w[0].message).startswith("No git repository present at")
+
+        assert len(w) == 1
+        assert str(w[0].message).startswith("No git repository present at")
 
     sys.path.insert(0, str(test_pkg))
 
@@ -254,11 +247,10 @@ def test_missing_cython_c_files(pyx_extension_test_package, monkeypatch):
         with pytest.raises(SystemExit) as exc_info:
             with warnings.catch_warnings(record=True) as w:
                 run_setup('setup.py', ['build_ext', '--inplace'])
-            # Warning expected from get_git_devstr, called by generate_version_py
-            if not USING_PY2:
-                assert len(w) == 1
-                assert str(w[0].message).startswith(
-                    "No git repository present at")
+
+            assert len(w) == 1
+            assert str(w[0].message).startswith(
+                "No git repository present at")
 
     msg = ('Could not find C/C++ file '
            '{0}.(c/cpp)'.format('apyhtest_eva/unit02'.replace('/', os.sep)))

@@ -19,9 +19,6 @@ from sphinx.setup_command import BuildDoc as SphinxBuildDoc
 from ..utils import minversion, AstropyDeprecationWarning
 
 
-PY3 = sys.version_info[0] >= 3
-
-
 class AstropyBuildDocs(SphinxBuildDoc):
     """
     A version of the ``build_docs`` command that uses the version of Astropy
@@ -90,16 +87,12 @@ class AstropyBuildDocs(SphinxBuildDoc):
                     log.info('Not cleaning directory ' + d + ' because '
                              'not present or not a directory')
 
-
     def run(self):
         # TODO: Break this method up into a few more subroutines and
         # document them better
         import webbrowser
 
-        if PY3:
-            from urllib.request import pathname2url
-        else:
-            from urllib import pathname2url
+        from urllib.request import pathname2url
 
         # This is used at the very end of `run` to decide if sys.exit should
         # be called. If it's None, it won't be.

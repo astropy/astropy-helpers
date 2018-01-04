@@ -20,23 +20,7 @@ try:
 except ImportError:
     import_machinery = None
 
-
-# Python 3.3's importlib caches filesystem reads for faster imports in the
-# general case. But sometimes it's necessary to manually invalidate those
-# caches so that the import system can pick up new generated files.  See
-# https://github.com/astropy/astropy/issues/820
-if sys.version_info[:2] >= (3, 3):
-    from importlib import invalidate_caches
-else:
-    def invalidate_caches():
-        return None
-
-
-# Python 2/3 compatibility
-if sys.version_info[0] < 3:
-    string_types = (str, unicode)  # noqa
-else:
-    string_types = (str,)
+from importlib import invalidate_caches
 
 
 # Note: The following Warning subclasses are simply copies of the Warnings in
@@ -81,19 +65,12 @@ def get_numpy_include_path():
     # install, since Numpy may still think it's in "setup mode", when
     # in fact we're ready to use it to build astropy now.
 
-    if sys.version_info[0] >= 3:
-        import builtins
-        if hasattr(builtins, '__NUMPY_SETUP__'):
-            del builtins.__NUMPY_SETUP__
-        import imp
-        import numpy
-        imp.reload(numpy)
-    else:
-        import __builtin__
-        if hasattr(__builtin__, '__NUMPY_SETUP__'):
-            del __builtin__.__NUMPY_SETUP__
-        import numpy
-        reload(numpy)
+    import builtins
+    if hasattr(builtins, '__NUMPY_SETUP__'):
+        del builtins.__NUMPY_SETUP__
+    import imp
+    import numpy
+    imp.reload(numpy)
 
     try:
         numpy_include = numpy.get_include()
@@ -105,7 +82,7 @@ def get_numpy_include_path():
 class _DummyFile(object):
     """A noop writeable object."""
 
-    errors = ''  # Required for Python 3.x
+    errors = ''
 
     def write(self, s):
         pass
@@ -245,7 +222,7 @@ def import_file(filename, name=None):
     # generates an underscore-separated name which is more likely to
     # be unique, and it doesn't really matter because the name isn't
     # used directly here anyway.
-    mode = 'U' if sys.version_info[0] < 3 else 'r'
+    mode = 'r'
 
     if name is None:
         basename = os.path.splitext(filename)[0]
@@ -291,14 +268,6 @@ def resolve_name(name):
             raise ImportError(name)
 
     return ret
-
-
-if sys.version_info[0] >= 3:
-    def iteritems(dictionary):
-        return dictionary.items()
-else:
-    def iteritems(dictionary):
-        return dictionary.iteritems()
 
 
 def extends_doc(extended_func):
@@ -627,7 +596,7 @@ def minversion(module, version, inclusive=True, version_path='__version__'):
 
     if isinstance(module, types.ModuleType):
         module_name = module.__name__
-    elif isinstance(module, string_types):
+    elif isinstance(module, str):
         module_name = module
         try:
             module = resolve_name(module_name)
@@ -840,23 +809,9 @@ def find_data_files(package, pattern):
         The package inside which to look for data files
     pattern : str
         Pattern (glob-style) to match for the data files (e.g. ``*.dat``).
-        This supports the Python 3.5 ``**``recursive syntax. For example,
-        ``**/*.fits`` matches all files ending with ``.fits``
-        recursively. Only one instance of ``**`` can be included in the
-        pattern.
+        This supports the``**``recursive syntax. For example, ``**/*.fits``
+        matches all files ending with ``.fits`` recursively. Only one
+        instance of ``**`` can be included in the pattern.
     """
 
-    if sys.version_info[:2] >= (3, 5):
-        return glob.glob(os.path.join(package, pattern), recursive=True)
-    else:
-        if '**' in pattern:
-            start, end = pattern.split('**')
-            if end.startswith(('/', os.sep)):
-                end = end[1:]
-            matches = glob.glob(os.path.join(package, start, end))
-            for root, dirs, files in os.walk(os.path.join(package, start)):
-                for dirname in dirs:
-                    matches += glob.glob(os.path.join(root, dirname, end))
-            return matches
-        else:
-            return glob.glob(os.path.join(package, pattern))
+    return glob.glob(os.path.join(package, pattern), recursive=True)

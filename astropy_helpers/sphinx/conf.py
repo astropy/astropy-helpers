@@ -57,15 +57,6 @@ intersphinx_mapping = {
     'astropy': ('http://docs.astropy.org/en/stable/', None),
     'h5py': ('http://docs.h5py.org/en/latest/', None)}
 
-if sys.version_info[0] == 2:
-    intersphinx_mapping['python'] = (
-        'https://docs.python.org/2/',
-        (None, 'http://data.astropy.org/intersphinx/python2.inv'))
-    intersphinx_mapping['pythonloc'] = (
-        'http://docs.python.org/',
-        path.abspath(path.join(path.dirname(__file__),
-                               'local/python2_local_links.inv')))
-
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
 exclude_patterns = ['_build']

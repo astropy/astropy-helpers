@@ -11,6 +11,7 @@ from distutils import log, ccompiler, sysconfig
 from distutils.core import Extension
 from distutils.ccompiler import get_default_compiler
 from setuptools.command.build_ext import build_ext as SetuptoolsBuildExt
+from setuptools.command import build_py
 
 from ..utils import get_numpy_include_path, invalidate_caches, classproperty
 from ..version_helpers import get_pkg_version_module
@@ -236,8 +237,7 @@ def generate_build_ext_command(packagename, release):
             # instance of a build_ext command that uses that base class (right
             # now the options being Cython.Distutils.build_ext, or the stock
             # setuptools build_ext)
-            new_cls = super(build_ext, cls._final_class).__new__(
-                    cls._final_class)
+            new_cls = super(build_ext, cls._final_class).__new__(cls._final_class)
 
             # Since the new cls is not a subclass of the original cls, we must
             # manually call its __init__
@@ -303,7 +303,7 @@ def generate_build_ext_command(packagename, release):
             # Update cython_version.py if building with Cython
             try:
                 cython_version = get_pkg_version_module(
-                        packagename, fromlist=['cython_version'])[0]
+                    packagename, fromlist=['cython_version'])[0]
             except (AttributeError, ImportError):
                 cython_version = 'unknown'
             if self.uses_cython and self.uses_cython != cython_version:

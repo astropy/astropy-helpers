@@ -13,17 +13,7 @@ from . import reset_setup_helpers, reset_distutils_log, fix_hide_setuptools  # n
 from . import run_cmd, run_setup, cleanup_import
 from astropy_helpers.git_helpers import get_git_devstr
 
-
-PY3 = sys.version_info[0] == 3
-
-if PY3:
-    _text_type = str
-else:
-    _text_type = unicode  # noqa
-
-
 _DEV_VERSION_RE = re.compile(r'\d+\.\d+(?:\.\d+)?\.dev(\d+)')
-
 
 TEST_VERSION_SETUP_PY = """\
 #!/usr/bin/env python
@@ -204,7 +194,7 @@ def test_installed_git_version(version_test_package, version, tmpdir, capsys):
         try:
             import apyhtest_eva
             githash = apyhtest_eva.__githash__
-            assert githash and isinstance(githash, _text_type)
+            assert githash and isinstance(githash, str)
             # Ensure that it does in fact look like a git hash and not some
             # other arbitrary string
             assert re.match(r'[0-9a-f]{40}', githash)

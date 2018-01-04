@@ -43,10 +43,7 @@ if ('__main__' in sys.modules and
     filename = os.path.basename(sys.modules['__main__'].__file__)
 
     if filename.rstrip('co') == 'setup.py':
-        if sys.version_info[0] >= 3:
-            import builtins
-        else:
-            import __builtin__ as builtins
+        import builtins
         builtins._ASTROPY_SETUP_ = True
 
     del filename

@@ -15,7 +15,6 @@ import traceback
 import warnings
 
 from distutils import log
-from distutils.dist import Distribution
 from distutils.errors import DistutilsOptionError, DistutilsModuleError
 from distutils.core import Extension
 from distutils.core import Command
@@ -31,9 +30,6 @@ from .utils import (walk_skip_hidden, import_file, extends_doc,
                     resolve_name, AstropyDeprecationWarning)
 
 from .commands.build_ext import generate_build_ext_command
-from .commands.build_py import AstropyBuildPy
-from .commands.install import AstropyInstall
-from .commands.install_lib import AstropyInstallLib
 from .commands.test import AstropyTest
 
 # These imports are not used in this module, but are included for backwards
@@ -66,13 +62,6 @@ except ImportError:
 except SyntaxError:
     # occurs if markupsafe is recent version, which doesn't support Python 3.2
     pass
-
-
-PY3 = sys.version_info[0] >= 3
-
-
-# This adds a new keyword to the setup() function
-Distribution.skip_2to3 = []
 
 
 def adjust_compiler(package):
@@ -169,15 +158,6 @@ def register_commands(package, version, release, srcdir='.'):
         # we're building a release version
         'build_ext': generate_build_ext_command(package, release),
 
-        # We have a custom build_py to generate the default configuration file
-        'build_py': AstropyBuildPy,
-
-        # Since install can (in some circumstances) be run without
-        # first building, we also need to override install and
-        # install_lib.  See #2223
-        'install': AstropyInstall,
-        'install_lib': AstropyInstallLib,
-
         'build_sphinx': AstropyBuildSphinx,
         'build_docs': AstropyBuildDocs
     }
@@ -226,7 +206,7 @@ def add_command_hooks(commands, srcdir='.'):
         else:
             return cmdcls.__name__
 
-    packages = filter_packages(find_packages(srcdir))
+    packages = find_packages(srcdir)
     dist = get_dummy_distribution()
 
     hooks = collections.defaultdict(dict)
@@ -348,8 +328,7 @@ def get_package_info(srcdir='.', exclude=()):
     packages in ``srcdir`` and locating a ``setup_package.py`` module.
     This module can contain the following functions:
     ``get_extensions()``, ``get_package_data()``,
-    ``get_build_options()``, ``get_external_libraries()``,
-    and ``requires_2to3()``.
+    ``get_build_options()``, and ``get_external_libraries()``.
 
     Each of those functions take no arguments.
 
@@ -368,17 +347,11 @@ def get_package_info(srcdir='.', exclude=()):
 
     - ``get_entry_points()`` returns a dict formatted as required by
       the ``entry_points`` argument to ``setup()``.
-
-    - ``requires_2to3()`` should return `True` when the source code
-      requires `2to3` processing to run on Python 3.x.  If
-      ``requires_2to3()`` is missing, it is assumed to return `True`.
-
     """
     ext_modules = []
     packages = []
     package_data = {}
     package_dir = {}
-    skip_2to3 = []
 
     if exclude:
         warnings.warn(
@@ -388,7 +361,7 @@ def get_package_info(srcdir='.', exclude=()):
             AstropyDeprecationWarning)
 
     # Use the find_packages tool to locate all packages and modules
-    packages = filter_packages(find_packages(srcdir, exclude=exclude))
+    packages = find_packages(srcdir, exclude=exclude)
 
     # Update package_dir if the package lies in a subdirectory
     if srcdir != '.':
@@ -407,13 +380,6 @@ def get_package_info(srcdir='.', exclude=()):
             libraries = setuppkg.get_external_libraries()
             for library in libraries:
                 add_external_library(library)
-        if hasattr(setuppkg, 'requires_2to3'):
-            requires_2to3 = setuppkg.requires_2to3()
-        else:
-            requires_2to3 = True
-        if not requires_2to3:
-            skip_2to3.append(
-                os.path.dirname(setuppkg.__file__))
 
     for setuppkg in iter_setup_packages(srcdir, packages):
         # get_extensions must include any Cython extensions by their .pyx
@@ -447,7 +413,6 @@ def get_package_info(srcdir='.', exclude=()):
         'packages': packages,
         'package_dir': package_dir,
         'package_data': package_data,
-        'skip_2to3': skip_2to3
         }
 
 
@@ -717,20 +682,6 @@ def find_packages(where='.', exclude=(), invalidate_cache=False):
     _module_state['package_cache'] = packages
 
     return packages
-
-
-def filter_packages(packagenames):
-    """
-    Removes some packages from the package list that shouldn't be
-    installed on the current version of Python.
-    """
-
-    if PY3:
-        exclude = '_py2'
-    else:
-        exclude = '_py3'
-
-    return [x for x in packagenames if not x.endswith(exclude)]
 
 
 class FakeBuildSphinx(Command):
