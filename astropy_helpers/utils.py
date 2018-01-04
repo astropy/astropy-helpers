@@ -270,10 +270,6 @@ def resolve_name(name):
     return ret
 
 
-def iteritems(dictionary):
-    return dictionary.items()
-
-
 def extends_doc(extended_func):
     """
     A function decorator for use when wrapping an existing function but adding

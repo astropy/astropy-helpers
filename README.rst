@@ -8,11 +8,11 @@ astropy-helpers
 .. warning::
 
     Please note that version ``v3.0`` and later of ``astropy-helpers`` does
-    require Python >=3.5. If you wish to maintain Python2 support for your
-    package that uses ``astropy-helpers``, then do not upgrade the helpers t
-    o ``v3.0+``. We will still provide Python2.7 compatible releases on the
-    ``v2.0.x`` branch during the lifetime of the ``astropy`` core package
-    LTS of ``v2.0.x``.
+    require Python 3.5 or later. If you wish to maintain Python 2 support
+    for your package that uses ``astropy-helpers``, then do not upgrade the
+    helpers to ``v3.0+``. We will still provide Python 2.7 compatible
+    releases on the ``v2.0.x`` branch during the lifetime of the ``astropy``
+    core package LTS of ``v2.0.x``.
 
 This project provides a Python package, ``astropy_helpers``, which includes
 many build, installation, and documentation-related tools used by the Astropy

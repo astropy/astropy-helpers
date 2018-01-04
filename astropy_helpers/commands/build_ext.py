@@ -237,8 +237,7 @@ def generate_build_ext_command(packagename, release):
             # instance of a build_ext command that uses that base class (right
             # now the options being Cython.Distutils.build_ext, or the stock
             # setuptools build_ext)
-            new_cls = super(build_ext, cls._final_class).__new__(
-                cls._final_class)
+            new_cls = super(build_ext, cls._final_class).__new__(cls._final_class)
 
             # Since the new cls is not a subclass of the original cls, we must
             # manually call its __init__

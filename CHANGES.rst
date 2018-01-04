@@ -4,8 +4,8 @@ astropy-helpers Changelog
 3.0 (unreleased)
 ----------------
 
-- Removing Python2 support, including 2to3. Packages wishing to keep Python2
-  support should NOT update to this version. [#340]
+- Removing Python 2 support, including 2to3. Packages wishing to keep Python
+  2 support should NOT update to this version. [#340]
 
 - Removing deprecated _test_compat making astropy a hard dependency for
   packages wishing to use the astropy tests machinery. [#314]
