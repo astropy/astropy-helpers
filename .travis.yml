@@ -20,6 +20,7 @@ env:
       EVENT_TYPE='push pull_request cron'
 
   global:
+    - SETUPTOOLS_VERSION=27
     - CONDA_DEPENDENCIES="setuptools sphinx cython numpy"
     - PIP_DEPENDENCIES="coveralls pytest-cov"
     - EVENT_TYPE='push pull_request'
