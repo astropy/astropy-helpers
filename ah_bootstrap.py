@@ -147,6 +147,11 @@ from distutils.debug import DEBUG
 DIST_NAME = 'astropy-helpers'
 PACKAGE_NAME = 'astropy_helpers'
 
+if PY3:
+    UPPER_VERSION_EXCLUSIVE = None
+else:
+    UPPER_VERSION_EXCLUSIVE = '3'
+
 # Defaults for other options
 DOWNLOAD_IF_NEEDED = True
 INDEX_URL = 'https://pypi.python.org/simple'
@@ -501,7 +506,10 @@ class _Bootstrapper(object):
         if version:
             req = '{0}=={1}'.format(DIST_NAME, version)
         else:
-            req = DIST_NAME
+            if UPPER_VERSION_EXCLUSIVE is None:
+                req = DIST_NAME
+            else:
+                req = '{0}<{1}'.format(DIST_NAME, UPPER_VERSION_EXCLUSIVE)
 
         attrs = {'setup_requires': [req]}
 
