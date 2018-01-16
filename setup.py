@@ -45,6 +45,7 @@ setup(
         'Topic :: System :: Archiving :: Packaging'
     ],
     cmdclass=cmdclass,
+    python_requires='>=3.5',
     zip_safe=False,
     **get_package_info(exclude=['astropy_helpers.tests'])
 )
