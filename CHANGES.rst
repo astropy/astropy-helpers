@@ -19,6 +19,8 @@ astropy-helpers Changelog
 
 - Make sure that astropy-helpers 3.x.x is not downloaded on Python 2. [#362, #363]
 
+- The bundled version of sphinx-automodapi has been updated to v0.7. [#365]
+
 
 2.0.2 (2017-10-13)
 ------------------
