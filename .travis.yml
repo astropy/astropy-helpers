@@ -41,6 +41,11 @@ matrix:
     - os: linux
       env: PYTHON_VERSION=3.6 SPHINX_VERSION='<1.6'
 
+  allow_failures:
+    - env: PYTHON_VERSION=3.6 SETUPTOOLS_VERSION=dev DEBUG=True
+           CONDA_DEPENDENCIES='sphinx cython numpy packaging six appdirs'
+           EVENT_TYPE='push pull_request cron'
+
 install:
 
     - git clone git://github.com/astropy/ci-helpers.git
