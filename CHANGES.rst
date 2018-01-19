@@ -6,6 +6,8 @@ astropy-helpers Changelog
 
 - Removing deprecated test_helpers.py file. [#369]
 
+- Remove bundled sphinx theme. [#367]
+
 
 3.0.1 (unreleased)
 ------------------
