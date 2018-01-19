@@ -47,5 +47,6 @@ setup(
     cmdclass=cmdclass,
     python_requires='>=3.5',
     zip_safe=False,
+    install_requires=['sphinx-astropy-theme'],
     **get_package_info(exclude=['astropy_helpers.tests'])
 )
