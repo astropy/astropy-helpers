@@ -15,7 +15,7 @@ astropy-helpers Changelog
 
 - Add --auto-use and --no-auto-use command-line flags to match the
   ``auto_use`` configuration option, and add an alias
-  ``--use-system-astropy-helpers`` for ``--no-auto-use``.
+  ``--use-system-astropy-helpers`` for ``--no-auto-use``. [#366]
 
 2.0.3 (unreleased)
 ------------------
