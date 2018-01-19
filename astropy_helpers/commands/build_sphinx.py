@@ -127,7 +127,10 @@ class AstropyBuildDocs(SphinxBuildDoc):
         build_cmd_path = os.path.abspath(build_cmd.build_lib)
 
         ah_importer = pkgutil.get_importer('astropy_helpers')
-        ah_path = os.path.abspath(ah_importer.path)
+        if ah_importer is None:
+            ah_path = '.'
+        else:
+            ah_path = os.path.abspath(ah_importer.path)
 
         # Now generate the source for and spawn a new process that runs the
         # command.  This is needed to get the correct imports for the built
