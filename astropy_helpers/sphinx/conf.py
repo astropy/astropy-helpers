@@ -209,7 +209,12 @@ html_sidebars = {
 try:
     import sphinx_astropy_theme
 except ImportError:
-    pass
+    from sphinx.util import logging
+    logger = logging.getLogger(__name__)
+    logger.info("NOTE: the sphinx-astropy-theme package is not installed, so "
+                "the 'bootstrap-astropy' theme will not be available. If you need "
+                "this theme, you can install it with 'pip install "
+                "sphinx-astropy-theme'", color='blue')
 else:
     html_theme_path = sphinx_astropy_theme.get_html_theme_path()
     html_favicon = 'astropy_logo.ico'
