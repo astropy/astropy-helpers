@@ -8,6 +8,10 @@ astropy-helpers Changelog
 
 - The bundled version of sphinx-automodapi has been updated to v0.7. [#365]
 
+- Add --auto-use and --no-auto-use command-line flags to match the
+  ``auto_use`` configuration option, and add an alias
+  ``--use-system-astropy-helpers`` for ``--no-auto-use``. [#366]
+
 
 2.0.2 (2017-10-13)
 ------------------
