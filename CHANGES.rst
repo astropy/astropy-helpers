@@ -13,6 +13,9 @@ astropy-helpers Changelog
 - Removing unused 'register' command since packages should be uploaded
   with twine and get registered automatically. [#332]
 
+- Add --auto-use and --no-auto-use command-line flags to match the
+  ``auto_use`` configuration option, and add an alias
+  ``--use-system-astropy-helpers`` for ``--no-auto-use``.
 
 2.0.3 (unreleased)
 ------------------
