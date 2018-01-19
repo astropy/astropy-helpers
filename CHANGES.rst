@@ -1,6 +1,11 @@
 astropy-helpers Changelog
 *************************
 
+3.1 (unreleased)
+----------------
+
+- Remove bundled sphinx theme. [#367]
+
 3.0 (unreleased)
 ----------------
 
