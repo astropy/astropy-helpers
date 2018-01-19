@@ -183,8 +183,6 @@ graphviz_dot_args = [
 # -- Options for HTML output -------------------------------------------------
 
 # Add any paths that contain custom themes here, relative to this directory.
-import sphinx_astropy_theme
-html_theme_path = sphinx_astropy_theme.get_html_theme_path()
 
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
@@ -202,9 +200,19 @@ html_sidebars = {
 # docs.  This file should be a Windows icon file (.ico) being 16x16 or 32x32
 # pixels large.
 
-# included in the bootstrap-astropy theme
-html_favicon = path.join(html_theme_path[0], html_theme, 'static',
-                         'astropy_logo.ico')
+# We include by default the favicon that is in the bootstrap-astropy theme.
+# However, we use a try...except because the user may not be using the
+# bootstrap astropy theme and might not have it installed. But if they do
+# want to use bootstrap-astropy they will need sphinx-astropy-theme to be
+# installed for 'bootstrap-astropy' to work above, in which case the code
+# below will succeed.
+try:
+    import sphinx_astropy_theme
+except ImportError:
+    pass
+else:
+    html_theme_path = sphinx_astropy_theme.get_html_theme_path()
+    html_favicon = 'astropy_logo.ico'
 
 # If not '', a 'Last updated on:' timestamp is inserted at every page bottom,
 # using the given strftime format.
