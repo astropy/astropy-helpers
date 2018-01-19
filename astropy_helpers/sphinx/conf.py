@@ -183,7 +183,8 @@ graphviz_dot_args = [
 # -- Options for HTML output -------------------------------------------------
 
 # Add any paths that contain custom themes here, relative to this directory.
-html_theme_path = [path.abspath(path.join(path.dirname(__file__), 'themes'))]
+import sphinx_astropy_theme
+html_theme_path = sphinx_astropy_theme.get_html_theme_path()
 
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.

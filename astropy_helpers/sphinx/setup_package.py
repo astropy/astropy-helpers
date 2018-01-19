@@ -2,9 +2,4 @@
 
 
 def get_package_data():
-    # Install the theme files
-    return {
-        'astropy_helpers.sphinx': [
-            'local/*.inv',
-            'themes/bootstrap-astropy/*.*',
-            'themes/bootstrap-astropy/static/*.*']}
+    return {'astropy_helpers.sphinx': ['local/*.inv']}
