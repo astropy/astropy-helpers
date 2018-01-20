@@ -1,7 +1,7 @@
 astropy-helpers Changelog
 *************************
 
-3.0rc1 (2018-01-07)
+3.0rc2 (2018-01-20)
 -------------------
 
 - Removing Python 2 support, including 2to3. Packages wishing to keep Python
@@ -14,7 +14,7 @@ astropy-helpers Changelog
   with twine and get registered automatically. [#332]
 
 
-2.0.3 (unreleased)
+2.0.3 (2018-01-20)
 ------------------
 
 - Make sure that astropy-helpers 3.x.x is not downloaded on Python 2. [#362, #363]
