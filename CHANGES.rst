@@ -1,7 +1,7 @@
 astropy-helpers Changelog
 *************************
 
-2.0.3 (unreleased)
+2.0.3 (2018-01-20)
 ------------------
 
 - Make sure that astropy-helpers 3.x.x is not downloaded on Python 2. [#363]
