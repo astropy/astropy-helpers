@@ -13,16 +13,17 @@ astropy-helpers Changelog
 - Removing unused 'register' command since packages should be uploaded
   with twine and get registered automatically. [#332]
 
-- Add --auto-use and --no-auto-use command-line flags to match the
-  ``auto_use`` configuration option, and add an alias
-  ``--use-system-astropy-helpers`` for ``--no-auto-use``. [#366]
 
-2.0.3 (unreleased)
+2.0.3 (2018-01-20)
 ------------------
 
 - Make sure that astropy-helpers 3.x.x is not downloaded on Python 2. [#362, #363]
 
 - The bundled version of sphinx-automodapi has been updated to v0.7. [#365]
+
+- Add --auto-use and --no-auto-use command-line flags to match the
+  ``auto_use`` configuration option, and add an alias
+  ``--use-system-astropy-helpers`` for ``--no-auto-use``. [#366]
 
 
 2.0.2 (2017-10-13)
