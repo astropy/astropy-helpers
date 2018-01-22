@@ -19,6 +19,12 @@ astropy-helpers Changelog
   with twine and get registered automatically. [#332]
 
 
+2.0.4 (unreleased)
+------------------
+
+- Nothing changed yet.
+
+
 2.0.3 (2018-01-20)
 ------------------
 
