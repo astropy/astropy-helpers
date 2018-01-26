@@ -220,7 +220,7 @@ except ImportError:
                 "astropy-sphinx-theme'", color='blue')
 else:
     html_theme_path = astropy_sphinx_theme.get_html_theme_path()
-    html_favicon = 'astropy_logo.ico'
+    html_favicon = os.path.join(html_theme_path[0], html_theme, 'static', 'astropy_logo.ico')
 
 # If not '', a 'Last updated on:' timestamp is inserted at every page bottom,
 # using the given strftime format.
