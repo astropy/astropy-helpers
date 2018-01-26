@@ -209,7 +209,10 @@ html_sidebars = {
 try:
     import sphinx_astropy_theme
 except ImportError:
-    from sphinx.util import logging
+    try:
+        from sphinx.util import logging
+    except ImportError:
+        import logging
     logger = logging.getLogger(__name__)
     logger.info("NOTE: the astropy-sphinx-theme package is not installed, so "
                 "the 'bootstrap-astropy' theme will not be available. If you need "
