@@ -284,12 +284,6 @@ def test_build_docs(tmpdir, mode):
 
     docs = test_pkg.mkdir('docs')
 
-    autosummary = docs.mkdir('_templates').mkdir('autosummary')
-
-    autosummary.join('base.rst').write('{% extends "autosummary_core/base.rst" %}')
-    autosummary.join('class.rst').write('{% extends "autosummary_core/class.rst" %}')
-    autosummary.join('module.rst').write('{% extends "autosummary_core/module.rst" %}')
-
     docs_dir = test_pkg.join('docs')
     docs_dir.join('conf.py').write(dedent("""\
         import sys
