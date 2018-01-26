@@ -203,7 +203,7 @@ html_sidebars = {
 # We include by default the favicon that is in the bootstrap-astropy theme.
 # However, we use a try...except because the user may not be using the
 # bootstrap astropy theme and might not have it installed. But if they do
-# want to use bootstrap-astropy they will need sphinx-astropy-theme to be
+# want to use bootstrap-astropy they will need astropy-sphinx-theme to be
 # installed for 'bootstrap-astropy' to work above, in which case the code
 # below will succeed.
 try:
@@ -211,10 +211,10 @@ try:
 except ImportError:
     from sphinx.util import logging
     logger = logging.getLogger(__name__)
-    logger.info("NOTE: the sphinx-astropy-theme package is not installed, so "
+    logger.info("NOTE: the astropy-sphinx-theme package is not installed, so "
                 "the 'bootstrap-astropy' theme will not be available. If you need "
                 "this theme, you can install it with 'pip install "
-                "sphinx-astropy-theme'", color='blue')
+                "astropy-sphinx-theme'", color='blue')
 else:
     html_theme_path = sphinx_astropy_theme.get_html_theme_path()
     html_favicon = 'astropy_logo.ico'
