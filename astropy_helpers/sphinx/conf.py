@@ -207,7 +207,7 @@ html_sidebars = {
 # installed for 'bootstrap-astropy' to work above, in which case the code
 # below will succeed.
 try:
-    import sphinx_astropy_theme
+    import astropy_sphinx_theme
 except ImportError:
     try:
         from sphinx.util import logging
@@ -219,7 +219,7 @@ except ImportError:
                 "this theme, you can install it with 'pip install "
                 "astropy-sphinx-theme'", color='blue')
 else:
-    html_theme_path = sphinx_astropy_theme.get_html_theme_path()
+    html_theme_path = astropy_sphinx_theme.get_html_theme_path()
     html_favicon = 'astropy_logo.ico'
 
 # If not '', a 'Last updated on:' timestamp is inserted at every page bottom,
