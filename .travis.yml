@@ -19,7 +19,7 @@ env:
 
   global:
     - CONDA_DEPENDENCIES="setuptools sphinx cython numpy"
-    - PIP_DEPENDENCIES="coveralls pytest-cov"
+    - PIP_DEPENDENCIES="coveralls pytest-cov astropy-sphinx-theme"
     - EVENT_TYPE='push pull_request'
 
 matrix:
@@ -28,7 +28,7 @@ matrix:
       env: PYTHON_VERSION=3.6 SPHINX_VERSION='>1.6'
 
     - os: linux
-      env: PYTHON_VERSION=3.6 PIP_DEPENDENCIES='git+https://github.com/sphinx-doc/sphinx.git#egg=sphinx coveralls pytest-cov'
+      env: PYTHON_VERSION=3.6 PIP_DEPENDENCIES='git+https://github.com/sphinx-doc/sphinx.git#egg=sphinx coveralls pytest-cov astropy-sphinx-theme'
            CONDA_DEPENDENCIES="setuptools cython numpy"
 
     - os: linux

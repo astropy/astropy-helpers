@@ -14,6 +14,7 @@ environment:
       # babel 2.0 is known to break on Windows:
       # https://github.com/python-babel/babel/issues/174
       CONDA_DEPENDENCIES: "numpy Cython sphinx pytest babel!=2.0 setuptools"
+      PIP_DEPENDENCIES: "astropy-sphinx-theme"
 
   matrix:
       - PYTHON_VERSION: "3.5"
@@ -39,4 +40,3 @@ build: false
 
 test_script:
   - "%CMD_IN_ENV% py.test astropy_helpers"
-
