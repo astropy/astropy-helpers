@@ -291,7 +291,7 @@ def test_build_docs(tmpdir, mode):
         import warnings
         with warnings.catch_warnings():  # ignore matplotlib warning
             warnings.simplefilter("ignore")
-            from astropy_helpers.sphinx.conf import *
+            from sphinx_astropy.conf import *
         exclude_patterns.append('_templates')
     """))
 

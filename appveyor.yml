@@ -14,7 +14,6 @@ environment:
       # babel 2.0 is known to break on Windows:
       # https://github.com/python-babel/babel/issues/174
       CONDA_DEPENDENCIES: "numpy Cython sphinx pytest babel!=2.0 setuptools"
-      PIP_DEPENDENCIES: "astropy-sphinx-theme"
 
   matrix:
       - PYTHON_VERSION: "3.5"
@@ -34,6 +33,9 @@ install:
     # Some of the tests use git commands that require a user to be configured
     - git config --global user.name "A U Thor"
     - git config --global user.email "author@example.com"
+
+    # TEMP: replace by sphinx-astropy in PIP_DEPENDENCIES once installed
+    - "%CMD_IN_ENV% pip install https://github.com/astrofrog/sphinx-astropy/archive/added-package-layout.zip"
 
 # Not a .NET project, we build the package in the install step instead
 build: false

@@ -14,12 +14,12 @@ env:
   matrix:
     - PYTHON_VERSION=3.5
     - PYTHON_VERSION=3.6 SETUPTOOLS_VERSION=dev DEBUG=True
-      CONDA_DEPENDENCIES='sphinx cython numpy packaging appdirs'
+      CONDA_DEPENDENCIES='cython numpy packaging appdirs'
       EVENT_TYPE='push pull_request cron'
 
   global:
     - CONDA_DEPENDENCIES="setuptools sphinx cython numpy"
-    - PIP_DEPENDENCIES="coveralls pytest-cov astropy-sphinx-theme"
+    - PIP_DEPENDENCIES="coveralls pytest-cov"
     - EVENT_TYPE='push pull_request'
 
 matrix:
@@ -28,7 +28,7 @@ matrix:
       env: PYTHON_VERSION=3.6 SPHINX_VERSION='>1.6'
 
     - os: linux
-      env: PYTHON_VERSION=3.6 PIP_DEPENDENCIES='git+https://github.com/sphinx-doc/sphinx.git#egg=sphinx coveralls pytest-cov astropy-sphinx-theme'
+      env: PYTHON_VERSION=3.6 PIP_DEPENDENCIES='git+https://github.com/sphinx-doc/sphinx.git#egg=sphinx coveralls pytest-cov'
            CONDA_DEPENDENCIES="setuptools cython numpy"
 
     - os: linux
@@ -58,6 +58,9 @@ before_script:
     # Some of the tests use git commands that require a user to be configured
     - git config --global user.name "A U Thor"
     - git config --global user.email "author@example.com"
+
+    # TEMP: replace by sphinx-astropy in PIP_DEPENDENCIES once installed
+    - pip install https://github.com/astrofrog/sphinx-astropy/archive/added-package-layout.zip
 
 script:
     # Use full path for coveragerc; see issue #193
