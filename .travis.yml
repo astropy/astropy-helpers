@@ -14,7 +14,7 @@ env:
   matrix:
     - PYTHON_VERSION=3.5
     - PYTHON_VERSION=3.6 SETUPTOOLS_VERSION=dev DEBUG=True
-      CONDA_DEPENDENCIES='cython numpy packaging appdirs'
+      CONDA_DEPENDENCIES='sphinx cython numpy packaging appdirs'
       EVENT_TYPE='push pull_request cron'
 
   global:
