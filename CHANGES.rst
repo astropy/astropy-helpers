@@ -1,6 +1,11 @@
 astropy-helpers Changelog
 *************************
 
+3.1 (unreleased)
+----------------
+
+- Removing deprecated test_helpers.py file. [#369]
+
 3.0 (unreleased)
 ----------------
 
