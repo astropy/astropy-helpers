@@ -7,6 +7,7 @@ import re
 import shutil
 import subprocess
 import sys
+import glob
 import textwrap
 import warnings
 
@@ -88,6 +89,7 @@ class AstropyBuildDocs(SphinxBuildDoc):
                              'not present or not a directory')
 
     def run(self):
+
         # TODO: Break this method up into a few more subroutines and
         # document them better
         import webbrowser
@@ -138,6 +140,23 @@ class AstropyBuildDocs(SphinxBuildDoc):
 
         """).format(build_cmd_path=build_cmd_path, ah_path=ah_path,
                     srcdir=self.source_dir)
+
+        # We've split out the Sphinx part of astropy-helpers into sphinx-astropy
+        # but we want it to be auto-installed seamlessly for anyone using
+        # build_docs. We check if it's already installed, and if not, we install
+        # it to a local .eggs directory and add the eggs to the path (these
+        # have to each be added to the path, we can't add them by simply adding
+        # .eggs to the path)
+        try:
+            import sphinx_astropy  # noqa
+        except ImportError:
+            from setuptools import Distribution
+            dist = Distribution()
+            dist.fetch_build_eggs('sphinx-astropy')
+            eggs_path = os.path.abspath('.eggs')
+            for egg in glob.glob(os.path.join(eggs_path, '*.egg')):
+                subproccode += 'sys.path.insert(0, {egg!r})\n'.format(egg=egg)
+
         # runlines[1:] removes 'def run(self)' on the first line
         subproccode += textwrap.dedent(''.join(runlines[1:]))
 
