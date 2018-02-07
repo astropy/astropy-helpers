@@ -34,9 +34,6 @@ install:
     - git config --global user.name "A U Thor"
     - git config --global user.email "author@example.com"
 
-    # TEMP: replace by sphinx-astropy in PIP_DEPENDENCIES once installed
-    - "%CMD_IN_ENV% pip install https://github.com/astrofrog/sphinx-astropy/archive/added-package-layout.zip"
-
 # Not a .NET project, we build the package in the install step instead
 build: false
 
