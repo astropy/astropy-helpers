@@ -25,19 +25,14 @@ env:
 matrix:
   include:
     - os: linux
-      env: PYTHON_VERSION=3.6 SPHINX_VERSION='>1.6'
-
+      env: PYTHON_VERSION=3.6 SPHINX_VERSION='1.6'
+    - os: linux
+      env: PYTHON_VERSION=3.6 SPHINX_VERSION='1.5' SETUPTOOLS_VERSION=27
+    - os: linux
+      env: PYTHON_VERSION=3.5 SPHINX_VERSION='1.4' SETUPTOOLS_VERSION=27
     - os: linux
       env: PYTHON_VERSION=3.6 PIP_DEPENDENCIES='git+https://github.com/sphinx-doc/sphinx.git#egg=sphinx coveralls pytest-cov'
            CONDA_DEPENDENCIES="setuptools cython numpy"
-
-    - os: linux
-      env: PYTHON_VERSION=3.5 SPHINX_VERSION='<1.4'
-    - os: linux
-      env: PYTHON_VERSION=3.5 SPHINX_VERSION='<1.5' SETUPTOOLS_VERSION=27
-    - os: linux
-      env: PYTHON_VERSION=3.6 SPHINX_VERSION='<1.6' SETUPTOOLS_VERSION=27
-
   allow_failures:
     - env: PYTHON_VERSION=3.6 SETUPTOOLS_VERSION=dev DEBUG=True
            CONDA_DEPENDENCIES='sphinx cython numpy packaging appdirs'
