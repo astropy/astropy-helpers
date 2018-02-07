@@ -6,9 +6,9 @@ astropy-helpers Changelog
 
 - Removing deprecated test_helpers.py file. [#369]
 
-- Remove all sphinx components from astropy-helpers. These are now replaced
-  by the sphinx-astropy package in conjunction with the astropy-theme-sphinx,
-  sphinx-automodapi, and numpydoc packages. [#368]
+- Remove all sphinx components from ``astropy-helpers``. These are now replaced
+  by the ``sphinx-astropy`` package in conjunction with the ``astropy-theme-sphinx``,
+  ``sphinx-automodapi``, and ``numpydoc`` packages. [#368]
 
 
 3.0.1 (unreleased)
