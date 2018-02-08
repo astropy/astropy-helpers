@@ -1,7 +1,7 @@
 astropy-helpers Changelog
 *************************
 
-2.0.4 (unreleased)
+2.0.4 (2018-02-09)
 ------------------
 
 - Support dotted package names as namespace packages in generate_version_py.
@@ -11,6 +11,7 @@ astropy-helpers Changelog
 
 - Fix false negative in add_openmp_flags_if_available when measuring code
   coverage with gcc. [#374]
+
 
 2.0.3 (2018-01-20)
 ------------------
