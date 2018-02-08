@@ -22,7 +22,8 @@ astropy-helpers Changelog
 2.0.4 (unreleased)
 ------------------
 
-- Nothing changed yet.
+- Support dotted package names as namespace packages in generate_version_py.
+  [#370]
 
 
 2.0.3 (2018-01-20)
