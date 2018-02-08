@@ -13,7 +13,7 @@ environment:
 
       # babel 2.0 is known to break on Windows:
       # https://github.com/python-babel/babel/issues/174
-      CONDA_DEPENDENCIES: "numpy Cython sphinx pytest babel!=2.0 setuptools=27"
+      CONDA_DEPENDENCIES: "numpy Cython sphinx pytest babel!=2.0 setuptools"
 
   matrix:
       - PYTHON_VERSION: "2.7"

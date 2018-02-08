@@ -7,6 +7,8 @@ astropy-helpers Changelog
 - Support dotted package names as namespace packages in generate_version_py.
   [#370]
 
+- Fix compatibility with setuptools 36.x and above. [#372]
+
 
 2.0.3 (2018-01-20)
 ------------------
