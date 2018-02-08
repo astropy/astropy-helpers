@@ -254,7 +254,8 @@ def generate_version_py(packagename, version, release=None, debug=None,
         # Likewise, keep whatever the current value is, if it exists
         debug = bool(current_debug)
 
-    version_py = os.path.join(srcdir, packagename, 'version.py')
+    package_srcdir = os.path.join(srcdir, *packagename.split('.'))
+    version_py = os.path.join(package_srcdir, 'version.py')
 
     if (last_generated_version != version or current_release != release or
             current_debug != debug):
