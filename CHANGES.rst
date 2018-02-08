@@ -1,8 +1,8 @@
 astropy-helpers Changelog
 *************************
 
-3.0rc2 (2018-01-20)
--------------------
+3.0 (2018-02-09)
+----------------
 
 - Removing Python 2 support, including 2to3. Packages wishing to keep Python
   2 support should NOT update to this version. [#340]
@@ -13,7 +13,8 @@ astropy-helpers Changelog
 - Removing unused 'register' command since packages should be uploaded
   with twine and get registered automatically. [#332]
 
-2.0.4 (unreleased)
+
+2.0.4 (2018-02-09)
 ------------------
 
 - Support dotted package names as namespace packages in generate_version_py.
