@@ -38,4 +38,6 @@ install:
 build: false
 
 test_script:
-  - "%CMD_IN_ENV% py.test astropy_helpers"
+  # Specify basetemp explicitly otherwise some of the filenames exceed
+  # 260 characters when fetch_build_eggs runs.
+  - "%CMD_IN_ENV% py.test --basetemp=\\pytest-tmp astropy_helpers"
