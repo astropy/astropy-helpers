@@ -9,8 +9,6 @@ astropy-helpers Changelog
 3.0 (unreleased)
 ----------------
 
-- Fix compatibility with the latest version of setuptools. [#372]
-
 - Removing Python 2 support, including 2to3. Packages wishing to keep Python
   2 support should NOT update to this version. [#340]
 
@@ -20,12 +18,13 @@ astropy-helpers Changelog
 - Removing unused 'register' command since packages should be uploaded
   with twine and get registered automatically. [#332]
 
-
 2.0.4 (unreleased)
 ------------------
 
 - Support dotted package names as namespace packages in generate_version_py.
   [#370]
+
+- Fix compatibility with setuptools 36.x and above. [#372]
 
 
 2.0.3 (2018-01-20)
