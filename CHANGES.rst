@@ -9,6 +9,8 @@ astropy-helpers Changelog
 3.0 (unreleased)
 ----------------
 
+- Fix compatibility with the latest version of setuptools. [#372]
+
 - Removing Python 2 support, including 2to3. Packages wishing to keep Python
   2 support should NOT update to this version. [#340]
 

@@ -519,12 +519,22 @@ class _Bootstrapper(object):
 
         attrs = {'setup_requires': [req]}
 
+        # NOTE: we need to parse the config file (e.g. setup.cfg) to make sure
+        # it honours the options set in the [easy_install] section, and we need
+        # to explicitly fetch the requirement eggs as setup_requires does not
+        # get honored in recent versions of setuptools:
+        # https://github.com/pypa/setuptools/issues/1273
+
         try:
             if DEBUG:
-                _Distribution(attrs=attrs)
+                dist = _Distribution(attrs=attrs)
+                dist.parse_config_files(ignore_option_errors=True)
+                dist.fetch_build_eggs(req)
             else:
                 with _silence():
-                    _Distribution(attrs=attrs)
+                    dist = _Distribution(attrs=attrs)
+                    dist.parse_config_files(ignore_option_errors=True)
+                    dist.fetch_build_eggs(req)
 
             # If the setup_requires succeeded it will have added the new dist to
             # the main working_set
