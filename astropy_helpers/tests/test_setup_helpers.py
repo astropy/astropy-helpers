@@ -258,7 +258,17 @@ def test_missing_cython_c_files(pyx_extension_test_package, monkeypatch):
     assert msg in str(exc_info.value)
 
 
-@pytest.mark.parametrize('mode', ['cli', 'cli-w', 'direct', 'deprecated', 'cli-l', 'cli-error'])
+MODES = ['cli', 'cli-w', 'deprecated', 'cli-l', 'cli-error']
+
+try:
+    import sphinx_astropy  # noqa
+except ImportError:
+    pass
+else:
+    MODES.append('direct')
+
+
+@pytest.mark.parametrize('mode', MODES)
 def test_build_docs(tmpdir, mode):
     """
     Test for build_docs
