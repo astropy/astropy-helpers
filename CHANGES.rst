@@ -9,6 +9,8 @@ astropy-helpers Changelog
 
 - Fix compatibility with setuptools 36.x and above. [#372]
 
+- Fix false negative in add_openmp_flags_if_available when measuring code
+  coverage with gcc. [#374]
 
 2.0.3 (2018-01-20)
 ------------------
