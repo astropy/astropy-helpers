@@ -154,8 +154,13 @@ class AstropyBuildDocs(SphinxBuildDoc):
             dist = Distribution()
             dist.fetch_build_eggs('sphinx-astropy')
             eggs_path = os.path.abspath('.eggs')
+            # Note that we use append below because we want to make sure that if
+            # a user runs a build which populates the .eggs directory, *then*
+            # installs sphinx-astropy at the system-level, we want to make sure
+            # the .eggs are only used as a last resort if they build the docs
+            # again.
             for egg in glob.glob(os.path.join(eggs_path, '*.egg')):
-                subproccode += 'sys.path.insert(0, {egg!r})\n'.format(egg=egg)
+                subproccode += 'sys.path.append({egg!r})\n'.format(egg=egg)
 
         # runlines[1:] removes 'def run(self)' on the first line
         subproccode += textwrap.dedent(''.join(runlines[1:]))
