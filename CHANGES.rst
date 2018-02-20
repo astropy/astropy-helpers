@@ -33,8 +33,9 @@ astropy-helpers Changelog
 2.0.5 (unreleased)
 ------------------
 
-- Nothing changed yet.
-
+- Fix segmentation faults that occurred when the astropy-helpers submodule
+  was first initialized and packages using astropy-helpers contained
+  Cython code. [#375]
 
 2.0.4 (2018-02-09)
 ------------------
