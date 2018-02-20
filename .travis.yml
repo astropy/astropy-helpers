@@ -18,26 +18,23 @@ env:
       EVENT_TYPE='push pull_request cron'
 
   global:
-    - CONDA_DEPENDENCIES="setuptools sphinx cython numpy"
-    - PIP_DEPENDENCIES="coveralls pytest-cov"
+    - CONDA_DEPENDENCIES="setuptools sphinx cython numpy pytest-cov"
+    - PIP_DEPENDENCIES="coveralls"
     - EVENT_TYPE='push pull_request'
 
 matrix:
   include:
+    # Do one build with sphinx-astropy as one of the tests bypasses the auto-
+    # installation but we want to make sure that test runs for coverage.
     - os: linux
-      env: PYTHON_VERSION=3.6 SPHINX_VERSION='>1.6'
-
+      env: PYTHON_VERSION=3.6 PIP_DEPENDENCIES='coveralls sphinx-astropy'
     - os: linux
-      env: PYTHON_VERSION=3.6 PIP_DEPENDENCIES='git+https://github.com/sphinx-doc/sphinx.git#egg=sphinx coveralls pytest-cov'
-           CONDA_DEPENDENCIES="setuptools cython numpy"
-
+      env: PYTHON_VERSION=3.6 SPHINX_VERSION='1.5' SETUPTOOLS_VERSION=27
     - os: linux
-      env: PYTHON_VERSION=3.5 SPHINX_VERSION='<1.4'
+      env: PYTHON_VERSION=3.5 SPHINX_VERSION='1.4' SETUPTOOLS_VERSION=27
     - os: linux
-      env: PYTHON_VERSION=3.5 SPHINX_VERSION='<1.5' SETUPTOOLS_VERSION=27
-    - os: linux
-      env: PYTHON_VERSION=3.6 SPHINX_VERSION='<1.6' SETUPTOOLS_VERSION=27
-
+      env: PYTHON_VERSION=3.6 PIP_DEPENDENCIES='git+https://github.com/sphinx-doc/sphinx.git#egg=sphinx coveralls'
+           CONDA_DEPENDENCIES="setuptools cython numpy pytest-cov"
   allow_failures:
     - env: PYTHON_VERSION=3.6 SETUPTOOLS_VERSION=dev DEBUG=True
            CONDA_DEPENDENCIES='sphinx cython numpy packaging appdirs'

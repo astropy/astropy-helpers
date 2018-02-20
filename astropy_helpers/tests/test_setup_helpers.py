@@ -258,7 +258,17 @@ def test_missing_cython_c_files(pyx_extension_test_package, monkeypatch):
     assert msg in str(exc_info.value)
 
 
-@pytest.mark.parametrize('mode', ['cli', 'cli-w', 'direct', 'deprecated', 'cli-l', 'cli-error'])
+MODES = ['cli', 'cli-w', 'deprecated', 'cli-l', 'cli-error']
+
+try:
+    import sphinx_astropy  # noqa
+except ImportError:
+    pass
+else:
+    MODES.append('direct')
+
+
+@pytest.mark.parametrize('mode', MODES)
 def test_build_docs(tmpdir, mode):
     """
     Test for build_docs
@@ -284,12 +294,6 @@ def test_build_docs(tmpdir, mode):
 
     docs = test_pkg.mkdir('docs')
 
-    autosummary = docs.mkdir('_templates').mkdir('autosummary')
-
-    autosummary.join('base.rst').write('{% extends "autosummary_core/base.rst" %}')
-    autosummary.join('class.rst').write('{% extends "autosummary_core/class.rst" %}')
-    autosummary.join('module.rst').write('{% extends "autosummary_core/module.rst" %}')
-
     docs_dir = test_pkg.join('docs')
     docs_dir.join('conf.py').write(dedent("""\
         import sys
@@ -297,7 +301,7 @@ def test_build_docs(tmpdir, mode):
         import warnings
         with warnings.catch_warnings():  # ignore matplotlib warning
             warnings.simplefilter("ignore")
-            from astropy_helpers.sphinx.conf import *
+            from sphinx_astropy.conf import *
         exclude_patterns.append('_templates')
     """))
 

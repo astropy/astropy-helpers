@@ -7,6 +7,7 @@ import re
 import shutil
 import subprocess
 import sys
+import glob
 import textwrap
 import warnings
 
@@ -88,6 +89,7 @@ class AstropyBuildDocs(SphinxBuildDoc):
                              'not present or not a directory')
 
     def run(self):
+
         # TODO: Break this method up into a few more subroutines and
         # document them better
         import webbrowser
@@ -120,7 +122,10 @@ class AstropyBuildDocs(SphinxBuildDoc):
         build_cmd_path = os.path.abspath(build_cmd.build_lib)
 
         ah_importer = pkgutil.get_importer('astropy_helpers')
-        ah_path = os.path.abspath(ah_importer.path)
+        if ah_importer is None:
+            ah_path = '.'
+        else:
+            ah_path = os.path.abspath(ah_importer.path)
 
         # Now generate the source for and spawn a new process that runs the
         # command.  This is needed to get the correct imports for the built
@@ -135,6 +140,28 @@ class AstropyBuildDocs(SphinxBuildDoc):
 
         """).format(build_cmd_path=build_cmd_path, ah_path=ah_path,
                     srcdir=self.source_dir)
+
+        # We've split out the Sphinx part of astropy-helpers into sphinx-astropy
+        # but we want it to be auto-installed seamlessly for anyone using
+        # build_docs. We check if it's already installed, and if not, we install
+        # it to a local .eggs directory and add the eggs to the path (these
+        # have to each be added to the path, we can't add them by simply adding
+        # .eggs to the path)
+        try:
+            import sphinx_astropy  # noqa
+        except ImportError:
+            from setuptools import Distribution
+            dist = Distribution()
+            dist.fetch_build_eggs('sphinx-astropy')
+            eggs_path = os.path.abspath('.eggs')
+            # Note that we use append below because we want to make sure that if
+            # a user runs a build which populates the .eggs directory, *then*
+            # installs sphinx-astropy at the system-level, we want to make sure
+            # the .eggs are only used as a last resort if they build the docs
+            # again.
+            for egg in glob.glob(os.path.join(eggs_path, '*.egg')):
+                subproccode += 'sys.path.append({egg!r})\n'.format(egg=egg)
+
         # runlines[1:] removes 'def run(self)' on the first line
         subproccode += textwrap.dedent(''.join(runlines[1:]))
 
