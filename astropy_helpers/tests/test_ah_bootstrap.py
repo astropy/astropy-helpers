@@ -97,9 +97,10 @@ def test_bootstrap_from_submodule(tmpdir, testpackage, capsys):
 
     with orig_repo.as_cwd():
 
-        orig_repo.join('ah_bootstrap.py').write(AH_BOOTSTRAP)
-
         run_cmd('git', ['init'])
+
+        orig_repo.join('ah_bootstrap.py').write(AH_BOOTSTRAP)
+        run_cmd('git', ['add', 'ah_bootstrap.py'])
 
         # Write a test setup.py that uses ah_bootstrap; it also ensures that
         # any previous reference to astropy_helpers is first wiped from

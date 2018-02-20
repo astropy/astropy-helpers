@@ -16,6 +16,8 @@ from ..commands import build_ext
 from . import reset_setup_helpers, reset_distutils_log  # noqa
 from . import run_setup, cleanup_import
 
+ASTROPY_HELPERS_PATH = os.path.join(os.path.dirname(__file__), '..', '..')
+
 
 def _extension_test_package(tmpdir, request, extension_type='c'):
     """Creates a simple test package with an extension module."""
@@ -87,6 +89,7 @@ def _extension_test_package(tmpdir, request, extension_type='c'):
         import sys
         from os.path import join
         from setuptools import setup
+        sys.path.insert(0, '{astropy_helpers_path}')
         from astropy_helpers.setup_helpers import register_commands
         from astropy_helpers.setup_helpers import get_package_info
         from astropy_helpers.version_helpers import generate_version_py
@@ -110,7 +113,7 @@ def _extension_test_package(tmpdir, request, extension_type='c'):
             cmdclass=cmdclassd,
             **package_info
         )
-    """))
+    """.format(astropy_helpers_path=ASTROPY_HELPERS_PATH)))
 
     if '' in sys.path:
         sys.path.remove('')
@@ -366,8 +369,10 @@ def test_command_hooks(tmpdir, capsys):
     # A simple setup.py for the test package--running register_commands should
     # discover and enable the command hooks
     test_pkg.join('setup.py').write(dedent("""\
+        import sys
         from os.path import join
         from setuptools import setup, Extension
+        sys.path.insert(0, '{astropy_helpers_path}')
         from astropy_helpers.setup_helpers import register_commands, get_package_info
 
         NAME = '_welltall_'
@@ -381,7 +386,7 @@ def test_command_hooks(tmpdir, capsys):
             version=VERSION,
             cmdclass=cmdclassd
         )
-    """))
+    """.format(astropy_helpers_path=ASTROPY_HELPERS_PATH)))
 
     with test_pkg.as_cwd():
         try:
@@ -536,8 +541,10 @@ def test_invalid_package_exclusion(tmpdir, capsys):
 
     module_name = 'foobar'
     setup_header = dedent("""\
+        import sys
         from os.path import join
         from setuptools import setup, Extension
+        sys.path.insert(0, '{astropy_helpers_path}')
         from astropy_helpers.setup_helpers import register_commands, \\
             get_package_info, add_exclude_packages
 
@@ -545,7 +552,7 @@ def test_invalid_package_exclusion(tmpdir, capsys):
         VERSION = 0.1
         RELEASE = True
 
-    """.format(module_name=module_name))
+    """.format(module_name=module_name, astropy_helpers_path=ASTROPY_HELPERS_PATH))
 
     setup_footer = dedent("""\
         setup(
