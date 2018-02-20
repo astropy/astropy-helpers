@@ -2,12 +2,12 @@
 
 import glob
 import os
+import json
 import textwrap
 
 from distutils.version import LooseVersion
 
 import setuptools
-from setuptools.package_index import PackageIndex
 
 import pytest
 
@@ -22,8 +22,14 @@ from __future__ import print_function
 
 import os
 import sys
+from copy import copy
 
+args = copy(sys.argv)
 import ah_bootstrap
+sys.argv = args
+
+{extra}
+
 # reset the name of the package installed by ah_boostrap to
 # _astropy_helpers_test_--this will prevent any confusion by pkg_resources with
 # any already installed packages named astropy_helpers
@@ -50,9 +56,17 @@ assert '--no-git' not in sys.argv
 import _astropy_helpers_test_
 filename = os.path.abspath(_astropy_helpers_test_.__file__)
 filename = filename.replace('.pyc', '.py')  # More consistent this way
-print(filename)
+import json
+data = {{}}
+data['filename'] = filename
+data['ah_bootstrap.BOOTSTRAPPER.use_git'] = ah_bootstrap.BOOTSTRAPPER.use_git
+print(json.dumps(data))
 """
 
+AH_BOOTSTRAP_FILE = os.path.join(os.path.dirname(__file__), '..', '..', 'ah_bootstrap.py')
+
+with open(AH_BOOTSTRAP_FILE) as f:
+    AH_BOOTSTRAP = f.read()
 
 # The behavior checked in some of the tests depends on the version of
 # setuptools
@@ -77,16 +91,16 @@ def test_bootstrap_from_submodule(tmpdir, testpackage, capsys):
 
     orig_repo = tmpdir.mkdir('orig')
 
-    # Ensure ah_bootstrap is imported from the local directory
-    import ah_bootstrap  # noqa
-
     with orig_repo.as_cwd():
+
+        orig_repo.join('ah_bootstrap.py').write(AH_BOOTSTRAP)
+
         run_cmd('git', ['init'])
 
         # Write a test setup.py that uses ah_bootstrap; it also ensures that
         # any previous reference to astropy_helpers is first wiped from
         # sys.modules
-        orig_repo.join('setup.py').write(TEST_SETUP_PY.format(args=''))
+        orig_repo.join('setup.py').write(TEST_SETUP_PY.format(args='', extra=''))
         run_cmd('git', ['add', 'setup.py'])
 
         # Add our own clone of the astropy_helpers repo as a submodule named
@@ -106,7 +120,7 @@ def test_bootstrap_from_submodule(tmpdir, testpackage, capsys):
         run_setup('setup.py', [])
 
         stdout, stderr = capsys.readouterr()
-        path = stdout.strip()
+        path = json.loads(stdout.strip())['filename']
 
         # Ensure that the astropy_helpers used by the setup.py is the one that
         # was imported from git submodule
@@ -148,7 +162,18 @@ def test_bootstrap_from_submodule_bad_locale(tmpdir, testpackage, capsys,
     test_bootstrap_from_submodule(tmpdir, testpackage, capsys)
 
 
-def test_check_submodule_no_git(tmpdir, testpackage):
+UPDATE_ERROR_PATCH = """
+class UpgradeError(Exception):
+    pass
+
+def _do_upgrade(*args, **kwargs):
+    raise UpgradeError()
+
+ah_bootstrap._Bootstrapper._do_upgrade = _do_upgrade
+"""
+
+
+def test_check_submodule_no_git(capsys, tmpdir, testpackage):
     """
     Tests that when importing astropy_helpers from a submodule, it is still
     recognized as a submodule even when using the --no-git option.
@@ -158,17 +183,17 @@ def test_check_submodule_no_git(tmpdir, testpackage):
 
     orig_repo = tmpdir.mkdir('orig')
 
-    # Ensure ah_bootstrap is imported from the local directory
-    import ah_bootstrap  # noqa
-
     with orig_repo.as_cwd():
+
+        orig_repo.join('ah_bootstrap.py').write(AH_BOOTSTRAP)
+
         run_cmd('git', ['init'])
 
         # Write a test setup.py that uses ah_bootstrap; it also ensures that
         # any previous reference to astropy_helpers is first wiped from
         # sys.modules
         args = 'auto_upgrade=True'
-        orig_repo.join('setup.py').write(TEST_SETUP_PY.format(args=args))
+        orig_repo.join('setup.py').write(TEST_SETUP_PY.format(args=args, extra=UPDATE_ERROR_PATCH))
         run_cmd('git', ['add', 'setup.py'])
 
         # Add our own clone of the astropy_helpers repo as a submodule named
@@ -178,25 +203,21 @@ def test_check_submodule_no_git(tmpdir, testpackage):
 
         run_cmd('git', ['commit', '-m', 'test repository'])
 
-        # Temporarily patch _do_upgrade to fail if called
-        class UpgradeError(Exception):
-            pass
+        run_setup('setup.py', ['--no-git'])
 
-        def _do_upgrade(*args, **kwargs):
-            raise UpgradeError()
+        stdout, stderr = capsys.readouterr()
 
-        orig_do_upgrade = ah_bootstrap._Bootstrapper._do_upgrade
-        ah_bootstrap._Bootstrapper._do_upgrade = _do_upgrade
-        try:
-            run_setup('setup.py', ['--no-git'])
-        except UpgradeError:
+        print(stdout)
+        print(stderr)
+
+        use_git = bool(json.loads(stdout.strip())['ah_bootstrap.BOOTSTRAPPER.use_git'])
+
+        if 'UpgradeError' in stderr:
             pytest.fail('Attempted to run auto-upgrade despite importing '
                         '_astropy_helpers_test_ from a git submodule')
-        finally:
-            ah_bootstrap._Bootstrapper._do_upgrade = orig_do_upgrade
 
         # Ensure that the no-git option was in fact set
-        assert not ah_bootstrap.BOOTSTRAPPER.use_git
+        assert not use_git
 
 
 def test_bootstrap_from_directory(tmpdir, testpackage, capsys):
@@ -205,21 +226,17 @@ def test_bootstrap_from_directory(tmpdir, testpackage, capsys):
     entirety bundled directly in the source package and not in an archive.
     """
 
-    import ah_bootstrap  # noqa
-
     source = tmpdir.mkdir('source')
     testpackage.copy(source.join('_astropy_helpers_test_'))
 
     with source.as_cwd():
-        source.join('setup.py').write(TEST_SETUP_PY.format(args=''))
+
+        source.join('ah_bootstrap.py').write(AH_BOOTSTRAP)
+
+        source.join('setup.py').write(TEST_SETUP_PY.format(args='', extra=''))
         run_setup('setup.py', [])
         stdout, stderr = capsys.readouterr()
-
-        stdout = stdout.splitlines()
-        if stdout:
-            path = stdout[-1].strip()
-        else:
-            path = ''
+        path = json.loads(stdout.strip())['filename']
 
         # Ensure that the astropy_helpers used by the setup.py is the one that
         # was imported from git submodule
@@ -238,9 +255,6 @@ def test_bootstrap_from_archive(tmpdir, testpackage, capsys):
 
     orig_repo = tmpdir.mkdir('orig')
 
-    # Ensure ah_bootstrap is imported from the local directory
-    import ah_bootstrap  # noqa
-
     # Make a source distribution of the test package
     with silence():
         run_setup(str(testpackage.join('setup.py')),
@@ -251,16 +265,19 @@ def test_bootstrap_from_archive(tmpdir, testpackage, capsys):
         dist_file.copy(orig_repo)
 
     with orig_repo.as_cwd():
+
+        orig_repo.join('ah_bootstrap.py').write(AH_BOOTSTRAP)
+
         # Write a test setup.py that uses ah_bootstrap; it also ensures that
         # any previous reference to astropy_helpers is first wiped from
         # sys.modules
         args = 'path={0!r}'.format(os.path.basename(str(dist_file)))
-        orig_repo.join('setup.py').write(TEST_SETUP_PY.format(args=args))
+        orig_repo.join('setup.py').write(TEST_SETUP_PY.format(args=args, extra=''))
 
         run_setup('setup.py', [])
 
         stdout, stderr = capsys.readouterr()
-        path = stdout.splitlines()[-1].strip()
+        path = json.loads(stdout.strip())['filename']
 
         # Installation from the .tar.gz should have resulted in a .egg
         # directory that the _astropy_helpers_test_ package was imported from
@@ -302,8 +319,11 @@ def test_download_if_needed(tmpdir, testpackage, capsys):
     dist_dir = testpackage.join('dist')
 
     with source.as_cwd():
+
+        source.join('ah_bootstrap.py').write(AH_BOOTSTRAP)
+
         source.join('setup.py').write(TEST_SETUP_PY.format(
-            args='download_if_needed=True'))
+            args='download_if_needed=True', extra=''))
         source.join('setup.cfg').write(textwrap.dedent("""\
             [easy_install]
             find_links = {find_links}
@@ -312,11 +332,7 @@ def test_download_if_needed(tmpdir, testpackage, capsys):
         run_setup('setup.py', [])
 
         stdout, stderr = capsys.readouterr()
-
-        # Just take the last line--on Python 2.6 distutils logs warning
-        # messages to stdout instead of stderr, causing them to be mixed up
-        # with our expected output
-        path = stdout.splitlines()[-1].strip()
+        path = json.loads(stdout.strip())['filename']
 
         # easy_install should have worked by 'installing' astropy_helpers as a
         # .egg in the current directory
@@ -331,6 +347,22 @@ def test_download_if_needed(tmpdir, testpackage, capsys):
         assert a == b
 
 
+EXTRA_PACKAGE_INDEX = """
+from setuptools.package_index import PackageIndex
+
+class FakePackageIndex(PackageIndex):
+    def __init__(self, *args, **kwargs):
+        PackageIndex.__init__(self, *args, **kwargs)
+        self.to_scan = {dists}
+
+    def find_packages(self, requirement):
+        # no-op
+        pass
+
+ah_bootstrap.PackageIndex = FakePackageIndex
+"""
+
+
 def test_upgrade(tmpdir, capsys):
     # Run the testpackage fixture manually, since we use it multiple times in
     # this test to make different versions of _astropy_helpers_test_
@@ -342,7 +374,10 @@ def test_upgrade(tmpdir, capsys):
     orig_dir.copy(source.join('_astropy_helpers_test_'))
 
     with source.as_cwd():
-        setup_py = TEST_SETUP_PY.format(args='auto_upgrade=True')
+
+        source.join('ah_bootstrap.py').write(AH_BOOTSTRAP)
+
+        setup_py = TEST_SETUP_PY.format(args='auto_upgrade=True', extra='')
         source.join('setup.py').write(setup_py)
 
         # This will be used to later to fake downloading the upgrade package
@@ -369,43 +404,31 @@ def test_upgrade(tmpdir, capsys):
         for dist_file in upgrade_dir.visit('*.tar.gz'):
             dist_file.copy(source.join('dists'))
 
-    # Monkey with the PackageIndex in ah_bootstrap so that it is initialized
-    # with the test upgrade packages, and so that it does not actually go out
-    # to the internet to look for anything
-    import ah_bootstrap  # noqa
+    with source.as_cwd():
 
-    class FakePackageIndex(PackageIndex):
-        def __init__(self, *args, **kwargs):
-            PackageIndex.__init__(self, *args, **kwargs)
-            self.to_scan = dists
+        setup_py = TEST_SETUP_PY.format(args='auto_upgrade=True',
+                                        extra=EXTRA_PACKAGE_INDEX.format(dists=dists))
+        source.join('setup.py').write(setup_py)
 
-        def find_packages(self, requirement):
-            # no-op
-            pass
+        # Now run the source setup.py; this test is similar to
+        # test_download_if_needed, but we explicitly check that the correct
+        # *version* of _astropy_helpers_test_ was used
+        run_setup('setup.py', [])
 
-    ah_bootstrap.PackageIndex = FakePackageIndex
+        stdout, stderr = capsys.readouterr()
+        print(stdout)
+        print(stderr)
+        path = json.loads(stdout.strip())['filename']
+        eggs = _get_local_eggs()
+        assert eggs
 
-    try:
-        with source.as_cwd():
-            # Now run the source setup.py; this test is similar to
-            # test_download_if_needed, but we explicitly check that the correct
-            # *version* of _astropy_helpers_test_ was used
-            run_setup('setup.py', [])
-
-            stdout, stderr = capsys.readouterr()
-            path = stdout.splitlines()[-1].strip()
-            eggs = _get_local_eggs()
-            assert eggs
-
-            egg = source.join(eggs[0])
-            assert os.path.isdir(str(egg))
-            a = os.path.normcase(path)
-            b = os.path.normcase(str(egg.join('_astropy_helpers_test_',
-                                              '__init__.py')))
-            assert a == b
-            assert 'astropy_helpers_test-0.1.1-' in str(egg)
-    finally:
-        ah_bootstrap.PackageIndex = PackageIndex
+        egg = source.join(eggs[0])
+        assert os.path.isdir(str(egg))
+        a = os.path.normcase(path)
+        b = os.path.normcase(str(egg.join('_astropy_helpers_test_',
+                                          '__init__.py')))
+        assert a == b
+        assert 'astropy_helpers_test-0.1.1-' in str(egg)
 
 
 def _get_local_eggs(path='.'):

@@ -40,17 +40,31 @@ def run_cmd(cmd, args, path=None, raise_error=True):
 
 
 @extends_doc(sandbox.run_setup)
-def run_setup(*args, **kwargs):
-    """
-    In Python 3, on MacOS X, the import cache has to be invalidated otherwise
-    new extensions built with ``run_setup`` do not always get picked up.
-    """
+def run_setup(setup_script, args):
 
-    try:
-        return sandbox.run_setup(*args, **kwargs)
-    finally:
-        import importlib
-        importlib.invalidate_caches()
+    # This used to call setuptools.sandbox's run_setup, but due to issues with
+    # this and Cython (which caused segmentation faults), we now use
+    # subprocess.
+
+    path = os.path.dirname(setup_script)
+    setup_script = os.path.basename(setup_script)
+
+    if not path:
+        path = None
+
+    import subprocess
+    p = subprocess.Popen([sys.executable, setup_script] + list(args), cwd=path,
+                         stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    stdout, stderr = p.communicate()
+
+    sys.stdout.write(stdout.decode('utf-8'))
+    sys.stderr.write(stderr.decode('utf-8'))
+
+    # try:
+    #     return sandbox.run_setup(*args, **kwargs)
+    # finally:
+    #     import importlib
+    #     importlib.invalidate_caches()
 
 
 @pytest.fixture(scope='function', autouse=True)
