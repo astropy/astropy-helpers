@@ -2,8 +2,6 @@ import os
 import subprocess as sp
 import sys
 
-from setuptools import sandbox
-
 import pytest
 
 from ..utils import extends_doc
@@ -39,7 +37,6 @@ def run_cmd(cmd, args, path=None, raise_error=True):
     return streams + (return_code,)
 
 
-@extends_doc(sandbox.run_setup)
 def run_setup(setup_script, args):
 
     # This used to call setuptools.sandbox's run_setup, but due to issues with
@@ -52,19 +49,12 @@ def run_setup(setup_script, args):
     if not path:
         path = None
 
-    import subprocess
-    p = subprocess.Popen([sys.executable, setup_script] + list(args), cwd=path,
-                         stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    p = sp.Popen([sys.executable, setup_script] + list(args), cwd=path,
+                 stdout=sp.PIPE, stderr=sp.PIPE)
     stdout, stderr = p.communicate()
 
     sys.stdout.write(stdout.decode('utf-8'))
     sys.stderr.write(stderr.decode('utf-8'))
-
-    # try:
-    #     return sandbox.run_setup(*args, **kwargs)
-    # finally:
-    #     import importlib
-    #     importlib.invalidate_caches()
 
 
 @pytest.fixture(scope='function', autouse=True)
@@ -96,23 +86,6 @@ def reset_distutils_log():
 
     from distutils import log
     log.set_threshold(log.WARN)
-
-
-@pytest.fixture(scope='module', autouse=True)
-def fix_hide_setuptools():
-    """
-    Workaround for https://github.com/astropy/astropy-helpers/issues/124
-
-    In setuptools 10.0 run_setup was changed in such a way that it sweeps
-    away the existing setuptools import before running the setup script.  In
-    principle this is nice, but in the practice of testing astropy_helpers
-    this is problematic since we're trying to test code that has already been
-    imported during the testing process, and which relies on the setuptools
-    module that was already in use.
-    """
-
-    if hasattr(sandbox, 'hide_setuptools'):
-        sandbox.hide_setuptools = lambda: None
 
 
 TEST_PACKAGE_SETUP_PY = """\

@@ -11,7 +11,7 @@ import setuptools
 
 import pytest
 
-from . import reset_setup_helpers, reset_distutils_log, fix_hide_setuptools  # noqa
+from . import reset_setup_helpers, reset_distutils_log  # noqa
 from . import run_cmd, run_setup, testpackage
 from ..utils import silence
 
@@ -22,9 +22,11 @@ from __future__ import print_function
 
 import os
 import sys
-from copy import copy
 
-args = copy(sys.argv)
+# This import is not the real run of ah_bootstrap for the purposes of the test,
+# so we need to preserve the command-line arguments otherwise these get eaten
+# up by this import
+args = sys.argv[:]
 import ah_bootstrap
 sys.argv = args
 
@@ -56,6 +58,8 @@ assert '--no-git' not in sys.argv
 import _astropy_helpers_test_
 filename = os.path.abspath(_astropy_helpers_test_.__file__)
 filename = filename.replace('.pyc', '.py')  # More consistent this way
+
+# We print out variables that are needed in tests below in JSON
 import json
 data = {{}}
 data['filename'] = filename
@@ -206,9 +210,6 @@ def test_check_submodule_no_git(capsys, tmpdir, testpackage):
         run_setup('setup.py', ['--no-git'])
 
         stdout, stderr = capsys.readouterr()
-
-        print(stdout)
-        print(stderr)
 
         use_git = bool(json.loads(stdout.strip())['ah_bootstrap.BOOTSTRAPPER.use_git'])
 
@@ -416,8 +417,6 @@ def test_upgrade(tmpdir, capsys):
         run_setup('setup.py', [])
 
         stdout, stderr = capsys.readouterr()
-        print(stdout)
-        print(stderr)
         path = json.loads(stdout.strip())['filename']
         eggs = _get_local_eggs()
         assert eggs

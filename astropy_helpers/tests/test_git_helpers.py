@@ -9,7 +9,7 @@ import tarfile
 import pytest
 from warnings import catch_warnings
 
-from . import reset_setup_helpers, reset_distutils_log, fix_hide_setuptools  # noqa
+from . import reset_setup_helpers, reset_distutils_log  # noqa
 from . import run_cmd, run_setup, cleanup_import
 from astropy_helpers.git_helpers import get_git_devstr
 
