@@ -60,8 +60,12 @@ before_script:
 script:
     # Use full path for coveragerc; see issue #193
     - py.test --cov astropy_helpers --cov-config $(pwd)/astropy_helpers/tests/coveragerc astropy_helpers
+
+    # In conftest.py we produce a .coverage.subprocess that contains coverage
+    # statistics for sub-processes, so we combine it with the main one here.
     - mv .coverage .coverage.main
     - coverage combine .coverage.main .coverage.subprocess
+    - coverage report
 
 after_success:
     - coveralls --rcfile=astropy_helpers/tests/coveragerc
