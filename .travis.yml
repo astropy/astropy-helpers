@@ -16,7 +16,7 @@ env:
     - PYTHON_VERSION=3.4 SETUPTOOLS_VERSION=20
     - PYTHON_VERSION=3.5
     - PYTHON_VERSION=3.6 SETUPTOOLS_VERSION=dev DEBUG=True
-      CONDA_DEPENDENCIES='sphinx cython numpy packaging six appdirs'
+      CONDA_DEPENDENCIES='sphinx cython numpy six pytest-cov'
       EVENT_TYPE='push pull_request cron'
 
   global:
@@ -40,10 +40,14 @@ matrix:
     - os: linux
       env: PYTHON_VERSION=3.6 SPHINX_VERSION='<1.6' SETUPTOOLS_VERSION=27
 
-  allow_failures:
-    - env: PYTHON_VERSION=3.6 SETUPTOOLS_VERSION=dev DEBUG=True
-           CONDA_DEPENDENCIES='sphinx cython numpy packaging six appdirs'
-           EVENT_TYPE='push pull_request cron'
+# Uncomment the following if there are issues in setuptools that we
+# can't work around quickly - otherwise leave uncommented so that
+# we notice when things go wrong.
+#
+# allow_failures:
+#   - env: PYTHON_VERSION=3.6 SETUPTOOLS_VERSION=dev DEBUG=True
+#          CONDA_DEPENDENCIES='sphinx cython numpy six pytest-cov'
+#          EVENT_TYPE='push pull_request cron'
 
 install:
 
@@ -64,6 +68,12 @@ before_script:
 script:
     # Use full path for coveragerc; see issue #193
     - py.test --cov astropy_helpers --cov-config $(pwd)/astropy_helpers/tests/coveragerc astropy_helpers
+
+    # In conftest.py we produce a .coverage.subprocess that contains coverage
+    # statistics for sub-processes, so we combine it with the main one here.
+    - mv .coverage .coverage.main
+    - coverage combine .coverage.main .coverage.subprocess
+    - coverage report
 
 after_success:
     - coveralls --rcfile=astropy_helpers/tests/coveragerc

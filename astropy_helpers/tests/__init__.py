@@ -2,11 +2,15 @@ import os
 import subprocess as sp
 import sys
 
-from setuptools import sandbox
-
 import pytest
 
-from ..utils import extends_doc
+try:
+    from coverage import CoverageData
+except ImportError:
+    HAS_COVERAGE = False
+else:
+    HAS_COVERAGE = True
+    from ..conftest import SUBPROCESS_COVERAGE
 
 PACKAGE_DIR = os.path.dirname(__file__)
 
@@ -39,19 +43,41 @@ def run_cmd(cmd, args, path=None, raise_error=True):
     return streams + (return_code,)
 
 
-@extends_doc(sandbox.run_setup)
-def run_setup(*args, **kwargs):
-    """
-    In Python 3, on MacOS X, the import cache has to be invalidated otherwise
-    new extensions built with ``run_setup`` do not always get picked up.
-    """
+def run_setup(setup_script, args):
 
-    try:
-        return sandbox.run_setup(*args, **kwargs)
-    finally:
-        if sys.version_info[:2] >= (3, 3):
-            import importlib
-            importlib.invalidate_caches()
+    # This used to call setuptools.sandbox's run_setup, but due to issues with
+    # this and Cython (which caused segmentation faults), we now use subprocess.
+
+    setup_script = os.path.abspath(setup_script)
+
+    path = os.path.dirname(setup_script)
+    setup_script = os.path.basename(setup_script)
+
+    if HAS_COVERAGE:
+
+        # In this case, we run the command using the coverage command and we
+        # then collect the coverage data into a SUBPROCESS_COVERAGE list which
+        # is set up at the start of the testing process and is then combined
+        # into a single .coverage file at the end of the testing process.
+
+        p = sp.Popen(['coverage', 'run', setup_script] + list(args), cwd=path,
+                     stdout=sp.PIPE, stderr=sp.PIPE)
+        stdout, stderr = p.communicate()
+
+        cdata = CoverageData()
+        cdata.read_file(os.path.join(path, '.coverage'))
+        SUBPROCESS_COVERAGE.append(cdata)
+
+    else:
+
+        # Otherwise we just run the tests with Python
+
+        p = sp.Popen([sys.executable, setup_script] + list(args), cwd=path,
+                     stdout=sp.PIPE, stderr=sp.PIPE)
+        stdout, stderr = p.communicate()
+
+    sys.stdout.write(stdout.decode('utf-8'))
+    sys.stderr.write(stderr.decode('utf-8'))
 
 
 @pytest.fixture(scope='function', autouse=True)
@@ -83,23 +109,6 @@ def reset_distutils_log():
 
     from distutils import log
     log.set_threshold(log.WARN)
-
-
-@pytest.fixture(scope='module', autouse=True)
-def fix_hide_setuptools():
-    """
-    Workaround for https://github.com/astropy/astropy-helpers/issues/124
-
-    In setuptools 10.0 run_setup was changed in such a way that it sweeps
-    away the existing setuptools import before running the setup script.  In
-    principle this is nice, but in the practice of testing astropy_helpers
-    this is problematic since we're trying to test code that has already been
-    imported during the testing process, and which relies on the setuptools
-    module that was already in use.
-    """
-
-    if hasattr(sandbox, 'hide_setuptools'):
-        sandbox.hide_setuptools = lambda: None
 
 
 TEST_PACKAGE_SETUP_PY = """\

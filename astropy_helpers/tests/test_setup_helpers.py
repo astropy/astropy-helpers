@@ -2,7 +2,6 @@ import os
 import sys
 import stat
 import shutil
-import warnings
 import contextlib
 
 import pytest
@@ -13,10 +12,11 @@ from setuptools import Distribution
 
 from ..setup_helpers import get_package_info, register_commands
 from ..commands import build_ext
-from ..utils import AstropyDeprecationWarning
 
-from . import reset_setup_helpers, reset_distutils_log, fix_hide_setuptools  # noqa
+from . import reset_setup_helpers, reset_distutils_log  # noqa
 from . import run_setup, cleanup_import
+
+ASTROPY_HELPERS_PATH = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..'))
 
 
 # Determine whether we're in a PY2 environment without using six
@@ -90,11 +90,18 @@ def _extension_test_package(tmpdir, request, extension_type='c'):
     """.format(', '.join(extensions_list))))
 
     test_pkg.join('setup.py').write(dedent("""\
+        import sys
         from os.path import join
         from setuptools import setup
+        sys.path.insert(0, r'{astropy_helpers_path}')
         from astropy_helpers.setup_helpers import register_commands
         from astropy_helpers.setup_helpers import get_package_info
         from astropy_helpers.version_helpers import generate_version_py
+
+        if '--no-cython' in sys.argv:
+            from astropy_helpers.commands import build_ext
+            build_ext.should_build_with_cython = lambda *args: False
+            sys.argv.remove('--no-cython')
 
         NAME = 'apyhtest_eva'
         VERSION = '0.1'
@@ -110,7 +117,7 @@ def _extension_test_package(tmpdir, request, extension_type='c'):
             cmdclass=cmdclassd,
             **package_info
         )
-    """))
+    """.format(astropy_helpers_path=ASTROPY_HELPERS_PATH)))
 
     if '' in sys.path:
         sys.path.remove('')
@@ -164,7 +171,7 @@ def test_cython_autoextensions(tmpdir):
     assert package_info['ext_modules'][0].name == 'yoda.luke.dagobah'
 
 
-def test_compiler_module(c_extension_test_package):
+def test_compiler_module(capsys, c_extension_test_package):
     """
     Test ensuring that the compiler module is built and installed for packages
     that have extension modules.
@@ -176,18 +183,14 @@ def test_compiler_module(c_extension_test_package):
     with test_pkg.as_cwd():
         # This is one of the simplest ways to install just a package into a
         # test directory
-        with warnings.catch_warnings(record=True) as w:
-            run_setup('setup.py',
-                      ['install',
-                       '--single-version-externally-managed',
-                       '--install-lib={0}'.format(install_temp),
-                       '--record={0}'.format(install_temp.join('record.txt'))])
-        # Skip this portion of the test on windows systems with Py 2.7 since
-        # it is known to produce additional warnings.
-        if not (USING_PY2 or sys.platform.startswith('win')):
-            # Warning expected from get_git_devstr, called by generate_version_py
-            assert len(w) == 1
-            assert str(w[0].message).startswith("No git repository present at")
+        run_setup('setup.py',
+                  ['install',
+                   '--single-version-externally-managed',
+                   '--install-lib={0}'.format(install_temp),
+                   '--record={0}'.format(install_temp.join('record.txt'))])
+
+        stdout, stderr = capsys.readouterr()
+        assert "No git repository present at" in stderr
 
     with install_temp.as_cwd():
         import apyhtest_eva
@@ -201,7 +204,7 @@ def test_compiler_module(c_extension_test_package):
         assert apyhtest_eva.version.compiler != 'unknown'
 
 
-def test_no_cython_buildext(c_extension_test_package, monkeypatch):
+def test_no_cython_buildext(capsys, c_extension_test_package, monkeypatch):
     """
     Regression test for https://github.com/astropy/astropy-helpers/pull/35
 
@@ -212,18 +215,12 @@ def test_no_cython_buildext(c_extension_test_package, monkeypatch):
 
     test_pkg = c_extension_test_package
 
-    # In order for this test to test the correct code path we need to fool
-    # build_ext into thinking we don't have Cython installed
-    monkeypatch.setattr(build_ext, 'should_build_with_cython',
-                        lambda *args: False)
-
     with test_pkg.as_cwd():
-        with warnings.catch_warnings(record=True) as w:
-            run_setup('setup.py', ['build_ext', '--inplace'])
-        # Warning expected from get_git_devstr, called by generate_version_py
-        if not USING_PY2:
-            assert len(w) == 1
-            assert str(w[0].message).startswith("No git repository present at")
+
+        run_setup('setup.py', ['build_ext', '--inplace', '--no-cython'])
+
+        stdout, stderr = capsys.readouterr()
+        assert "No git repository present at" in stderr
 
     sys.path.insert(0, str(test_pkg))
 
@@ -235,7 +232,7 @@ def test_no_cython_buildext(c_extension_test_package, monkeypatch):
         sys.path.remove(str(test_pkg))
 
 
-def test_missing_cython_c_files(pyx_extension_test_package, monkeypatch):
+def test_missing_cython_c_files(capsys, pyx_extension_test_package, monkeypatch):
     """
     Regression test for https://github.com/astropy/astropy-helpers/pull/181
 
@@ -245,35 +242,24 @@ def test_missing_cython_c_files(pyx_extension_test_package, monkeypatch):
 
     test_pkg = pyx_extension_test_package
 
-    # In order for this test to test the correct code path we need to fool
-    # build_ext into thinking we don't have Cython installed
-    monkeypatch.setattr(build_ext, 'should_build_with_cython',
-                        lambda *args: False)
-
     with test_pkg.as_cwd():
-        with pytest.raises(SystemExit) as exc_info:
-            with warnings.catch_warnings(record=True) as w:
-                run_setup('setup.py', ['build_ext', '--inplace'])
-            # Warning expected from get_git_devstr, called by generate_version_py
-            if not USING_PY2:
-                assert len(w) == 1
-                assert str(w[0].message).startswith(
-                    "No git repository present at")
 
-    msg = ('Could not find C/C++ file '
-           '{0}.(c/cpp)'.format('apyhtest_eva/unit02'.replace('/', os.sep)))
+        run_setup('setup.py', ['build_ext', '--inplace', '--no-cython'])
 
-    assert msg in str(exc_info.value)
+        stdout, stderr = capsys.readouterr()
+        assert "No git repository present at" in stderr
+
+        msg = ('Could not find C/C++ file '
+               '{0}.(c/cpp)'.format('apyhtest_eva/unit02'.replace('/', os.sep)))
+
+        assert msg in stderr
 
 
-@pytest.mark.parametrize('mode', ['cli', 'cli-w', 'direct', 'deprecated', 'cli-l', 'cli-error'])
-def test_build_docs(tmpdir, mode):
+@pytest.mark.parametrize('mode', ['cli', 'cli-w', 'deprecated', 'cli-l', 'cli-error'])
+def test_build_docs(capsys, tmpdir, mode):
     """
     Test for build_docs
     """
-
-    import astropy_helpers
-    ah_path = os.path.dirname(astropy_helpers.__file__)
 
     test_pkg = tmpdir.mkdir('test_pkg')
 
@@ -290,8 +276,9 @@ def test_build_docs(tmpdir, mode):
             pass
     """))
 
-    docs = test_pkg.mkdir('docs')
+    test_pkg.mkdir('docs')
 
+    docs = test_pkg.join('docs')
     autosummary = docs.mkdir('_templates').mkdir('autosummary')
 
     autosummary.join('base.rst').write('{% extends "autosummary_core/base.rst" %}')
@@ -320,6 +307,8 @@ def test_build_docs(tmpdir, mode):
     """))
 
     test_pkg.join('setup.py').write(dedent("""\
+        import sys
+        sys.path.insert(0, r'{astropy_helpers_path}')
         from os.path import join
         from setuptools import setup, Extension
         from astropy_helpers.setup_helpers import register_commands, get_package_info
@@ -336,10 +325,9 @@ def test_build_docs(tmpdir, mode):
             cmdclass=cmdclassd,
             **get_package_info()
         )
-    """))
+    """.format(astropy_helpers_path=ASTROPY_HELPERS_PATH)))
 
     with test_pkg.as_cwd():
-        shutil.copytree(ah_path, 'astropy_helpers')
 
         if mode == 'cli':
             run_setup('setup.py', ['build_docs'])
@@ -348,15 +336,9 @@ def test_build_docs(tmpdir, mode):
         elif mode == 'cli-l':
             run_setup('setup.py', ['build_docs', '-l'])
         elif mode == 'deprecated':
-            with pytest.warns(AstropyDeprecationWarning):
-                run_setup('setup.py', ['build_sphinx'])
-        elif mode == 'direct':  # to check coverage
-            with docs_dir.as_cwd():
-                from sphinx import main
-                try:
-                    main(['-b html', '-d _build/doctrees', '.', '_build/html'])
-                except SystemExit as exc:
-                    assert exc.code == 0
+            run_setup('setup.py', ['build_sphinx'])
+            stdout, stderr = capsys.readouterr()
+            assert 'AstropyDeprecationWarning' in stderr
 
 
 def test_command_hooks(tmpdir, capsys):
@@ -379,8 +361,10 @@ def test_command_hooks(tmpdir, capsys):
     # A simple setup.py for the test package--running register_commands should
     # discover and enable the command hooks
     test_pkg.join('setup.py').write(dedent("""\
+        import sys
         from os.path import join
         from setuptools import setup, Extension
+        sys.path.insert(0, r'{astropy_helpers_path}')
         from astropy_helpers.setup_helpers import register_commands, get_package_info
 
         NAME = '_welltall_'
@@ -394,7 +378,7 @@ def test_command_hooks(tmpdir, capsys):
             version=VERSION,
             cmdclass=cmdclassd
         )
-    """))
+    """.format(astropy_helpers_path=ASTROPY_HELPERS_PATH)))
 
     with test_pkg.as_cwd():
         try:
@@ -411,7 +395,7 @@ def test_command_hooks(tmpdir, capsys):
         Goodbye build!
     """).strip()
 
-    assert want in stdout
+    assert want in stdout.replace('\r\n', '\n').replace('\r', '\n')
 
 
 def test_adjust_compiler(monkeypatch, tmpdir):
@@ -549,8 +533,10 @@ def test_invalid_package_exclusion(tmpdir, capsys):
 
     module_name = 'foobar'
     setup_header = dedent("""\
+        import sys
         from os.path import join
         from setuptools import setup, Extension
+        sys.path.insert(0, r'{astropy_helpers_path}')
         from astropy_helpers.setup_helpers import register_commands, \\
             get_package_info, add_exclude_packages
 
@@ -558,7 +544,7 @@ def test_invalid_package_exclusion(tmpdir, capsys):
         VERSION = 0.1
         RELEASE = True
 
-    """.format(module_name=module_name))
+    """.format(module_name=module_name, astropy_helpers_path=ASTROPY_HELPERS_PATH))
 
     setup_footer = dedent("""\
         setup(
@@ -582,14 +568,13 @@ def test_invalid_package_exclusion(tmpdir, capsys):
         setup_header + error_commands + setup_footer)
 
     with error_pkg.as_cwd():
-        try:
-            with pytest.raises(RuntimeError):
-                run_setup('setup.py', ['build'])
-        finally:
-            cleanup_import(module_name)
+        run_setup('setup.py', ['build'])
+
+        stdout, stderr = capsys.readouterr()
+        assert "RuntimeError" in stderr
 
     # Test warning when using deprecated exclude parameter
-    warn_commands =  dedent("""\
+    warn_commands = dedent("""\
         cmdclassd = register_commands(NAME, VERSION, RELEASE)
         package_info = get_package_info(exclude=['test*'])
 
@@ -600,8 +585,6 @@ def test_invalid_package_exclusion(tmpdir, capsys):
         setup_header + warn_commands + setup_footer)
 
     with warn_pkg.as_cwd():
-        try:
-            with pytest.warns(AstropyDeprecationWarning):
-                run_setup('setup.py', ['build'])
-        finally:
-            cleanup_import(module_name)
+        run_setup('setup.py', ['build'])
+        stdout, stderr = capsys.readouterr()
+        assert 'AstropyDeprecationWarning' in stderr
