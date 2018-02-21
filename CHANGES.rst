@@ -34,8 +34,7 @@ astropy-helpers Changelog
 ------------------
 
 - Fix segmentation faults that occurred when the astropy-helpers submodule
-  was first initialized and packages using astropy-helpers contained
-  Cython code. [#375]
+  was first initialized in packages that also contained Cython code. [#375]
 
 2.0.4 (2018-02-09)
 ------------------
