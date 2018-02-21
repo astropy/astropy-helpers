@@ -4,7 +4,13 @@ import sys
 
 import pytest
 
-from ..utils import extends_doc
+try:
+    from coverage import CoverageData
+except ImportError:
+    HAS_COVERAGE = False
+else:
+    HAS_COVERAGE = True
+    from ..conftest import SUBPROCESS_COVERAGE
 
 PACKAGE_DIR = os.path.dirname(__file__)
 
@@ -40,18 +46,35 @@ def run_cmd(cmd, args, path=None, raise_error=True):
 def run_setup(setup_script, args):
 
     # This used to call setuptools.sandbox's run_setup, but due to issues with
-    # this and Cython (which caused segmentation faults), we now use
-    # subprocess.
+    # this and Cython (which caused segmentation faults), we now use subprocess.
+
+    setup_script = os.path.abspath(setup_script)
 
     path = os.path.dirname(setup_script)
     setup_script = os.path.basename(setup_script)
 
-    if not path:
-        path = None
+    if HAS_COVERAGE:
 
-    p = sp.Popen([sys.executable, setup_script] + list(args), cwd=path,
-                 stdout=sp.PIPE, stderr=sp.PIPE)
-    stdout, stderr = p.communicate()
+        # In this case, we run the command using the coverage command and we
+        # then collect the coverage data into a SUBPROCESS_COVERAGE list which
+        # is set up at the start of the testing process and is then combined
+        # into a single .coverage file at the end of the testing process.
+
+        p = sp.Popen(['coverage', 'run', setup_script] + list(args), cwd=path,
+                     stdout=sp.PIPE, stderr=sp.PIPE)
+        stdout, stderr = p.communicate()
+
+        cdata = CoverageData()
+        cdata.read_file(os.path.join(path, '.coverage'))
+        SUBPROCESS_COVERAGE.append(cdata)
+
+    else:
+
+        # Otherwise we just run the tests with Python
+
+        p = sp.Popen([sys.executable, setup_script] + list(args), cwd=path,
+                     stdout=sp.PIPE, stderr=sp.PIPE)
+        stdout, stderr = p.communicate()
 
     sys.stdout.write(stdout.decode('utf-8'))
     sys.stderr.write(stderr.decode('utf-8'))

@@ -60,6 +60,8 @@ before_script:
 script:
     # Use full path for coveragerc; see issue #193
     - py.test --cov astropy_helpers --cov-config $(pwd)/astropy_helpers/tests/coveragerc astropy_helpers
+    - mv .coverage .coverage.main
+    - coverage combine .coverage.main .coverage.subprocess
 
 after_success:
     - coveralls --rcfile=astropy_helpers/tests/coveragerc

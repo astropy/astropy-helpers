@@ -253,22 +253,12 @@ def test_missing_cython_c_files(capsys, pyx_extension_test_package, monkeypatch)
 
 MODES = ['cli', 'cli-w', 'deprecated', 'cli-l', 'cli-error']
 
-try:
-    import sphinx_astropy  # noqa
-except ImportError:
-    pass
-else:
-    MODES.append('direct')
-
 
 @pytest.mark.parametrize('mode', MODES)
 def test_build_docs(capsys, tmpdir, mode):
     """
     Test for build_docs
     """
-
-    import astropy_helpers
-    ah_path = os.path.dirname(astropy_helpers.__file__)
 
     test_pkg = tmpdir.mkdir('test_pkg')
 
@@ -285,7 +275,7 @@ def test_build_docs(capsys, tmpdir, mode):
             pass
     """))
 
-    docs = test_pkg.mkdir('docs')
+    test_pkg.mkdir('docs')
 
     docs_dir = test_pkg.join('docs')
     docs_dir.join('conf.py').write(dedent("""\
@@ -309,6 +299,8 @@ def test_build_docs(capsys, tmpdir, mode):
     """))
 
     test_pkg.join('setup.py').write(dedent("""\
+        import sys
+        sys.path.insert(0, '{astropy_helpers_path}')
         from os.path import join
         from setuptools import setup, Extension
         from astropy_helpers.setup_helpers import register_commands, get_package_info
@@ -325,10 +317,9 @@ def test_build_docs(capsys, tmpdir, mode):
             cmdclass=cmdclassd,
             **get_package_info()
         )
-    """))
+    """.format(astropy_helpers_path=ASTROPY_HELPERS_PATH)))
 
     with test_pkg.as_cwd():
-        shutil.copytree(ah_path, 'astropy_helpers')
 
         if mode == 'cli':
             run_setup('setup.py', ['build_docs'])
@@ -340,13 +331,6 @@ def test_build_docs(capsys, tmpdir, mode):
             run_setup('setup.py', ['build_sphinx'])
             stdout, stderr = capsys.readouterr()
             assert 'AstropyDeprecationWarning' in stderr
-        elif mode == 'direct':  # to check coverage
-            with docs_dir.as_cwd():
-                from sphinx import main
-                try:
-                    main(['-b html', '-d _build/doctrees', '.', '_build/html'])
-                except SystemExit as exc:
-                    assert exc.code == 0
 
 
 def test_command_hooks(tmpdir, capsys):
