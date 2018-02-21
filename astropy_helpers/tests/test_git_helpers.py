@@ -9,20 +9,25 @@ import tarfile
 import pytest
 from warnings import catch_warnings
 
-from . import reset_setup_helpers, reset_distutils_log, fix_hide_setuptools  # noqa
+from . import reset_setup_helpers, reset_distutils_log  # noqa
 from . import run_cmd, run_setup, cleanup_import
 from astropy_helpers.git_helpers import get_git_devstr
 
 _DEV_VERSION_RE = re.compile(r'\d+\.\d+(?:\.\d+)?\.dev(\d+)')
 
+ASTROPY_HELPERS_PATH = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..'))
+
 TEST_VERSION_SETUP_PY = """\
 #!/usr/bin/env python
 
+import sys
 from setuptools import setup
 
 NAME = 'apyhtest_eva'
 VERSION = {version!r}
 RELEASE = 'dev' not in VERSION
+
+sys.path.insert(0, r'{astropy_helpers_path}')
 
 from astropy_helpers.git_helpers import get_git_devstr
 from astropy_helpers.version_helpers import generate_version_py
@@ -50,7 +55,8 @@ def version_test_package(tmpdir, request):
     def make_test_package(version='42.42.dev'):
         test_package = tmpdir.mkdir('test_package')
         test_package.join('setup.py').write(
-            TEST_VERSION_SETUP_PY.format(version=version))
+            TEST_VERSION_SETUP_PY.format(version=version,
+                                         astropy_helpers_path=ASTROPY_HELPERS_PATH))
         test_package.mkdir('apyhtest_eva').join('__init__.py').write(TEST_VERSION_INIT)
         with test_package.as_cwd():
             run_cmd('git', ['init'])
