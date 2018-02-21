@@ -1,3 +1,9 @@
+# This file contains settings for pytest that are specific to astropy-helpers.
+# Since we run many of the tests in sub-processes, we need to collect coverage
+# data inside each subprocess and then combine it into a single .coverage file.
+# To do this we set up a list which run_setup appends coverage objects to.
+# This is not intended to be used by packages other than astropy-helpers.
+
 import os
 import glob
 
@@ -7,10 +13,6 @@ except ImportError:
     HAS_COVERAGE = False
 else:
     HAS_COVERAGE = True
-
-# Since we run many of the tests in sub-processes, we need to collect coverage
-# data inside each subprocess and then combine it into a single .coverage file.
-# To do this we set up a list which run_setup appends coverage objects to.
 
 if HAS_COVERAGE:
     SUBPROCESS_COVERAGE = []
