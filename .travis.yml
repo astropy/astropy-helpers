@@ -14,7 +14,7 @@ env:
   matrix:
     - PYTHON_VERSION=3.5
     - PYTHON_VERSION=3.6 SETUPTOOLS_VERSION=dev DEBUG=True
-      CONDA_DEPENDENCIES='sphinx cython numpy packaging appdirs'
+      CONDA_DEPENDENCIES='sphinx cython numpy pytest-cov'
       EVENT_TYPE='push pull_request cron'
 
   global:
@@ -37,10 +37,8 @@ matrix:
            CONDA_DEPENDENCIES="setuptools cython numpy pytest-cov"
   allow_failures:
     - env: PYTHON_VERSION=3.6 SETUPTOOLS_VERSION=dev DEBUG=True
-           CONDA_DEPENDENCIES='sphinx cython numpy packaging appdirs'
+           CONDA_DEPENDENCIES='sphinx cython numpy pytest-cov'
            EVENT_TYPE='push pull_request cron'
-    - env: PYTHON_VERSION=3.6 PIP_DEPENDENCIES='git+https://github.com/sphinx-doc/sphinx.git#egg=sphinx coveralls pytest-cov'
-           CONDA_DEPENDENCIES="setuptools cython numpy"
 install:
 
     - git clone git://github.com/astropy/ci-helpers.git
