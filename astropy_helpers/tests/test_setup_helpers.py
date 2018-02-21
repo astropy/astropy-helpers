@@ -387,7 +387,7 @@ def test_command_hooks(tmpdir, capsys):
         Goodbye build!
     """).strip()
 
-    assert want in stdout
+    assert want in stdout.replace('\r\n', '\n').replace('\r', '\n')
 
 
 def test_adjust_compiler(monkeypatch, tmpdir):
