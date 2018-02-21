@@ -15,7 +15,7 @@ from astropy_helpers.git_helpers import get_git_devstr
 
 _DEV_VERSION_RE = re.compile(r'\d+\.\d+(?:\.\d+)?\.dev(\d+)')
 
-ASTROPY_HELPERS_PATH = os.path.join(os.path.dirname(__file__), '..', '..')
+ASTROPY_HELPERS_PATH = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..'))
 
 TEST_VERSION_SETUP_PY = """\
 #!/usr/bin/env python
@@ -27,7 +27,7 @@ NAME = 'apyhtest_eva'
 VERSION = {version!r}
 RELEASE = 'dev' not in VERSION
 
-sys.path.insert(0, '{astropy_helpers_path}')
+sys.path.insert(0, r'{astropy_helpers_path}')
 
 from astropy_helpers.git_helpers import get_git_devstr
 from astropy_helpers.version_helpers import generate_version_py

@@ -16,7 +16,7 @@ from ..commands import build_ext
 from . import reset_setup_helpers, reset_distutils_log  # noqa
 from . import run_setup, cleanup_import
 
-ASTROPY_HELPERS_PATH = os.path.join(os.path.dirname(__file__), '..', '..')
+ASTROPY_HELPERS_PATH = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..'))
 
 
 def _extension_test_package(tmpdir, request, extension_type='c'):
@@ -89,7 +89,7 @@ def _extension_test_package(tmpdir, request, extension_type='c'):
         import sys
         from os.path import join
         from setuptools import setup
-        sys.path.insert(0, '{astropy_helpers_path}')
+        sys.path.insert(0, r'{astropy_helpers_path}')
         from astropy_helpers.setup_helpers import register_commands
         from astropy_helpers.setup_helpers import get_package_info
         from astropy_helpers.version_helpers import generate_version_py
@@ -300,7 +300,7 @@ def test_build_docs(capsys, tmpdir, mode):
 
     test_pkg.join('setup.py').write(dedent("""\
         import sys
-        sys.path.insert(0, '{astropy_helpers_path}')
+        sys.path.insert(0, r'{astropy_helpers_path}')
         from os.path import join
         from setuptools import setup, Extension
         from astropy_helpers.setup_helpers import register_commands, get_package_info
@@ -356,7 +356,7 @@ def test_command_hooks(tmpdir, capsys):
         import sys
         from os.path import join
         from setuptools import setup, Extension
-        sys.path.insert(0, '{astropy_helpers_path}')
+        sys.path.insert(0, r'{astropy_helpers_path}')
         from astropy_helpers.setup_helpers import register_commands, get_package_info
 
         NAME = '_welltall_'
@@ -528,7 +528,7 @@ def test_invalid_package_exclusion(tmpdir, capsys):
         import sys
         from os.path import join
         from setuptools import setup, Extension
-        sys.path.insert(0, '{astropy_helpers_path}')
+        sys.path.insert(0, r'{astropy_helpers_path}')
         from astropy_helpers.setup_helpers import register_commands, \\
             get_package_info, add_exclude_packages
 
