@@ -12,6 +12,15 @@ astropy-helpers Changelog
   by the ``sphinx-astropy`` package in conjunction with the ``astropy-theme-sphinx``,
   ``sphinx-automodapi``, and ``numpydoc`` packages. [#368]
 
+- openmp_helpers.py: Make add_openmp_flags_if_available() work for clang.
+  The small openmp C test code, used to determine if openmp works, fails to
+  build with clang due to missing include and library paths for openmp.
+  When run, it then fails due to rpath (runtime path) issues.
+  Adds the necessary include, library, and runtime paths to the build.
+  Autogenerator utility added to gen openmp_enabled.py::is_openmp_enabled()
+  which can be called post build to determine state of OpenMP support.
+  [#382]
+
 
 3.0.2 (unreleased)
 ------------------

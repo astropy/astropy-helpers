@@ -36,6 +36,24 @@ matrix:
       env: PYTHON_VERSION=3.6 PIP_DEPENDENCIES='git+https://github.com/sphinx-doc/sphinx.git#egg=sphinx coveralls'
            CONDA_DEPENDENCIES="setuptools cython numpy pytest-cov"
 
+    # Test conda's clang
+    - os: osx
+      env:
+        - PYTHON_VERSION=3.5
+        - CONDA_DEPENDENCIES="setuptools sphinx cython numpy pytest-cov clang llvm-openmp"
+      before_install:
+        - export TEST_OPENMP="True"
+        - export CC=clang
+
+    # Test gcc on OSX
+    - os: osx
+      env:
+        - PYTHON_VERSION=3.5
+        - CONDA_DEPENDENCIES="setuptools sphinx cython numpy pytest-cov gcc"
+      before_install:
+        - export TEST_OPENMP="True"
+        - export CC=gcc
+
   # Uncomment the following if there are issues in setuptools that we
   # can't work around quickly - otherwise leave uncommented so that
   # we notice when things go wrong.
@@ -44,6 +62,16 @@ matrix:
   #   - env: PYTHON_VERSION=3.6 SETUPTOOLS_VERSION=dev DEBUG=True
   #          CONDA_DEPENDENCIES='sphinx cython numpy pytest-cov'
   #          EVENT_TYPE='push pull_request cron'
+
+before_install:
+
+      # Test OSX without OpenMP support
+      # Since the matrix OSX tests use the OS shipped version of clang, they double up
+      # as exploratory tests for when the shipped version has automatic OpenMP support.
+      # These tests will then fail and at such a time a new one should be added
+      # to explicitly remove OpenMP support.
+    - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then export TEST_OPENMP="False";
+      else export TEST_OPENMP="True"; fi
 
 install:
 
