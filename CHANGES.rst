@@ -1,7 +1,7 @@
 astropy-helpers Changelog
 *************************
 
-2.0.5 (unreleased)
+2.0.5 (2018-02-22)
 ------------------
 
 - Fix segmentation faults that occurred when the astropy-helpers submodule
