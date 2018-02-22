@@ -251,10 +251,7 @@ def test_missing_cython_c_files(capsys, pyx_extension_test_package, monkeypatch)
         assert msg in stderr
 
 
-MODES = ['cli', 'cli-w', 'deprecated', 'cli-l', 'cli-error']
-
-
-@pytest.mark.parametrize('mode', MODES)
+@pytest.mark.parametrize('mode', ['cli', 'cli-w', 'deprecated', 'cli-l', 'cli-error'])
 def test_build_docs(capsys, tmpdir, mode):
     """
     Test for build_docs
