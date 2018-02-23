@@ -11,10 +11,16 @@ astropy-helpers Changelog
   ``sphinx-automodapi``, and ``numpydoc`` packages. [#368]
 
 
-3.0.1 (unreleased)
+3.0.2 (unreleased)
 ------------------
 
 - Nothing changed yet.
+
+
+3.0.1 (2018-02-22)
+------------------
+
+- Nothing changed.
 
 
 3.0 (2018-02-09)
@@ -30,7 +36,13 @@ astropy-helpers Changelog
   with twine and get registered automatically. [#332]
 
 
-2.0.5 (unreleased)
+2.0.6 (unreleased)
+------------------
+
+- Nothing changed yet.
+
+
+2.0.5 (2018-02-22)
 ------------------
 
 - Fix segmentation faults that occurred when the astropy-helpers submodule
