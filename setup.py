@@ -4,7 +4,8 @@
 import ah_bootstrap
 import pkg_resources
 from setuptools import setup
-from astropy_helpers.setup_helpers import register_commands, get_package_info
+from astropy_helpers.setup_helpers import (register_commands, get_package_info,
+                                           add_exclude_packages)
 from astropy_helpers.version_helpers import generate_version_py
 
 NAME = 'astropy_helpers'
@@ -16,6 +17,7 @@ generate_version_py(NAME, VERSION, RELEASE, False, uses_git=not RELEASE)
 # Use the updated version including the git rev count
 from astropy_helpers.version import version as VERSION
 
+add_exclude_packages(['astropy_helpers.tests'])
 cmdclass = register_commands(NAME, VERSION, RELEASE)
 # This package actually doesn't use the Astropy test command
 del cmdclass['test']
@@ -46,5 +48,5 @@ setup(
     ],
     cmdclass=cmdclass,
     zip_safe=False,
-    **get_package_info(exclude=['astropy_helpers.tests'])
+    **get_package_info()
 )

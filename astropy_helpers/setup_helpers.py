@@ -141,7 +141,7 @@ def add_exclude_packages(excludes):
             "add_package_excludes must be called before all other setup helper "
             "functions in order to properly handle excluded packages")
 
-    _module_state['exclude_packages'].add(set(excludes))
+    _module_state['exclude_packages'].update(set(excludes))
 
 
 def register_commands(package, version, release, srcdir='.'):
