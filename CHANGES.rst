@@ -1,7 +1,7 @@
 astropy-helpers Changelog
 *************************
 
-2.0.6 (unreleased)
+2.0.6 (2018-02-24)
 ------------------
 
 - Avoid deprecation warning due to ``exclude=`` keyword in ``setup.py``. [#379]
