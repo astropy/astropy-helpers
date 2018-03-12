@@ -218,7 +218,7 @@ class AstropyBuildDocs(SphinxBuildDoc):
             proc = subprocess.Popen([sys.executable, '-c', subproccode],
                                     stdin=subprocess.PIPE,
                                     stdout=subprocess.PIPE,
-                                    stderr=subprocess.STDOUT)
+                                    stderr=None)
 
             retcode = 1
             with proc.stdout:
