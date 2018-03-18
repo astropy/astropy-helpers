@@ -10,6 +10,10 @@ astropy-helpers Changelog
   by the ``sphinx-astropy`` package in conjunction with the ``astropy-theme-sphinx``,
   ``sphinx-automodapi``, and ``numpydoc`` packages. [#368]
 
+- Added the ``--warning-file`` option to the ``build_docs`` command, which
+  allows sphinx warnings to be output to a file. (It also outputs the result
+  of that file when run on travis.) [#383]
+
 
 3.0.2 (unreleased)
 ------------------
