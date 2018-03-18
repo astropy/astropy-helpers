@@ -134,7 +134,6 @@ class AstropyBuildDocs(SphinxBuildDoc):
         # Now generate the source for and spawn a new process that runs the
         # command.  This is needed to get the correct imports for the built
         # version
-        runlines, runlineno = inspect.getsourcelines(SphinxBuildDoc.run)
         subproccode = textwrap.dedent("""
             from sphinx.setup_command import *
 
@@ -182,6 +181,11 @@ class AstropyBuildDocs(SphinxBuildDoc):
             for egg in glob.glob(os.path.join(eggs_path, '*.egg')):
                 subproccode += 'sys.path.append({egg!r})\n'.format(egg=egg)
 
+        # Somewhat hacky: extract the lines to actually run the command from the
+        # run method of SphinxBuildDoc.  This is necessary because there aren't
+        # enough interediate steps inside `run` that we can override in this
+        # subclass, so we pull out the source and modify it at the string level.
+        runlines, runlineno = inspect.getsourcelines(SphinxBuildDoc.run)
         # runlines[1:] removes 'def run(self)' on the first line
         subproccode += textwrap.dedent(''.join(runlines[1:]))
 
