@@ -6,6 +6,8 @@ astropy-helpers Changelog
 
 - Removing deprecated test_helpers.py file. [#369]
 
+- Removing ez_setup.py file and require setuptools 1.0 or later. [#384]
+
 - Remove all sphinx components from ``astropy-helpers``. These are now replaced
   by the ``sphinx-astropy`` package in conjunction with the ``astropy-theme-sphinx``,
   ``sphinx-automodapi``, and ``numpydoc`` packages. [#368]
