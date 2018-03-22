@@ -5,7 +5,7 @@ astropy-helpers Changelog
 2.0.7 (unreleased)
 ------------------
 
-- Nothing changed yet.
+- Removing ez_setup.py file and requiring setuptools 1.0 or later. [#384]
 
 
 2.0.6 (2018-02-24)
