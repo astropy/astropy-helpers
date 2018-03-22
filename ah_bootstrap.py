@@ -38,13 +38,16 @@ latest version of this module.
 
 import contextlib
 import errno
-import imp
 import io
 import locale
 import os
 import re
 import subprocess as sp
 import sys
+
+if sys.version_info < (3, 5):
+    print("ERROR: Python 3.5 or later is required by astropy-helpers")
+    sys.exit(1)
 
 try:
     from ConfigParser import ConfigParser, RawConfigParser
