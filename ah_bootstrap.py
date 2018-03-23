@@ -45,8 +45,11 @@ import re
 import subprocess as sp
 import sys
 
-if sys.version_info < (3, 5):
-    print("ERROR: Python 3.5 or later is required by astropy-helpers")
+__minimum_python_version__ = (3, 5)
+
+if sys.version_info < __minimum_python_version__:
+    print("ERROR: Python {} or later is required by astropy-helpers".format(
+        __minimum_python_version__))
     sys.exit(1)
 
 try:
