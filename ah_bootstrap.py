@@ -38,13 +38,19 @@ latest version of this module.
 
 import contextlib
 import errno
-import imp
 import io
 import locale
 import os
 import re
 import subprocess as sp
 import sys
+
+__minimum_python_version__ = (3, 5)
+
+if sys.version_info < __minimum_python_version__:
+    print("ERROR: Python {} or later is required by astropy-helpers".format(
+        __minimum_python_version__))
+    sys.exit(1)
 
 try:
     from ConfigParser import ConfigParser, RawConfigParser
