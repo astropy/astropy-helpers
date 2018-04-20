@@ -101,6 +101,8 @@ release = {rel}
 timestamp = {timestamp!r}
 debug = {debug}
 
+astropy_helpers_version = "{ahver}"
+
 try:
     from ._compiler import compiler
 except ImportError:
@@ -144,6 +146,11 @@ githash = "{githash}"
 
 def _get_version_py_str(packagename, version, githash, release, debug,
                         uses_git=True):
+    try:
+        from astropy_helpers import __version__ as ahver
+    except ImportError:
+        ahver = "unknown"
+
     epoch = int(os.environ.get('SOURCE_DATE_EPOCH', time.time()))
     timestamp = datetime.datetime.utcfromtimestamp(epoch)
     major, minor, bugfix = _version_split(version)
@@ -174,6 +181,7 @@ def _get_version_py_str(packagename, version, githash, release, debug,
                                               major=major,
                                               minor=minor,
                                               bugfix=bugfix,
+                                              ahver=ahver,
                                               rel=release, debug=debug)
 
 
