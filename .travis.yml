@@ -45,9 +45,13 @@ matrix:
   #          CONDA_DEPENDENCIES='sphinx cython numpy pytest-cov'
   #          EVENT_TYPE='push pull_request cron'
 
+before_install:
+
+    # WARNING!: please include the code below when overloading the `before_install` stage.
+    - if [ ! -d "ci-helpers" ]; then git clone --depth 1 git://github.com/astropy/ci-helpers.git; fi
+
 install:
 
-    - git clone git://github.com/astropy/ci-helpers.git
     - source ci-helpers/travis/setup_conda.sh
 
     # We cannot install the developer version of setuptools using pip because
