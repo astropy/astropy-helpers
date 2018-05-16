@@ -55,7 +55,7 @@ intersphinx_mapping = {
     'matplotlib': ('http://matplotlib.org/',
                    (None, 'http://data.astropy.org/intersphinx/matplotlib.inv')),
     'astropy': ('http://docs.astropy.org/en/stable/', None),
-    'h5py': ('http://docs.h5py.org/en/latest/', None)}
+    'h5py': ('http://docs.h5py.org/en/stable/', None)}
 
 if sys.version_info[0] == 2:
     intersphinx_mapping['python'] = (
