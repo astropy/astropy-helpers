@@ -13,10 +13,16 @@ astropy-helpers Changelog
   ``sphinx-automodapi``, and ``numpydoc`` packages. [#368]
 
 
-3.0.2 (unreleased)
+3.0.3 (unreleased)
 ------------------
 
 - Nothing changed yet.
+
+
+3.0.2 (2018-06-01)
+------------------
+
+- Nothing changed.
 
 
 3.0.1 (2018-02-22)
@@ -38,10 +44,16 @@ astropy-helpers Changelog
   with twine and get registered automatically. [#332]
 
 
-2.0.7 (unreleased)
+2.0.8 (unreleased)
 ------------------
 
 - Nothing changed yet.
+
+
+2.0.7 (2018-06-01)
+------------------
+
+- Removing ez_setup.py file and requiring setuptools 1.0 or later. [#384]
 
 
 2.0.6 (2018-02-24)
@@ -56,6 +68,7 @@ astropy-helpers Changelog
 - Fix segmentation faults that occurred when the astropy-helpers submodule
   was first initialized in packages that also contained Cython code. [#375]
 
+
 2.0.4 (2018-02-09)
 ------------------
 
@@ -66,6 +79,7 @@ astropy-helpers Changelog
 
 - Fix false negative in add_openmp_flags_if_available when measuring code
   coverage with gcc. [#374]
+
 
 2.0.3 (2018-01-20)
 ------------------
