@@ -51,6 +51,9 @@ class AstropyBuildDocs(SphinxBuildDoc):
         ('open-docs-in-browser', 'o',
          'Open the docs in a browser (using the webbrowser module) if the '
          'build finishes successfully.'))
+    user_options.append(
+        ('warning-file=', None,
+         'A file to write any warnings/errors to (in addition to printing).'))
 
     boolean_options = SphinxBuildDoc.boolean_options[:]
     boolean_options.append('warnings-returncode')
@@ -66,6 +69,7 @@ class AstropyBuildDocs(SphinxBuildDoc):
         self.no_intersphinx = False
         self.open_docs_in_browser = False
         self.warnings_returncode = False
+        self.warning_file = None
 
     def finalize_options(self):
 
@@ -130,7 +134,6 @@ class AstropyBuildDocs(SphinxBuildDoc):
         # Now generate the source for and spawn a new process that runs the
         # command.  This is needed to get the correct imports for the built
         # version
-        runlines, runlineno = inspect.getsourcelines(SphinxBuildDoc.run)
         subproccode = textwrap.dedent("""
             from sphinx.setup_command import *
 
@@ -140,6 +143,22 @@ class AstropyBuildDocs(SphinxBuildDoc):
 
         """).format(build_cmd_path=build_cmd_path, ah_path=ah_path,
                     srcdir=self.source_dir)
+
+        if self.warning_file:
+            # this creates a Tee that later is *used* in the Sphinx invocation
+            # in the lines pulled from the SphinxBuildDoc.run method
+
+            # test write to make sure any exception is raised and logged  here
+            # instead of in the subproc
+            with open(os.path.abspath(self.warning_file), 'w') as f:
+                f.write('Test output.  Should be overridden by subproc.')
+            subproccode += textwrap.dedent("""
+                import sys, os
+                from sphinx.util import Tee
+
+                warnfp = open('{warnfile}', 'w')
+                warningtee = Tee(sys.stderr, warnfp)
+                """.format(warnfile=os.path.abspath(self.warning_file)))
 
         # We've split out the Sphinx part of astropy-helpers into sphinx-astropy
         # but we want it to be auto-installed seamlessly for anyone using
@@ -162,11 +181,16 @@ class AstropyBuildDocs(SphinxBuildDoc):
             for egg in glob.glob(os.path.join(eggs_path, '*.egg')):
                 subproccode += 'sys.path.append({egg!r})\n'.format(egg=egg)
 
+        # Somewhat hacky: extract the lines to actually run the command from the
+        # run method of SphinxBuildDoc.  This is necessary because there aren't
+        # enough interediate steps inside `run` that we can override in this
+        # subclass, so we pull out the source and modify it at the string level.
+        runlines, runlineno = inspect.getsourcelines(SphinxBuildDoc.run)
         # runlines[1:] removes 'def run(self)' on the first line
         subproccode += textwrap.dedent(''.join(runlines[1:]))
 
-        # All "self.foo" in the subprocess code needs to be replaced by the
-        # values taken from the current self in *this* process
+        # Rather hacky: All "self.foo" in the subprocess code needs to be
+        # replaced by the values taken from the current self in *this* process
         subproccode = self._self_iden_rex.split(subproccode)
         for i in range(1, len(subproccode), 2):
             iden = subproccode[i]
@@ -178,6 +202,13 @@ class AstropyBuildDocs(SphinxBuildDoc):
             else:
                 subproccode[i] = repr(val)
         subproccode = ''.join(subproccode)
+
+        if self.warning_file:
+            # VERY hacky: assumes that the text below exists and only in the right
+            # place.  Could change in future sphinxes
+            subproccode = subproccode.replace('confoverrides, status_stream,',
+                                              'confoverrides, status_stream, '
+                                              'warningtee,')
 
         optcode = textwrap.dedent("""
 
@@ -236,12 +267,19 @@ class AstropyBuildDocs(SphinxBuildDoc):
                     # this means we are in the travis build, so customize
                     # the message appropriately.
                     msg = ('The build_docs travis build FAILED '
-                           'because sphinx issued documentation '
-                           'warnings (scroll up to see the warnings).')
+                           'because sphinx issued documentation warnings. '
+                           'Scroll up to see the warnings in context.')
+                    if self.warning_file:
+                        msg += 'Warnings/errors are also listed below:\n'
+                        with open(os.path.abspath(self.warning_file)) as f:
+                            msg += f.read()
                 else:  # standard failure message
                     msg = ('build_docs returning a non-zero exit '
                            'code because sphinx issued documentation '
                            'warnings.')
+                    if self.warning_file:
+                        fn = os.path.abspath(self.warning_file)
+                        msg += ' Warnings recorded in file: "{}"'.format(fn)
                 log.warn(msg)
 
         else:
