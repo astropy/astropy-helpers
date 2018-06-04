@@ -13,13 +13,13 @@
 
 from __future__ import absolute_import, print_function
 
-import datetime
-import glob
 import os
-import subprocess
 import sys
-import tempfile
+import glob
 import time
+import datetime
+import tempfile
+import subprocess
 
 from distutils import log
 from distutils.ccompiler import new_compiler
@@ -43,8 +43,8 @@ int main(void) {
 
 def _get_flag_value_from_var(flag, var, delim=' '):
     """
-    Utility to extract `flag` value from `os.environ[`var`]` or, if not present,
-    from `distutils.sysconfig.get_config_var(`var`)`.
+    Utility to extract ``flag`` value from `os.environ[``var``]` or, if not present,
+    from `distutils.sysconfig.get_config_var(``var``)`.
     E.g. to get include path: _get_flag_value_from_var('-I', 'CFLAGS')
     might return "/usr/local/include".
 
@@ -59,8 +59,8 @@ def _get_flag_value_from_var(flag, var, delim=' '):
     # Simple input validation
     if not var or not flag:
         return None
-    l = len(flag)
-    if not l:
+    flag_length = len(flag)
+    if not flag_length:
         return None
 
     # Look for var in os.eviron
@@ -79,8 +79,8 @@ def _get_flag_value_from_var(flag, var, delim=' '):
     # Extract flag from {var:value}
     if flags:
         for item in flags.split(delim):
-            if flag in item[:l]:
-                return item[l:]
+            if flag in item[:flag_length]:
+                return item[flag_length:]
 
     return None
 
@@ -102,7 +102,7 @@ def get_openmp_flags():
     Notes
     -----
     The flags returned are not tested for validity, use
-    `test_openmp_support(openmp_flags=get_openmp_flags())` to do so.
+    `check_openmp_support(openmp_flags=get_openmp_flags())` to do so.
     """
 
     compile_flags = []
@@ -125,7 +125,7 @@ def get_openmp_flags():
 
     return {'compiler_flags':compile_flags, 'linker_flags':link_flags}
 
-def test_openmp_support(openmp_flags=None, silent=False):
+def check_openmp_support(openmp_flags=None):
     """
     Compile and run OpenMP test code to determine viable support.
 
@@ -135,8 +135,6 @@ def test_openmp_support(openmp_flags=None, silent=False):
         Expecting `{'compiler_flags':<flags>, 'linker_flags':<flags>}`.
         These are passed as `extra_postargs` to `compile()` and
         `link_executable()` respectively.
-    silent : bool, optional
-        silence log warnings
 
     Returns
     -------
@@ -180,14 +178,12 @@ def test_openmp_support(openmp_flags=None, silent=False):
             if len(output) == nthreads:
                 is_openmp_supported = True
             else:
-                if not silent:
-                    log.warn("Unexpected number of lines from output of test OpenMP "
-                             "program (output was {0})".format(output))
+                log.warn("Unexpected number of lines from output of test OpenMP "
+                         "program (output was {0})".format(output))
                 is_openmp_supported = False
         else:
-            if not silent:
-                log.warn("Unexpected output from test OpenMP "
-                         "program (output was {0})".format(output))
+            log.warn("Unexpected output from test OpenMP "
+                     "program (output was {0})".format(output))
             is_openmp_supported = False
     except (CompileError, LinkError):
         is_openmp_supported = False
@@ -202,7 +198,12 @@ def is_openmp_supported():
     Utility to determine whether the build compiler
     has OpenMP support.
     """
-    return test_openmp_support(silent=True)
+    
+    # don't log
+    log_threshold = log.set_threshold(log.FATAL)
+    ret = check_openmp_support()
+    log.set_threshold(log_threshold)
+    return ret
 
 def add_openmp_flags_if_available(extension):
     """
@@ -213,7 +214,7 @@ def add_openmp_flags_if_available(extension):
     """
 
     openmp_flags = get_openmp_flags()
-    using_openmp = test_openmp_support(openmp_flags=openmp_flags, silent=False)
+    using_openmp = check_openmp_support(openmp_flags=openmp_flags)
 
     if using_openmp:
         compile_flags = openmp_flags['compiler_flags'] if 'compiler_flags' in openmp_flags else None
@@ -239,7 +240,7 @@ def is_openmp_enabled():
 
 def generate_openmp_enabled_py(packagename, srcdir='.'):
     """
-    Utility for creating openmp_enabled.py::is_openmp_enabled()
+    Utility for creating `openmp_enabled.is_openmp_enabled()`
     used to determine, post build, whether the package was built
     with or without OpenMP support.
     """
