@@ -42,7 +42,7 @@ matrix:
         - PYTHON_VERSION=3.5
         - CONDA_DEPENDENCIES="setuptools sphinx cython numpy pytest-cov clang llvm-openmp"
       before_install:
-        - export TEST_OPENMP="True"
+        - export OPENMP_EXPECTED="True"
         - export CC=clang
 
     # Test gcc on OSX
@@ -51,7 +51,7 @@ matrix:
         - PYTHON_VERSION=3.5
         - CONDA_DEPENDENCIES="setuptools sphinx cython numpy pytest-cov gcc"
       before_install:
-        - export TEST_OPENMP="True"
+        - export OPENMP_EXPECTED="True"
         - export CC=gcc
 
   # Uncomment the following if there are issues in setuptools that we
@@ -70,8 +70,8 @@ before_install:
       # as exploratory tests for when the shipped version has automatic OpenMP support.
       # These tests will then fail and at such a time a new one should be added
       # to explicitly remove OpenMP support.
-    - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then export TEST_OPENMP="False";
-      else export TEST_OPENMP="True"; fi
+    - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then export OPENMP_EXPECTED="False";
+      else export OPENMP_EXPECTED="True"; fi
 
 install:
 
