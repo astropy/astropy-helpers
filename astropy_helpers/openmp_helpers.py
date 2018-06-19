@@ -262,7 +262,7 @@ def is_openmp_enabled():
 
 def generate_openmp_enabled_py(packagename, srcdir='.'):
     """
-    Generate `package.openmp_enabled.is_openmp_enabled`, which can then be used
+    Generate ``package.openmp_enabled.is_openmp_enabled``, which can then be used
     to determine, post build, whether the package was built with or without
     OpenMP support.
     """
