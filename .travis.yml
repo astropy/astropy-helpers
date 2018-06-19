@@ -42,7 +42,7 @@ matrix:
         - PYTHON_VERSION=3.5
         - CONDA_DEPENDENCIES="setuptools sphinx cython numpy pytest-cov clang llvm-openmp"
         - OPENMP_EXPECTED=True
-        - CC=clang
+        - CCOMPILER=clang
 
     # Test gcc on OSX
     - os: osx
@@ -50,7 +50,7 @@ matrix:
         - PYTHON_VERSION=3.5
         - CONDA_DEPENDENCIES="setuptools sphinx cython numpy pytest-cov gcc"
         - OPENMP_EXPECTED=True
-        - CC=gcc
+        - CCOMPILER=gcc
 
   # Uncomment the following if there are issues in setuptools that we
   # can't work around quickly - otherwise leave uncommented so that
@@ -75,6 +75,15 @@ before_install:
           export OPENMP_EXPECTED=True;
         fi
       fi
+
+    # We need to use CCOMPILER otherwise Travis overwrites CC if we define it
+    # in env: above.
+    - if [ ! -z $CCOMPILER ]; then
+        export CC=$CCOMPILER;
+      fi
+
+    # Check CC variable
+    - echo $CC
 
 install:
 
