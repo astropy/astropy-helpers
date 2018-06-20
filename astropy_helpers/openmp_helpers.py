@@ -41,16 +41,34 @@ int main(void) {
 }
 """
 
+
 def _get_flag_value_from_var(flag, var, delim=' '):
     """
-    Utility to extract ``flag`` value from `os.environ[``var``]` or, if not present,
-    from `distutils.sysconfig.get_config_var(``var``)`.
-    E.g. to get include path: _get_flag_value_from_var('-I', 'CFLAGS')
-    might return "/usr/local/include".
+    Extract flags from an environment variable.
+
+    Parameters
+    ----------
+    flag : str
+        The flag to extract, for example '-I' or '-L'
+    var : str
+        The environment variable to extract the flag from, e.g. CFLAGS or LDFLAGS.
+    delim : str, optional
+        The delimiter separating flags inside the environment variable
+
+    Examples
+    --------
+    Let's assume the LDFLAGS is set to '-L/usr/local/include -customflag'. This
+    function will then return the following:
+
+        >>> _get_flag_value_from_var('-L', 'LDFLAGS')
+        '/usr/local/include'
 
     Notes
     -----
-    Not yet tested and therefore not yet supported on Windows
+    Environment variables are first checked in ``os.environ[var]``, then in
+    ``distutils.sysconfig.get_config_var(var)``.
+
+    This function is not supported on Windows.
     """
 
     if sys.platform.startswith('win'):
@@ -63,14 +81,10 @@ def _get_flag_value_from_var(flag, var, delim=' '):
     if not flag_length:
         return None
 
-    # Look for var in os.eviron
-    try:
+    # Look for var in os.eviron then in get_config_var
+    if var in os.environ:
         flags = os.environ[var]
-    except KeyError:
-        flags = None
-    
-    # If os.environ was unsuccesful try in sysconfig
-    if not flags:
+    else:
         try:
             flags = get_config_var(var)
         except KeyError:
@@ -79,16 +93,9 @@ def _get_flag_value_from_var(flag, var, delim=' '):
     # Extract flag from {var:value}
     if flags:
         for item in flags.split(delim):
-            if flag in item[:flag_length]:
+            if item.startswith(flag):
                 return item[flag_length:]
 
-    return None
-
-def _get_include_path():
-    return _get_flag_value_from_var('-I', 'CFLAGS')
-
-def _get_library_path():
-    return _get_flag_value_from_var('-L', 'LDFLAGS')
 
 def get_openmp_flags():
     """
@@ -106,35 +113,39 @@ def get_openmp_flags():
     """
 
     compile_flags = []
-    include_path = _get_include_path()
-    if include_path:
-        compile_flags.append('-I' + include_path)
-
     link_flags = []
-    lib_path = _get_library_path()
-    if lib_path:
-        link_flags.append('-L' + lib_path)
 
     if get_compiler_option() == 'msvc':
         compile_flags.append('-openmp')
     else:
-        compile_flags.append('-fopenmp')
-        link_flags.append('-fopenmp')
+
+        include_path = _get_flag_value_from_var('-I', 'CFLAGS')
+        if include_path:
+            compile_flags.append('-I' + include_path)
+
+        lib_path = _get_flag_value_from_var('-L', 'LDFLAGS')
         if lib_path:
+            link_flags.append('-L' + lib_path)
             link_flags.append('-Wl,-rpath,' + lib_path)
 
-    return {'compiler_flags':compile_flags, 'linker_flags':link_flags}
+        compile_flags.append('-fopenmp')
+        link_flags.append('-fopenmp')
+
+    return {'compiler_flags': compile_flags, 'linker_flags': link_flags}
+
 
 def check_openmp_support(openmp_flags=None):
     """
-    Compile and run OpenMP test code to determine viable support.
+    Check whether OpenMP test code can be compiled and run.
 
     Parameters
     ----------
-    openmp_flags : dictionary, optional
-        Expecting `{'compiler_flags':<flags>, 'linker_flags':<flags>}`.
+    openmp_flags : dict, optional
+        This should be a dictionary with keys ``compiler_flags`` and
+        ``linker_flags`` giving the compiliation and linking flags respectively.
         These are passed as `extra_postargs` to `compile()` and
-        `link_executable()` respectively.
+        `link_executable()` respectively. If this is not set, the flags will
+        be automatically determined using environment variables.
 
     Returns
     -------
@@ -148,13 +159,15 @@ def check_openmp_support(openmp_flags=None):
     if not openmp_flags:
         # customize_compiler() extracts info from os.environ. If certain keys
         # exist it uses these plus those from sysconfig.get_config_vars().
-        # If the key is missing in os.environ it is not extracted from 
+        # If the key is missing in os.environ it is not extracted from
         # sysconfig.get_config_var(). E.g. 'LDFLAGS' get left out, preventing
-        # clang from finding libomp.dylib because -L<path> is not passed to linker.
-        # Call get_openmp_flags() to get flags missed by customize_compiler().
+        # clang from finding libomp.dylib because -L<path> is not passed to
+        # linker. Call get_openmp_flags() to get flags missed by
+        # customize_compiler().
         openmp_flags = get_openmp_flags()
-    compile_flags = openmp_flags['compiler_flags'] if 'compiler_flags' in openmp_flags else None
-    link_flags = openmp_flags['linker_flags'] if 'linker_flags' in openmp_flags else None
+
+    compile_flags = openmp_flags.get('compiler_flags')
+    link_flags = openmp_flags.get('linker_flags')
 
     tmp_dir = tempfile.mkdtemp()
     start_dir = os.path.abspath('.')
@@ -168,10 +181,18 @@ def check_openmp_support(openmp_flags=None):
 
         os.mkdir('objects')
 
-        # Compile, link, and run test program
-        ccompiler.compile(['test_openmp.c'], output_dir='objects', extra_postargs=compile_flags)
-        ccompiler.link_executable(glob.glob(os.path.join('objects', '*' + ccompiler.obj_extension)), 'test_openmp', extra_postargs=link_flags)
-        output = subprocess.check_output('./test_openmp').decode(sys.stdout.encoding or 'utf-8').splitlines()
+        # Compile, test program
+        ccompiler.compile(['test_openmp.c'], output_dir='objects',
+                          extra_postargs=compile_flags)
+
+        # Link test program
+        objects = glob.glob(os.path.join('objects', '*' + ccompiler.obj_extension))
+        ccompiler.link_executable(objects, 'test_openmp',
+                                  extra_postargs=link_flags)
+
+        # Run test program
+        output = subprocess.check_output('./test_openmp')
+        output = output.decode(sys.stdout.encoding or 'utf-8').splitlines()
 
         if 'nthreads=' in output[0]:
             nthreads = int(output[0].strip().split('=')[1])
@@ -190,20 +211,19 @@ def check_openmp_support(openmp_flags=None):
 
     finally:
         os.chdir(start_dir)
-    
+
     return is_openmp_supported
+
 
 def is_openmp_supported():
     """
-    Utility to determine whether the build compiler
-    has OpenMP support.
+    Determine whether the build compiler has OpenMP support.
     """
-    
-    # don't log
     log_threshold = log.set_threshold(log.FATAL)
     ret = check_openmp_support()
     log.set_threshold(log_threshold)
     return ret
+
 
 def add_openmp_flags_if_available(extension):
     """
@@ -217,32 +237,34 @@ def add_openmp_flags_if_available(extension):
     using_openmp = check_openmp_support(openmp_flags=openmp_flags)
 
     if using_openmp:
-        compile_flags = openmp_flags['compiler_flags'] if 'compiler_flags' in openmp_flags else None
-        link_flags = openmp_flags['linker_flags'] if 'linker_flags' in openmp_flags else None
+        compile_flags = openmp_flags.get('compiler_flags')
+        link_flags = openmp_flags.get('linker_flags')
         log.info("Compiling Cython/C/C++ extension with OpenMP support")
         extension.extra_compile_args.extend(compile_flags)
         extension.extra_link_args.extend(link_flags)
     else:
-        log.warn("Cannot compile Cython extension with OpenMP, reverting to non-parallel code")
+        log.warn("Cannot compile Cython/C/C++ extension with OpenMP, reverting "
+                 "to non-parallel code")
 
     return using_openmp
+
 
 _IS_OPENMP_ENABLED_SRC = """
 # Autogenerated by {packagetitle}'s setup.py on {timestamp!s}
 
 def is_openmp_enabled():
-    \'\'\'
-    Autogenerated utility to determine, post build, whether the package
-    was built with or without OpenMP support.
-    \'\'\'
+    \"\"\"
+    Determine whether this package was built with OpenMP support.
+    \"\"\"
     return {return_bool}
 """[1:]
 
+
 def generate_openmp_enabled_py(packagename, srcdir='.'):
     """
-    Utility for creating `openmp_enabled.is_openmp_enabled()`
-    used to determine, post build, whether the package was built
-    with or without OpenMP support.
+    Generate ``package.openmp_enabled.is_openmp_enabled``, which can then be used
+    to determine, post build, whether the package was built with or without
+    OpenMP support.
     """
 
     if packagename.lower() == 'astropy':
