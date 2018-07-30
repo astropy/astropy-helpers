@@ -15,9 +15,11 @@ env:
     - PYTHON_VERSION=2.7 EVENT_TYPE='push pull_request cron'
     - PYTHON_VERSION=3.4 SETUPTOOLS_VERSION=20
     - PYTHON_VERSION=3.5
-    - PYTHON_VERSION=3.6 SETUPTOOLS_VERSION=dev DEBUG=True
+    - PYTHON_VERSION=3.6
+    - PYTHON_VERSION=3.7 SETUPTOOLS_VERSION=dev DEBUG=True
       CONDA_DEPENDENCIES='sphinx cython numpy six pytest-cov'
       EVENT_TYPE='push pull_request cron'
+
 
   global:
     - CONDA_DEPENDENCIES="setuptools sphinx cython numpy"
