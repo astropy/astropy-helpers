@@ -95,6 +95,8 @@ major = {major}
 minor = {minor}
 bugfix = {bugfix}
 
+version_info = (major, minor, bugfix)
+
 release = {rel}
 timestamp = {timestamp!r}
 debug = {debug}
