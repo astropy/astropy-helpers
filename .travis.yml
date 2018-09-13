@@ -39,6 +39,11 @@ matrix:
       env: PYTHON_VERSION=3.5 SPHINX_VERSION='<1.5' SETUPTOOLS_VERSION=27
     - os: linux
       env: PYTHON_VERSION=3.6 SPHINX_VERSION='<1.6' SETUPTOOLS_VERSION=27
+    # Test without installing numpy beforehand to make sure everything works
+    # without assuming numpy is already installed
+    - os: linux
+      env: PYTHON_VERSION=3.6 CONDA_DEPENDENCIES='sphinx cython pytest-cov'
+
 
   # Uncomment the following if there are issues in setuptools that we
   # can't work around quickly - otherwise leave uncommented so that

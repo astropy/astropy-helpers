@@ -36,7 +36,8 @@ astropy-helpers Changelog
 2.0.8 (unreleased)
 ------------------
 
-- Nothing changed yet.
+- Fixed error that occurs when installing a package in an environment where
+  ``numpy`` is not already installed. [#404]
 
 
 2.0.7 (2018-06-01)
