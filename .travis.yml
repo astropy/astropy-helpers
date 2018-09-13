@@ -37,6 +37,10 @@ matrix:
     - os: linux
       env: PYTHON_VERSION=3.6 PIP_DEPENDENCIES='git+https://github.com/sphinx-doc/sphinx.git#egg=sphinx coveralls'
            CONDA_DEPENDENCIES="setuptools cython numpy pytest-cov"
+    # Test without installing numpy beforehand to make sure everything works
+    # without assuming numpy is already installed
+    - os: linux
+      env: PYTHON_VERSION=3.6 CONDA_DEPENDENCIES='sphinx cython pytest-cov'
 
     # Test conda's clang
     - os: osx
