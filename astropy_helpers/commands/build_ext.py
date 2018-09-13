@@ -289,9 +289,11 @@ def generate_build_ext_command(packagename, release):
         def run(self):
             # For extensions that require 'numpy' in their include dirs,
             # replace 'numpy' with the actual paths
-            np_include = get_numpy_include_path()
+            np_include = None
             for extension in self.extensions:
                 if 'numpy' in extension.include_dirs:
+                    if np_include is None:
+                        np_include = get_np_include_path()
                     idx = extension.include_dirs.index('numpy')
                     extension.include_dirs.insert(idx, np_include)
                     extension.include_dirs.remove('numpy')
