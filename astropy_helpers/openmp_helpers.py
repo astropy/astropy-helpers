@@ -206,7 +206,7 @@ def check_openmp_support(openmp_flags=None):
             log.warn("Unexpected output from test OpenMP "
                      "program (output was {0})".format(output))
             is_openmp_supported = False
-    except (CompileError, LinkError):
+    except (CompileError, LinkError, subprocess.CalledProcessError):
         is_openmp_supported = False
 
     finally:
