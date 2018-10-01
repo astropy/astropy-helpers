@@ -2,6 +2,7 @@ import os
 import sys
 import stat
 import shutil
+import importlib
 import contextlib
 
 import pytest
@@ -19,7 +20,7 @@ from . import run_setup, cleanup_import
 ASTROPY_HELPERS_PATH = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..'))
 
 
-def _extension_test_package(tmpdir, request, extension_type='c'):
+def _extension_test_package(tmpdir, request, extension_type='c', include_numpy=False):
     """Creates a simple test package with an extension module."""
 
     test_pkg = tmpdir.mkdir('test_pkg')
@@ -73,9 +74,11 @@ def _extension_test_package(tmpdir, request, extension_type='c'):
     elif extension_type == 'both':
         extensions = ['unit01.c', 'unit02.pyx']
 
+    include_dirs = ['numpy'] if include_numpy else []
+
     extensions_list = [
-        "Extension('apyhtest_eva.{0}', [join('apyhtest_eva', '{1}')])".format(
-            os.path.splitext(extension)[0], extension)
+        "Extension('apyhtest_eva.{0}', [join('apyhtest_eva', '{1}')], include_dirs={2})".format(
+            os.path.splitext(extension)[0], extension, include_dirs)
         for extension in extensions]
 
     test_pkg.join('apyhtest_eva', 'setup_package.py').write(dedent("""\
@@ -135,7 +138,10 @@ def extension_test_package(tmpdir, request):
 
 @pytest.fixture
 def c_extension_test_package(tmpdir, request):
-    return _extension_test_package(tmpdir, request, extension_type='c')
+    # Check whether numpy is installed in the test environment
+    has_numpy = bool(importlib.find_loader('numpy'))
+    return _extension_test_package(tmpdir, request, extension_type='c',
+                                   include_numpy=has_numpy)
 
 
 @pytest.fixture
