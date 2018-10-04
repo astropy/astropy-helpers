@@ -12,7 +12,7 @@ import setuptools
 import pytest
 
 from . import reset_setup_helpers, reset_distutils_log  # noqa
-from . import run_cmd, run_setup, testpackage
+from . import run_cmd, run_setup, testpackage, create_testpackage
 from ..utils import silence
 
 
@@ -366,9 +366,7 @@ ah_bootstrap.PackageIndex = FakePackageIndex
 
 
 def test_upgrade(tmpdir, capsys):
-    # Run the testpackage fixture manually, since we use it multiple times in
-    # this test to make different versions of _astropy_helpers_test_
-    orig_dir = testpackage(tmpdir.mkdir('orig'))
+    orig_dir = create_testpackage(tmpdir.mkdir('orig'))
 
     # Make a test package that uses _astropy_helpers_test_
     source = tmpdir.mkdir('source')
@@ -391,8 +389,8 @@ def test_upgrade(tmpdir, capsys):
     # Make additional "upgrade" versions of the _astropy_helpers_test_
     # package--one of them is version 0.2 and the other is version 0.1.1.  The
     # auto-upgrade should ignore version 0.2 but use version 0.1.1.
-    upgrade_dir_1 = testpackage(tmpdir.mkdir('upgrade_1'), version='0.2')
-    upgrade_dir_2 = testpackage(tmpdir.mkdir('upgrade_2'), version='0.1.1')
+    upgrade_dir_1 = create_testpackage(tmpdir.mkdir('upgrade_1'), version='0.2')
+    upgrade_dir_2 = create_testpackage(tmpdir.mkdir('upgrade_2'), version='0.1.1')
 
     dists = []
     # For each upgrade package go ahead and build a source distribution of it
