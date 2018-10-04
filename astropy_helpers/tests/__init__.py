@@ -125,14 +125,7 @@ setup(name=NAME, version=VERSION,
 """
 
 
-@pytest.fixture
-def testpackage(tmpdir, version='0.1'):
-    """
-    This fixture creates a simplified package called _astropy_helpers_test_
-    used primarily for testing ah_boostrap, but without using the
-    astropy_helpers package directly and getting it confused with the
-    astropy_helpers package already under test.
-    """
+def create_testpackage(tmpdir, version='0.1'):
 
     source = tmpdir.mkdir('testpkg')
 
@@ -149,6 +142,18 @@ def testpackage(tmpdir, version='0.1'):
         run_cmd('git', ['commit', '-m', 'test package'])
 
     return source
+
+
+@pytest.fixture
+def testpackage(tmpdir, version='0.1'):
+    """
+    This fixture creates a simplified package called _astropy_helpers_test_
+    used primarily for testing ah_boostrap, but without using the
+    astropy_helpers package directly and getting it confused with the
+    astropy_helpers package already under test.
+    """
+
+    return create_testpackage(tmpdir, version=version)
 
 
 def cleanup_import(package_name):
