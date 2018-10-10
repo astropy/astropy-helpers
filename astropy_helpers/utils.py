@@ -362,9 +362,9 @@ def deprecated(since, message='', name='', alternative='', pending=False,
         if not old_doc:
             old_doc = ''
         old_doc = textwrap.dedent(old_doc).strip('\n')
-        new_doc = (('\n.. deprecated:: %(since)s'
-                    '\n    %(message)s\n\n' %
-                    {'since': since, 'message': message.strip()}) + old_doc)
+        new_doc = (('\n.. deprecated:: {since}'
+                    '\n    {message}\n\n'.format(
+                    **{'since': since, 'message': message.strip()})) + old_doc)
         if not old_doc:
             # This is to prevent a spurious 'unexpected unindent' warning from
             # docutils when the original docstring was blank.
@@ -407,7 +407,7 @@ def deprecated(since, message='', name='', alternative='', pending=False,
         # functools.wraps on it, but we normally don't care.
         # This crazy way to get the type of a wrapper descriptor is
         # straight out of the Python 3.3 inspect module docs.
-        if type(func) != type(str.__dict__['__add__']):
+        if type(func) is not type(str.__dict__['__add__']):  # nopep8
             deprecated_func = functools.wraps(func)(deprecated_func)
 
         deprecated_func.__doc__ = deprecate_doc(
@@ -417,35 +417,25 @@ def deprecated(since, message='', name='', alternative='', pending=False,
 
     def deprecate_class(cls, message):
         """
-        Returns a wrapper class with the docstrings updated and an
-        __init__ function that will raise an
-        ``AstropyDeprectationWarning`` warning when called.
+        Update the docstring and wrap the ``__init__`` in-place (or ``__new__``
+        if the class or any of the bases overrides ``__new__``) so it will give
+        a deprecation warning when an instance is created.
+
+        This won't work for extension classes because these can't be modified
+        in-place and the alternatives don't work in the general case:
+
+        - Using a new class that looks and behaves like the original doesn't
+          work because the __new__ method of extension types usually makes sure
+          that it's the same class or a subclass.
+        - Subclassing the class and return the subclass can lead to problems
+          with pickle and will look weird in the Sphinx docs.
         """
-        # Creates a new class with the same name and bases as the
-        # original class, but updates the dictionary with a new
-        # docstring and a wrapped __init__ method.  __module__ needs
-        # to be manually copied over, since otherwise it will be set
-        # to *this* module (astropy.utils.misc).
-
-        # This approach seems to make Sphinx happy (the new class
-        # looks enough like the original class), and works with
-        # extension classes (which functools.wraps does not, since
-        # it tries to modify the original class).
-
-        # We need to add a custom pickler or you'll get
-        #     Can't pickle <class ..>: it's not found as ...
-        # errors. Picklability is required for any class that is
-        # documented by Sphinx.
-
-        members = cls.__dict__.copy()
-
-        members.update({
-            '__doc__': deprecate_doc(cls.__doc__, message),
-            '__init__': deprecate_function(get_function(cls.__init__),
-                                           message),
-        })
-
-        return type(cls.__name__, cls.__bases__, members)
+        cls.__doc__ = deprecate_doc(cls.__doc__, message)
+        if cls.__new__ is object.__new__:
+            cls.__init__ = deprecate_function(get_function(cls.__init__), message)
+        else:
+            cls.__new__ = deprecate_function(get_function(cls.__new__), message)
+        return cls
 
     def deprecate(obj, message=message, name=name, alternative=alternative,
                   pending=pending):
@@ -465,21 +455,21 @@ def deprecated(since, message='', name='', alternative='', pending=False,
             name = get_function(obj).__name__
 
         altmessage = ''
-        if not message or type(message) == type(deprecate):
+        if not message or type(message) is type(deprecate):
             if pending:
-                message = ('The %(func)s %(obj_type)s will be deprecated in a '
+                message = ('The {func} {obj_type} will be deprecated in a '
                            'future version.')
             else:
-                message = ('The %(func)s %(obj_type)s is deprecated and may '
+                message = ('The {func} {obj_type} is deprecated and may '
                            'be removed in a future version.')
             if alternative:
-                altmessage = '\n        Use %s instead.' % alternative
+                altmessage = '\n        Use {} instead.'.format(alternative)
 
-        message = ((message % {
+        message = ((message.format(**{
             'func': name,
             'name': name,
             'alternative': alternative,
-            'obj_type': obj_type_name}) +
+            'obj_type': obj_type_name})) +
             altmessage)
 
         if isinstance(obj, type):
@@ -487,7 +477,7 @@ def deprecated(since, message='', name='', alternative='', pending=False,
         else:
             return deprecate_function(obj, message)
 
-    if type(message) == type(deprecate):
+    if type(message) is type(deprecate):
         return deprecate(message)
 
     return deprecate
