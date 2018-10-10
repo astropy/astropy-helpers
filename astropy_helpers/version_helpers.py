@@ -28,12 +28,12 @@ import sys
 import time
 
 from distutils import log
+from importlib import invalidate_caches
 
 import pkg_resources
 
 from . import git_helpers
 from .distutils_helpers import is_distutils_display_option
-from .utils import invalidate_caches
 
 
 def _version_split(version):

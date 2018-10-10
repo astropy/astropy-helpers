@@ -20,7 +20,6 @@ try:
 except ImportError:
     import_machinery = None
 
-from importlib import invalidate_caches
 
 
 # Note: The following Warning subclasses are simply copies of the Warnings in

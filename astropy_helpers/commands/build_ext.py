@@ -10,10 +10,11 @@ import textwrap
 from distutils import log, ccompiler, sysconfig
 from distutils.core import Extension
 from distutils.ccompiler import get_default_compiler
+from importlib import invalidate_caches
 from setuptools.command.build_ext import build_ext as SetuptoolsBuildExt
 from setuptools.command import build_py
 
-from ..utils import get_numpy_include_path, invalidate_caches, classproperty
+from ..utils import get_numpy_include_path, classproperty
 from ..version_helpers import get_pkg_version_module
 
 
