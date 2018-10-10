@@ -653,7 +653,7 @@ class classproperty(property):
 
     ::
 
-        >>> class Foo(object):
+        >>> class Foo:
         ...     _bar_internal = 1
         ...     @classproperty
         ...     def bar(cls):
@@ -671,7 +671,7 @@ class classproperty(property):
     As previously noted, a `classproperty` is limited to implementing
     read-only attributes::
 
-        >>> class Foo(object):
+        >>> class Foo:
         ...     _bar_internal = 1
         ...     @classproperty
         ...     def bar(cls):
@@ -687,7 +687,7 @@ class classproperty(property):
 
     When the ``lazy`` option is used, the getter is only called once::
 
-        >>> class Foo(object):
+        >>> class Foo:
         ...     @classproperty(lazy=True)
         ...     def bar(cls):
         ...         print("Performing complicated calculation")
@@ -721,7 +721,7 @@ class classproperty(property):
 
             return wrapper
 
-        return super(classproperty, cls).__new__(cls)
+        return super().__new__(cls)
 
     def __init__(self, fget, doc=None, lazy=False):
         self._lazy = lazy
@@ -729,37 +729,32 @@ class classproperty(property):
             self._cache = {}
         fget = self._wrap_fget(fget)
 
-        super(classproperty, self).__init__(fget=fget, doc=doc)
+        super().__init__(fget=fget, doc=doc)
 
         # There is a buglet in Python where self.__doc__ doesn't
         # get set properly on instances of property subclasses if
         # the doc argument was used rather than taking the docstring
         # from fget
+        # Related Python issue: https://bugs.python.org/issue24766
         if doc is not None:
             self.__doc__ = doc
 
-    def __get__(self, obj, objtype=None):
+    def __get__(self, obj, objtype):
         if self._lazy and objtype in self._cache:
             return self._cache[objtype]
 
-        if objtype is not None:
-            # The base property.__get__ will just return self here;
-            # instead we pass objtype through to the original wrapped
-            # function (which takes the class as its sole argument)
-            val = self.fget.__wrapped__(objtype)
-        else:
-            val = super(classproperty, self).__get__(obj, objtype=objtype)
+        # The base property.__get__ will just return self here;
+        # instead we pass objtype through to the original wrapped
+        # function (which takes the class as its sole argument)
+        val = self.fget.__wrapped__(objtype)
 
         if self._lazy:
-            if objtype is None:
-                objtype = obj.__class__
-
             self._cache[objtype] = val
 
         return val
 
     def getter(self, fget):
-        return super(classproperty, self).getter(self._wrap_fget(fget))
+        return super().getter(self._wrap_fget(fget))
 
     def setter(self, fset):
         raise NotImplementedError(
@@ -782,9 +777,6 @@ class classproperty(property):
         @functools.wraps(orig_fget)
         def fget(obj):
             return orig_fget(obj.__class__)
-
-        # Set the __wrapped__ attribute manually for support on Python 2
-        fget.__wrapped__ = orig_fget
 
         return fget
 
