@@ -30,6 +30,13 @@ from .setup_helpers import get_compiler_option
 
 __all__ = ['add_openmp_flags_if_available']
 
+try:
+    # Check if this has already been instantiated, only set the default once.
+    _ASTROPY_DISABLE_SETUP_WITH_OPENMP_
+except NameError:
+    import builtins
+    # It hasn't, so do so.
+    builtins._ASTROPY_DISABLE_SETUP_WITH_OPENMP_ = False
 
 CCODE = """
 #include <omp.h>
@@ -233,6 +240,10 @@ def add_openmp_flags_if_available(extension):
     Returns `True` if the flags were added, `False` otherwise.
     """
 
+    if _ASTROPY_DISABLE_SETUP_WITH_OPENMP_:
+        log.info("OpenMP support has been explicitly disabled.")
+        return False
+
     openmp_flags = get_openmp_flags()
     using_openmp = check_openmp_support(openmp_flags=openmp_flags)
 
@@ -260,7 +271,7 @@ def is_openmp_enabled():
 """[1:]
 
 
-def generate_openmp_enabled_py(packagename, srcdir='.'):
+def generate_openmp_enabled_py(packagename, srcdir='.', disable_openmp=None):
     """
     Generate ``package.openmp_enabled.is_openmp_enabled``, which can then be used
     to determine, post build, whether the package was built with or without
@@ -275,9 +286,16 @@ def generate_openmp_enabled_py(packagename, srcdir='.'):
     epoch = int(os.environ.get('SOURCE_DATE_EPOCH', time.time()))
     timestamp = datetime.datetime.utcfromtimestamp(epoch)
 
+    if disable_openmp is not None:
+        import builtins
+        builtins._ASTROPY_DISABLE_SETUP_WITH_OPENMP_ = disable_openmp
+    if _ASTROPY_DISABLE_SETUP_WITH_OPENMP_:
+        log.info("OpenMP support has been explicitly disabled.")
+    openmp_support = False if _ASTROPY_DISABLE_SETUP_WITH_OPENMP_ else is_openmp_supported()
+
     src = _IS_OPENMP_ENABLED_SRC.format(packagetitle=packagetitle,
                                         timestamp=timestamp,
-                                        return_bool=is_openmp_supported())
+                                        return_bool=openmp_support)
 
     package_srcdir = os.path.join(srcdir, *packagename.split('.'))
     is_openmp_enabled_py = os.path.join(package_srcdir, 'openmp_enabled.py')
