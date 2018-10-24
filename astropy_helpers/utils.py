@@ -354,9 +354,9 @@ def deprecated(since, message='', name='', alternative='', pending=False,
         if not old_doc:
             old_doc = ''
         old_doc = textwrap.dedent(old_doc).strip('\n')
-        new_doc = (('\n.. deprecated:: %(since)s'
-                    '\n    %(message)s\n\n' %
-                    {'since': since, 'message': message.strip()}) + old_doc)
+        new_doc = (('\n.. deprecated:: {since}'
+                    '\n    {message}\n\n'.format(
+                    **{'since': since, 'message': message.strip()})) + old_doc)
         if not old_doc:
             # This is to prevent a spurious 'unexpected unindent' warning from
             # docutils when the original docstring was blank.
@@ -399,7 +399,7 @@ def deprecated(since, message='', name='', alternative='', pending=False,
         # functools.wraps on it, but we normally don't care.
         # This crazy way to get the type of a wrapper descriptor is
         # straight out of the Python 3.3 inspect module docs.
-        if type(func) != type(str.__dict__['__add__']):
+        if type(func) is not type(str.__dict__['__add__']):  # nopep8
             deprecated_func = functools.wraps(func)(deprecated_func)
 
         deprecated_func.__doc__ = deprecate_doc(
@@ -409,35 +409,25 @@ def deprecated(since, message='', name='', alternative='', pending=False,
 
     def deprecate_class(cls, message):
         """
-        Returns a wrapper class with the docstrings updated and an
-        __init__ function that will raise an
-        ``AstropyDeprectationWarning`` warning when called.
+        Update the docstring and wrap the ``__init__`` in-place (or ``__new__``
+        if the class or any of the bases overrides ``__new__``) so it will give
+        a deprecation warning when an instance is created.
+
+        This won't work for extension classes because these can't be modified
+        in-place and the alternatives don't work in the general case:
+
+        - Using a new class that looks and behaves like the original doesn't
+          work because the __new__ method of extension types usually makes sure
+          that it's the same class or a subclass.
+        - Subclassing the class and return the subclass can lead to problems
+          with pickle and will look weird in the Sphinx docs.
         """
-        # Creates a new class with the same name and bases as the
-        # original class, but updates the dictionary with a new
-        # docstring and a wrapped __init__ method.  __module__ needs
-        # to be manually copied over, since otherwise it will be set
-        # to *this* module (astropy.utils.misc).
-
-        # This approach seems to make Sphinx happy (the new class
-        # looks enough like the original class), and works with
-        # extension classes (which functools.wraps does not, since
-        # it tries to modify the original class).
-
-        # We need to add a custom pickler or you'll get
-        #     Can't pickle <class ..>: it's not found as ...
-        # errors. Picklability is required for any class that is
-        # documented by Sphinx.
-
-        members = cls.__dict__.copy()
-
-        members.update({
-            '__doc__': deprecate_doc(cls.__doc__, message),
-            '__init__': deprecate_function(get_function(cls.__init__),
-                                           message),
-        })
-
-        return type(cls.__name__, cls.__bases__, members)
+        cls.__doc__ = deprecate_doc(cls.__doc__, message)
+        if cls.__new__ is object.__new__:
+            cls.__init__ = deprecate_function(get_function(cls.__init__), message)
+        else:
+            cls.__new__ = deprecate_function(get_function(cls.__new__), message)
+        return cls
 
     def deprecate(obj, message=message, name=name, alternative=alternative,
                   pending=pending):
@@ -457,21 +447,21 @@ def deprecated(since, message='', name='', alternative='', pending=False,
             name = get_function(obj).__name__
 
         altmessage = ''
-        if not message or type(message) == type(deprecate):
+        if not message or type(message) is type(deprecate):
             if pending:
-                message = ('The %(func)s %(obj_type)s will be deprecated in a '
+                message = ('The {func} {obj_type} will be deprecated in a '
                            'future version.')
             else:
-                message = ('The %(func)s %(obj_type)s is deprecated and may '
+                message = ('The {func} {obj_type} is deprecated and may '
                            'be removed in a future version.')
             if alternative:
-                altmessage = '\n        Use %s instead.' % alternative
+                altmessage = '\n        Use {} instead.'.format(alternative)
 
-        message = ((message % {
+        message = ((message.format(**{
             'func': name,
             'name': name,
             'alternative': alternative,
-            'obj_type': obj_type_name}) +
+            'obj_type': obj_type_name})) +
             altmessage)
 
         if isinstance(obj, type):
@@ -479,7 +469,7 @@ def deprecated(since, message='', name='', alternative='', pending=False,
         else:
             return deprecate_function(obj, message)
 
-    if type(message) == type(deprecate):
+    if type(message) is type(deprecate):
         return deprecate(message)
 
     return deprecate
@@ -655,7 +645,7 @@ class classproperty(property):
 
     ::
 
-        >>> class Foo(object):
+        >>> class Foo:
         ...     _bar_internal = 1
         ...     @classproperty
         ...     def bar(cls):
@@ -673,7 +663,7 @@ class classproperty(property):
     As previously noted, a `classproperty` is limited to implementing
     read-only attributes::
 
-        >>> class Foo(object):
+        >>> class Foo:
         ...     _bar_internal = 1
         ...     @classproperty
         ...     def bar(cls):
@@ -689,7 +679,7 @@ class classproperty(property):
 
     When the ``lazy`` option is used, the getter is only called once::
 
-        >>> class Foo(object):
+        >>> class Foo:
         ...     @classproperty(lazy=True)
         ...     def bar(cls):
         ...         print("Performing complicated calculation")
@@ -723,7 +713,7 @@ class classproperty(property):
 
             return wrapper
 
-        return super(classproperty, cls).__new__(cls)
+        return super().__new__(cls)
 
     def __init__(self, fget, doc=None, lazy=False):
         self._lazy = lazy
@@ -731,37 +721,32 @@ class classproperty(property):
             self._cache = {}
         fget = self._wrap_fget(fget)
 
-        super(classproperty, self).__init__(fget=fget, doc=doc)
+        super().__init__(fget=fget, doc=doc)
 
         # There is a buglet in Python where self.__doc__ doesn't
         # get set properly on instances of property subclasses if
         # the doc argument was used rather than taking the docstring
         # from fget
+        # Related Python issue: https://bugs.python.org/issue24766
         if doc is not None:
             self.__doc__ = doc
 
-    def __get__(self, obj, objtype=None):
+    def __get__(self, obj, objtype):
         if self._lazy and objtype in self._cache:
             return self._cache[objtype]
 
-        if objtype is not None:
-            # The base property.__get__ will just return self here;
-            # instead we pass objtype through to the original wrapped
-            # function (which takes the class as its sole argument)
-            val = self.fget.__wrapped__(objtype)
-        else:
-            val = super(classproperty, self).__get__(obj, objtype=objtype)
+        # The base property.__get__ will just return self here;
+        # instead we pass objtype through to the original wrapped
+        # function (which takes the class as its sole argument)
+        val = self.fget.__wrapped__(objtype)
 
         if self._lazy:
-            if objtype is None:
-                objtype = obj.__class__
-
             self._cache[objtype] = val
 
         return val
 
     def getter(self, fget):
-        return super(classproperty, self).getter(self._wrap_fget(fget))
+        return super().getter(self._wrap_fget(fget))
 
     def setter(self, fset):
         raise NotImplementedError(
@@ -784,9 +769,6 @@ class classproperty(property):
         @functools.wraps(orig_fget)
         def fget(obj):
             return orig_fget(obj.__class__)
-
-        # Set the __wrapped__ attribute manually for support on Python 2
-        fget.__wrapped__ = orig_fget
 
         return fget
 
