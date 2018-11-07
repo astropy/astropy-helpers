@@ -1,6 +1,5 @@
 from __future__ import print_function
 
-import inspect
 import os
 import pkgutil
 import re
@@ -12,12 +11,10 @@ import textwrap
 import warnings
 
 from distutils import log
-from distutils.cmd import DistutilsOptionError
 
-import sphinx
 from sphinx.setup_command import BuildDoc as SphinxBuildDoc
 
-from ..utils import minversion, AstropyDeprecationWarning
+from ..utils import AstropyDeprecationWarning
 
 
 class AstropyBuildDocs(SphinxBuildDoc):
@@ -73,12 +70,14 @@ class AstropyBuildDocs(SphinxBuildDoc):
 
         # Clear out previous sphinx builds, if requested
         if self.clean_docs:
+
             dirstorm = [os.path.join(self.source_dir, 'api'),
                         os.path.join(self.source_dir, 'generated')]
+
             if self.build_dir is None:
-                dirstorm.append('docs/_build')
-            else:
-                dirstorm.append(self.build_dir)
+                self.build_dir = 'docs/_build'
+
+            dirstorm.append(self.build_dir)
 
             for d in dirstorm:
                 if os.path.isdir(d):
@@ -154,13 +153,15 @@ class AstropyBuildDocs(SphinxBuildDoc):
                 subproccode += 'sys.path.append({egg!r})\n'.format(egg=egg)
 
         subproccode += textwrap.dedent("""
-            argv = ['-W', '-b', 'html', '.', '_build/html']
 
             if SPHINX_LT_17:
                 argv.insert(0, 'sphinx-build')
 
-            build_main(argv=argv)
-        """)
+            for builder in {builders!r}:
+                argv = ['-W', '.', '-b', builder, os.path.join({output_dir!r}, builder)]
+                build_main(argv=argv)
+        """.format(builders=self.builder,
+                   output_dir=os.path.relpath(self.build_dir, 'docs')))
 
         log.debug('Starting subprocess of {0} with python code:\n{1}\n'
                   '[CODE END])'.format(sys.executable, subproccode))
