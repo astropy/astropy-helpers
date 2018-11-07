@@ -100,20 +100,6 @@ class AstropyBuildDocs(SphinxBuildDoc):
         # be called. If it's None, it won't be.
         retcode = None
 
-        # If possible, create the _static dir
-        if self.build_dir is not None:
-            # the _static dir should be in the same place as the _build dir
-            # for Astropy
-            basedir, subdir = os.path.split(self.build_dir)
-            if subdir == '':  # the path has a trailing /...
-                basedir, subdir = os.path.split(basedir)
-            staticdir = os.path.join(basedir, '_static')
-            if os.path.isfile(staticdir):
-                raise DistutilsOptionError(
-                    'Attempted to build_docs in a location where' +
-                    staticdir + 'is a file.  Must be a directory.')
-            self.mkpath(staticdir)
-
         # Now make sure Astropy is built and determine where it was built
         build_cmd = self.reinitialize_command('build')
         build_cmd.inplace = 0
@@ -127,17 +113,22 @@ class AstropyBuildDocs(SphinxBuildDoc):
         else:
             ah_path = os.path.abspath(ah_importer.path)
 
-        # Now generate the source for and spawn a new process that runs the
-        # command.  This is needed to get the correct imports for the built
-        # version
-        runlines, runlineno = inspect.getsourcelines(SphinxBuildDoc.run)
         subproccode = textwrap.dedent("""
-            from sphinx.setup_command import *
+            import os
+            import sys
+            from distutils.version import LooseVersion
+            from sphinx import __version__
+
+            SPHINX_LT_17 = LooseVersion(__version__) < LooseVersion('1.7')
+
+            if SPHINX_LT_17:
+                from sphinx import build_main
+            else:
+                from sphinx.cmd.build import build_main
 
             os.chdir({srcdir!r})
             sys.path.insert(0, {build_cmd_path!r})
             sys.path.insert(0, {ah_path!r})
-
         """).format(build_cmd_path=build_cmd_path, ah_path=ah_path,
                     srcdir=self.source_dir)
 
@@ -162,51 +153,14 @@ class AstropyBuildDocs(SphinxBuildDoc):
             for egg in glob.glob(os.path.join(eggs_path, '*.egg')):
                 subproccode += 'sys.path.append({egg!r})\n'.format(egg=egg)
 
-        # runlines[1:] removes 'def run(self)' on the first line
-        subproccode += textwrap.dedent(''.join(runlines[1:]))
+        subproccode += textwrap.dedent("""
+            argv = ['-W', '-b', 'html', '.', '_build/html']
 
-        # All "self.foo" in the subprocess code needs to be replaced by the
-        # values taken from the current self in *this* process
-        subproccode = self._self_iden_rex.split(subproccode)
-        for i in range(1, len(subproccode), 2):
-            iden = subproccode[i]
-            val = getattr(self, iden)
-            if iden.endswith('_dir'):
-                # Directories should be absolute, because the `chdir` call
-                # in the new process moves to a different directory
-                subproccode[i] = repr(os.path.abspath(val))
-            else:
-                subproccode[i] = repr(val)
-        subproccode = ''.join(subproccode)
+            if SPHINX_LT_17:
+                argv.insert(0, 'sphinx-build')
 
-        optcode = textwrap.dedent("""
-
-        class Namespace(object): pass
-        self = Namespace()
-        self.pdb = {pdb!r}
-        self.verbosity = {verbosity!r}
-        self.traceback = {traceback!r}
-
-        """).format(pdb=getattr(self, 'pdb', False),
-                    verbosity=getattr(self, 'verbosity', 0),
-                    traceback=getattr(self, 'traceback', False))
-
-        subproccode = optcode + subproccode
-
-        # This is a quick gross hack, but it ensures that the code grabbed from
-        # SphinxBuildDoc.run will work in Python 2 if it uses the print
-        # function
-        if minversion(sphinx, '1.3'):
-            subproccode = 'from __future__ import print_function' + subproccode
-
-        if self.no_intersphinx:
-            # the confoverrides variable in sphinx.setup_command.BuildDoc can
-            # be used to override the conf.py ... but this could well break
-            # if future versions of sphinx change the internals of BuildDoc,
-            # so remain vigilant!
-            subproccode = subproccode.replace(
-                'confoverrides = {}',
-                'confoverrides = {\'intersphinx_mapping\':{}}')
+            build_main(argv=argv)
+        """)
 
         log.debug('Starting subprocess of {0} with python code:\n{1}\n'
                   '[CODE END])'.format(sys.executable, subproccode))
