@@ -14,7 +14,8 @@ environment:
 
       # babel 2.0 is known to break on Windows:
       # https://github.com/python-babel/babel/issues/174
-      CONDA_DEPENDENCIES: "numpy Cython sphinx pytest babel!=2.0 setuptools"
+      CONDA_DEPENDENCIES: "numpy Cython sphinx pytest babel!=2.0 setuptools pytest-cov"
+      PIP_DEPENDENCIES: "codecov"
 
   matrix:
       - PYTHON_VERSION: "3.5"
@@ -42,4 +43,5 @@ build: false
 test_script:
   # Specify basetemp explicitly otherwise some of the filenames exceed
   # 260 characters when fetch_build_eggs runs.
-  - "%CMD_IN_ENV% py.test --basetemp=\\pytest-tmp astropy_helpers"
+  - "%CMD_IN_ENV% py.test --cov --basetemp=\\pytest-tmp astropy_helpers"
+  - "%CMD_IN_ENV% codecov"

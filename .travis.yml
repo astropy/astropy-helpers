@@ -21,7 +21,7 @@ env:
 
   global:
     - CONDA_DEPENDENCIES="setuptools sphinx cython numpy pytest-cov"
-    - PIP_DEPENDENCIES="coveralls"
+    - PIP_DEPENDENCIES="codecov"
     - EVENT_TYPE='push pull_request'
 
 matrix:
@@ -29,13 +29,13 @@ matrix:
     # Do one build with sphinx-astropy as one of the tests bypasses the auto-
     # installation but we want to make sure that test runs for coverage.
     - os: linux
-      env: PYTHON_VERSION=3.6 PIP_DEPENDENCIES='coveralls sphinx-astropy'
+      env: PYTHON_VERSION=3.6 PIP_DEPENDENCIES='codecov sphinx-astropy'
     - os: linux
       env: PYTHON_VERSION=3.6 SPHINX_VERSION='1.5' SETUPTOOLS_VERSION=27
     - os: linux
       env: PYTHON_VERSION=3.5 SPHINX_VERSION='1.4' SETUPTOOLS_VERSION=27
     - os: linux
-      env: PYTHON_VERSION=3.6 PIP_DEPENDENCIES='git+https://github.com/sphinx-doc/sphinx.git#egg=sphinx coveralls'
+      env: PYTHON_VERSION=3.6 PIP_DEPENDENCIES='git+https://github.com/sphinx-doc/sphinx.git#egg=sphinx codecov'
            CONDA_DEPENDENCIES="setuptools cython numpy pytest-cov"
     # Test without installing numpy beforehand to make sure everything works
     # without assuming numpy is already installed
@@ -118,4 +118,4 @@ script:
     - coverage report
 
 after_success:
-    - coveralls --rcfile=astropy_helpers/tests/coveragerc
+    - codecov
