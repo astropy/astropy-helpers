@@ -23,10 +23,6 @@ class AstropyBuildDocs(SphinxBuildDoc):
     that is built by the setup ``build`` command, rather than whatever is
     installed on the system.  To build docs against the installed version, run
     ``make html`` in the ``astropy/docs`` directory.
-
-    This also automatically creates the docs/_static directories--this is
-    needed because GitHub won't create the _static dir because it has no
-    tracked files.
     """
 
     description = 'Build Sphinx documentation for Astropy environment'
@@ -161,7 +157,7 @@ class AstropyBuildDocs(SphinxBuildDoc):
                 argv = ['-W', '.', '-b', builder, os.path.join({output_dir!r}, builder)]
                 build_main(argv=argv)
         """.format(builders=self.builder,
-                   output_dir=os.path.relpath(self.build_dir, 'docs')))
+                   output_dir=os.path.abspath(self.build_dir)))
 
         log.debug('Starting subprocess of {0} with python code:\n{1}\n'
                   '[CODE END])'.format(sys.executable, subproccode))
