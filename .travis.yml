@@ -108,8 +108,7 @@ before_script:
     - git config --global user.email "author@example.com"
 
 script:
-    # Use full path for coveragerc; see issue #193
-    - py.test --cov astropy_helpers --cov-config $(pwd)/astropy_helpers/tests/coveragerc astropy_helpers
+    - py.test --cov astropy_helpers astropy_helpers
 
     # In conftest.py we produce a .coverage.subprocess that contains coverage
     # statistics for sub-processes, so we combine it with the main one here.
