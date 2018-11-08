@@ -79,6 +79,9 @@ def run_setup(setup_script, args):
     sys.stdout.write(stdout.decode('utf-8'))
     sys.stderr.write(stderr.decode('utf-8'))
 
+    if p.returncode != 0:
+        raise SystemExit(p.returncode)
+
 
 @pytest.fixture(scope='function', autouse=True)
 def reset_setup_helpers(request):
