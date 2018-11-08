@@ -182,6 +182,12 @@ class AstropyBuildDocs(SphinxBuildDoc):
         if self.traceback:
             argv.append('-T')
 
+        # The default verbosity level is 1, so in that case we just don't add a flag
+        if self.verbose == 0:
+            argv.append('-q')
+        elif self.verbose > 1:
+            argv.append('-v')
+
         if SPHINX_LT_17:
             argv.insert(0, 'sphinx-build')
 
