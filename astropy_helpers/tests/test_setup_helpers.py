@@ -246,7 +246,8 @@ def test_missing_cython_c_files(capsys, pyx_extension_test_package, monkeypatch)
 
     with test_pkg.as_cwd():
 
-        run_setup('setup.py', ['build_ext', '--inplace', '--no-cython'])
+        with pytest.raises(SystemExit):
+            run_setup('setup.py', ['build_ext', '--inplace', '--no-cython'])
 
         stdout, stderr = capsys.readouterr()
         assert "No git repository present at" in stderr
@@ -564,7 +565,8 @@ def test_invalid_package_exclusion(tmpdir, capsys):
         setup_header + error_commands + setup_footer)
 
     with error_pkg.as_cwd():
-        run_setup('setup.py', ['build'])
+        with pytest.raises(SystemExit):
+            run_setup('setup.py', ['build'])
 
         stdout, stderr = capsys.readouterr()
         assert "RuntimeError" in stderr
