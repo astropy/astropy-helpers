@@ -8,7 +8,6 @@ import subprocess
 import sys
 import glob
 import warnings
-import tempfile
 from distutils.version import LooseVersion
 
 from distutils import log
@@ -31,7 +30,9 @@ os.chdir({srcdir!r})
 {sys_path_inserts}
 
 for builder in {builders!r}:
-    build_main(argv={argv!r} + ['-b', builder, '.', os.path.join({output_dir!r}, builder)])
+    retcode = build_main(argv={argv!r} + ['-b', builder, '.', os.path.join({output_dir!r}, builder)])
+    if retcode != 0:
+        sys.exit(retcode)
 """
 
 
@@ -161,8 +162,7 @@ class AstropyBuildDocs(SphinxBuildDoc):
         argv = []
 
         if self.warnings_returncode:
-            warning_file = tempfile.mktemp()
-            argv.extend(['-W', '-w', warning_file])
+            argv.extend(['-W'])
 
         # We now need to adjust the flags based on the parent class's options
 
@@ -209,14 +209,6 @@ class AstropyBuildDocs(SphinxBuildDoc):
         proc.communicate(subproccode.encode('utf-8'))
         if proc.returncode != 0:
             retcode = proc.returncode
-
-        # Sphinx doesn't appear to return a non-zero exit code if thre are
-        # warnings even if they are treated as errors, so we check for any
-        # warnings/errors in the warning file and adjust the return code
-        if self.warnings_returncode:
-            with open(warning_file) as f:
-                if len(f.read().strip()) > 0:
-                    retcode = 1
 
         if retcode is None:
             if self.open_docs_in_browser:
