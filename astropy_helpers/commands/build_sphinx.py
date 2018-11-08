@@ -20,7 +20,6 @@ from ..utils import AstropyDeprecationWarning
 
 SPHINX_LT_17 = LooseVersion(__version__) < LooseVersion('1.7')
 
-
 SUBPROCESS_CODE = """
 import os
 import sys
