@@ -172,10 +172,10 @@ class AstropyBuildDocs(SphinxBuildDoc):
         if self.all_files:
             argv.append('-a')
 
-        if self.pdb:
+        if getattr(self, 'pdb', False):
             argv.append('-P')
 
-        if self.nitpicky:
+        if getattr(self, 'nitpicky', False):
             argv.append('-n')
 
         if self.traceback:
@@ -190,10 +190,15 @@ class AstropyBuildDocs(SphinxBuildDoc):
         if SPHINX_LT_17:
             argv.insert(0, 'sphinx-build')
 
+        if isinstance(self.builder, str):
+            builders = [self.builder]
+        else:
+            builders = self.builder
+
         subproccode = SUBPROCESS_CODE.format(build_main=build_main,
                                              srcdir=self.source_dir,
                                              sys_path_inserts=sys_path_inserts,
-                                             builders=self.builder,
+                                             builders=builders,
                                              argv=argv,
                                              output_dir=os.path.abspath(self.build_dir))
 

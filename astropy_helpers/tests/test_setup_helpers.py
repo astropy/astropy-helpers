@@ -289,6 +289,7 @@ def test_build_docs(capsys, tmpdir, mode):
             warnings.simplefilter("ignore")
             from sphinx_astropy.conf import *
         exclude_patterns.append('_templates')
+        suppress_warnings = ['app.add_directive', 'app.add_node', 'app.add_role']
     """))
 
     if mode == 'cli-error':
