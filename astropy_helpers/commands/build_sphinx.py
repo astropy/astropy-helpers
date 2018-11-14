@@ -12,14 +12,14 @@ from distutils.version import LooseVersion
 
 from distutils import log
 
-from sphinx import __version__
+from sphinx import __version__ as sphinx_version
 from sphinx.setup_command import BuildDoc as SphinxBuildDoc
 
 from ..utils import AstropyDeprecationWarning
 
-SPHINX_LT_17 = LooseVersion(__version__) < LooseVersion('1.7')
+SPHINX_LT_17 = LooseVersion(sphinx_version) < LooseVersion('1.7')
 
-SUBPROCESS_CODE = """
+SUBPROCESS_TEMPLATE = """
 import os
 import sys
 
@@ -226,7 +226,7 @@ class AstropyBuildDocs(SphinxBuildDoc):
         else:
             builders = self.builder
 
-        subproccode = SUBPROCESS_CODE.format(build_main=build_main,
+        subproccode = SUBPROCESS_TEMPLATE.format(build_main=build_main,
                                              srcdir=self.source_dir,
                                              sys_path_inserts=sys_path_inserts,
                                              builders=builders,
