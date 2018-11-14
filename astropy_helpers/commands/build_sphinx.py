@@ -36,6 +36,45 @@ for builder in {builders!r}:
 """
 
 
+def ensure_sphinx_astropy_installed():
+    """
+    Make sure that sphinx-astropy is available, installing it temporarily if not.
+
+    This returns the available version of sphinx-astropy as well as any
+    paths that should be added to sys.path for sphinx-astropy to be available.
+    """
+    # We've split out the Sphinx part of astropy-helpers into sphinx-astropy
+    # but we want it to be auto-installed seamlessly for anyone using
+    # build_docs. We check if it's already installed, and if not, we install
+    # it to a local .eggs directory and add the eggs to the path (these
+    # have to each be added to the path, we can't add them by simply adding
+    # .eggs to the path)
+    sys_path_inserts = []
+    sphinx_astropy_version = None
+    try:
+        from sphinx_astropy import __version__ as sphinx_astropy_version  # noqa
+    except ImportError:
+
+        from setuptools import Distribution
+        dist = Distribution()
+        eggs = dist.fetch_build_eggs('sphinx-astropy')
+
+        # Find out the version of sphinx-astropy if possible. For some old
+        # setuptools version, eggs will be None even if sphinx-astropy was
+        # successfully installed.
+        if eggs is not None:
+            for egg in eggs:
+                if egg.project_name == 'sphinx-astropy':
+                    sphinx_astropy_version = egg.parsed_version.public
+                    break
+
+        eggs_path = os.path.abspath('.eggs')
+        for egg in glob.glob(os.path.join(eggs_path, '*.egg')):
+            sys_path_inserts.append(egg)
+
+    return sphinx_astropy_version, sys_path_inserts
+
+
 class AstropyBuildDocs(SphinxBuildDoc):
     """
     A version of the ``build_docs`` command that uses the version of Astropy
@@ -134,36 +173,11 @@ class AstropyBuildDocs(SphinxBuildDoc):
         else:
             build_main = 'from sphinx.cmd.build import build_main'
 
-        sys_path_inserts = [build_cmd_path, ah_path]
+        # We need to make sure sphinx-astropy is installed and install it
+        # temporarily if not
+        sphinx_astropy_version, extra_paths = ensure_sphinx_astropy_installed()
 
-        # We've split out the Sphinx part of astropy-helpers into sphinx-astropy
-        # but we want it to be auto-installed seamlessly for anyone using
-        # build_docs. We check if it's already installed, and if not, we install
-        # it to a local .eggs directory and add the eggs to the path (these
-        # have to each be added to the path, we can't add them by simply adding
-        # .eggs to the path)
-        try:
-            from sphinx_astropy import __version__ as sphinx_astropy_version  # noqa
-        except ImportError:
-            from setuptools import Distribution
-            dist = Distribution()
-            eggs = dist.fetch_build_eggs('sphinx-astropy')
-            # Find out the version of sphinx-astropy
-            sphinx_astropy_version = '0'
-            if eggs is not None:
-                for egg in eggs:
-                    if egg.project_name == 'sphinx-astropy':
-                        sphinx_astropy_version = egg.parsed_version.public
-                        break
-            # Note that we use append below because we want to make sure that if
-            # a user runs a build which populates the .eggs directory, *then*
-            # installs sphinx-astropy at the system-level, we want to make sure
-            # the .eggs are only used as a last resort if they build the docs
-            # again.
-            eggs_path = os.path.abspath('.eggs')
-            for egg in glob.glob(os.path.join(eggs_path, '*.egg')):
-                sys_path_inserts.append(egg)
-
+        sys_path_inserts = [build_cmd_path, ah_path] + extra_paths
         sys_path_inserts = os.linesep.join(['sys.path.insert(0, {0!r})'.format(path) for path in sys_path_inserts])
 
         argv = []
@@ -172,7 +186,10 @@ class AstropyBuildDocs(SphinxBuildDoc):
             argv.append('-W')
 
         if self.no_intersphinx:
-            if LooseVersion(sphinx_astropy_version) >= LooseVersion('1.1'):
+            # Note, if sphinx_astropy_version is None, this could indicate an
+            # old version of setuptools, but sphinx-astropy is likely ok, so
+            # we can proceed.
+            if sphinx_astropy_version is None or LooseVersion(sphinx_astropy_version) >= LooseVersion('1.1'):
                 argv.extend(['-D', 'disable_intersphinx=1'])
             else:
                 log.warn('The -n option to disable intersphinx requires '
