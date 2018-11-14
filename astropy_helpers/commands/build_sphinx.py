@@ -162,7 +162,11 @@ class AstropyBuildDocs(SphinxBuildDoc):
         argv = []
 
         if self.warnings_returncode:
-            argv.extend(['-W'])
+            argv.append('-W')
+
+        if self.no_intersphinx:
+            # NOTE: this requires sphinx-astropy>=1.1
+            argv.extend(['-D', 'disable_intersphinx=1'])
 
         # We now need to adjust the flags based on the parent class's options
 
