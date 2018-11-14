@@ -149,12 +149,12 @@ class AstropyBuildDocs(SphinxBuildDoc):
             dist = Distribution()
             eggs = dist.fetch_build_eggs('sphinx-astropy')
             # Find out the version of sphinx-astropy
-            for egg in eggs:
-                if egg.project_name == 'sphinx-astropy':
-                    sphinx_astropy_version = egg.parsed_version.public
-                    break
-            else:
-                sphinx_astropy_version = '0'
+            sphinx_astropy_version = '0'
+            if eggs is not None:
+                for egg in eggs:
+                    if egg.project_name == 'sphinx-astropy':
+                        sphinx_astropy_version = egg.parsed_version.public
+                        break
             # Note that we use append below because we want to make sure that if
             # a user runs a build which populates the .eggs directory, *then*
             # installs sphinx-astropy at the system-level, we want to make sure
