@@ -1,6 +1,5 @@
 from __future__ import print_function
 
-import inspect
 import os
 import pkgutil
 import re
@@ -8,16 +7,72 @@ import shutil
 import subprocess
 import sys
 import glob
-import textwrap
 import warnings
+from distutils.version import LooseVersion
 
 from distutils import log
-from distutils.cmd import DistutilsOptionError
 
-import sphinx
+from sphinx import __version__ as sphinx_version
 from sphinx.setup_command import BuildDoc as SphinxBuildDoc
 
-from ..utils import minversion, AstropyDeprecationWarning
+from ..utils import AstropyDeprecationWarning
+
+SPHINX_LT_17 = LooseVersion(sphinx_version) < LooseVersion('1.7')
+
+SUBPROCESS_TEMPLATE = """
+import os
+import sys
+
+{build_main}
+
+os.chdir({srcdir!r})
+
+{sys_path_inserts}
+
+for builder in {builders!r}:
+    retcode = build_main(argv={argv!r} + ['-b', builder, '.', os.path.join({output_dir!r}, builder)])
+    if retcode != 0:
+        sys.exit(retcode)
+"""
+
+
+def ensure_sphinx_astropy_installed():
+    """
+    Make sure that sphinx-astropy is available, installing it temporarily if not.
+
+    This returns the available version of sphinx-astropy as well as any
+    paths that should be added to sys.path for sphinx-astropy to be available.
+    """
+    # We've split out the Sphinx part of astropy-helpers into sphinx-astropy
+    # but we want it to be auto-installed seamlessly for anyone using
+    # build_docs. We check if it's already installed, and if not, we install
+    # it to a local .eggs directory and add the eggs to the path (these
+    # have to each be added to the path, we can't add them by simply adding
+    # .eggs to the path)
+    sys_path_inserts = []
+    sphinx_astropy_version = None
+    try:
+        from sphinx_astropy import __version__ as sphinx_astropy_version  # noqa
+    except ImportError:
+
+        from setuptools import Distribution
+        dist = Distribution()
+        eggs = dist.fetch_build_eggs('sphinx-astropy')
+
+        # Find out the version of sphinx-astropy if possible. For some old
+        # setuptools version, eggs will be None even if sphinx-astropy was
+        # successfully installed.
+        if eggs is not None:
+            for egg in eggs:
+                if egg.project_name == 'sphinx-astropy':
+                    sphinx_astropy_version = egg.parsed_version.public
+                    break
+
+        eggs_path = os.path.abspath('.eggs')
+        for egg in glob.glob(os.path.join(eggs_path, '*.egg')):
+            sys_path_inserts.append(egg)
+
+    return sphinx_astropy_version, sys_path_inserts
 
 
 class AstropyBuildDocs(SphinxBuildDoc):
@@ -26,10 +81,6 @@ class AstropyBuildDocs(SphinxBuildDoc):
     that is built by the setup ``build`` command, rather than whatever is
     installed on the system.  To build docs against the installed version, run
     ``make html`` in the ``astropy/docs`` directory.
-
-    This also automatically creates the docs/_static directories--this is
-    needed because GitHub won't create the _static dir because it has no
-    tracked files.
     """
 
     description = 'Build Sphinx documentation for Astropy environment'
@@ -66,19 +117,23 @@ class AstropyBuildDocs(SphinxBuildDoc):
         self.no_intersphinx = False
         self.open_docs_in_browser = False
         self.warnings_returncode = False
+        self.traceback = False
 
     def finalize_options(self):
+
+        # This has to happen before we call the parent class's finalize_options
+        if self.build_dir is None:
+            self.build_dir = 'docs/_build'
 
         SphinxBuildDoc.finalize_options(self)
 
         # Clear out previous sphinx builds, if requested
         if self.clean_docs:
+
             dirstorm = [os.path.join(self.source_dir, 'api'),
                         os.path.join(self.source_dir, 'generated')]
-            if self.build_dir is None:
-                dirstorm.append('docs/_build')
-            else:
-                dirstorm.append(self.build_dir)
+
+            dirstorm.append(self.build_dir)
 
             for d in dirstorm:
                 if os.path.isdir(d):
@@ -100,20 +155,6 @@ class AstropyBuildDocs(SphinxBuildDoc):
         # be called. If it's None, it won't be.
         retcode = None
 
-        # If possible, create the _static dir
-        if self.build_dir is not None:
-            # the _static dir should be in the same place as the _build dir
-            # for Astropy
-            basedir, subdir = os.path.split(self.build_dir)
-            if subdir == '':  # the path has a trailing /...
-                basedir, subdir = os.path.split(basedir)
-            staticdir = os.path.join(basedir, '_static')
-            if os.path.isfile(staticdir):
-                raise DistutilsOptionError(
-                    'Attempted to build_docs in a location where' +
-                    staticdir + 'is a file.  Must be a directory.')
-            self.mkpath(staticdir)
-
         # Now make sure Astropy is built and determine where it was built
         build_cmd = self.reinitialize_command('build')
         build_cmd.inplace = 0
@@ -127,128 +168,80 @@ class AstropyBuildDocs(SphinxBuildDoc):
         else:
             ah_path = os.path.abspath(ah_importer.path)
 
-        # Now generate the source for and spawn a new process that runs the
-        # command.  This is needed to get the correct imports for the built
-        # version
-        runlines, runlineno = inspect.getsourcelines(SphinxBuildDoc.run)
-        subproccode = textwrap.dedent("""
-            from sphinx.setup_command import *
+        if SPHINX_LT_17:
+            build_main = 'from sphinx import build_main'
+        else:
+            build_main = 'from sphinx.cmd.build import build_main'
 
-            os.chdir({srcdir!r})
-            sys.path.insert(0, {build_cmd_path!r})
-            sys.path.insert(0, {ah_path!r})
+        # We need to make sure sphinx-astropy is installed and install it
+        # temporarily if not
+        sphinx_astropy_version, extra_paths = ensure_sphinx_astropy_installed()
 
-        """).format(build_cmd_path=build_cmd_path, ah_path=ah_path,
-                    srcdir=self.source_dir)
+        sys_path_inserts = [build_cmd_path, ah_path] + extra_paths
+        sys_path_inserts = os.linesep.join(['sys.path.insert(0, {0!r})'.format(path) for path in sys_path_inserts])
 
-        # We've split out the Sphinx part of astropy-helpers into sphinx-astropy
-        # but we want it to be auto-installed seamlessly for anyone using
-        # build_docs. We check if it's already installed, and if not, we install
-        # it to a local .eggs directory and add the eggs to the path (these
-        # have to each be added to the path, we can't add them by simply adding
-        # .eggs to the path)
-        try:
-            import sphinx_astropy  # noqa
-        except ImportError:
-            from setuptools import Distribution
-            dist = Distribution()
-            dist.fetch_build_eggs('sphinx-astropy')
-            eggs_path = os.path.abspath('.eggs')
-            # Note that we use append below because we want to make sure that if
-            # a user runs a build which populates the .eggs directory, *then*
-            # installs sphinx-astropy at the system-level, we want to make sure
-            # the .eggs are only used as a last resort if they build the docs
-            # again.
-            for egg in glob.glob(os.path.join(eggs_path, '*.egg')):
-                subproccode += 'sys.path.append({egg!r})\n'.format(egg=egg)
+        argv = []
 
-        # runlines[1:] removes 'def run(self)' on the first line
-        subproccode += textwrap.dedent(''.join(runlines[1:]))
-
-        # All "self.foo" in the subprocess code needs to be replaced by the
-        # values taken from the current self in *this* process
-        subproccode = self._self_iden_rex.split(subproccode)
-        for i in range(1, len(subproccode), 2):
-            iden = subproccode[i]
-            val = getattr(self, iden)
-            if iden.endswith('_dir'):
-                # Directories should be absolute, because the `chdir` call
-                # in the new process moves to a different directory
-                subproccode[i] = repr(os.path.abspath(val))
-            else:
-                subproccode[i] = repr(val)
-        subproccode = ''.join(subproccode)
-
-        optcode = textwrap.dedent("""
-
-        class Namespace(object): pass
-        self = Namespace()
-        self.pdb = {pdb!r}
-        self.verbosity = {verbosity!r}
-        self.traceback = {traceback!r}
-
-        """).format(pdb=getattr(self, 'pdb', False),
-                    verbosity=getattr(self, 'verbosity', 0),
-                    traceback=getattr(self, 'traceback', False))
-
-        subproccode = optcode + subproccode
-
-        # This is a quick gross hack, but it ensures that the code grabbed from
-        # SphinxBuildDoc.run will work in Python 2 if it uses the print
-        # function
-        if minversion(sphinx, '1.3'):
-            subproccode = 'from __future__ import print_function' + subproccode
+        if self.warnings_returncode:
+            argv.append('-W')
 
         if self.no_intersphinx:
-            # the confoverrides variable in sphinx.setup_command.BuildDoc can
-            # be used to override the conf.py ... but this could well break
-            # if future versions of sphinx change the internals of BuildDoc,
-            # so remain vigilant!
-            subproccode = subproccode.replace(
-                'confoverrides = {}',
-                'confoverrides = {\'intersphinx_mapping\':{}}')
+            # Note, if sphinx_astropy_version is None, this could indicate an
+            # old version of setuptools, but sphinx-astropy is likely ok, so
+            # we can proceed.
+            if sphinx_astropy_version is None or LooseVersion(sphinx_astropy_version) >= LooseVersion('1.1'):
+                argv.extend(['-D', 'disable_intersphinx=1'])
+            else:
+                log.warn('The -n option to disable intersphinx requires '
+                         'sphinx-astropy>=1.1. Ignoring.')
+
+        # We now need to adjust the flags based on the parent class's options
+
+        if self.fresh_env:
+            argv.append('-E')
+
+        if self.all_files:
+            argv.append('-a')
+
+        if getattr(self, 'pdb', False):
+            argv.append('-P')
+
+        if getattr(self, 'nitpicky', False):
+            argv.append('-n')
+
+        if self.traceback:
+            argv.append('-T')
+
+        # The default verbosity level is 1, so in that case we just don't add a flag
+        if self.verbose == 0:
+            argv.append('-q')
+        elif self.verbose > 1:
+            argv.append('-v')
+
+        if SPHINX_LT_17:
+            argv.insert(0, 'sphinx-build')
+
+        if isinstance(self.builder, str):
+            builders = [self.builder]
+        else:
+            builders = self.builder
+
+        subproccode = SUBPROCESS_TEMPLATE.format(build_main=build_main,
+                                             srcdir=self.source_dir,
+                                             sys_path_inserts=sys_path_inserts,
+                                             builders=builders,
+                                             argv=argv,
+                                             output_dir=os.path.abspath(self.build_dir))
 
         log.debug('Starting subprocess of {0} with python code:\n{1}\n'
                   '[CODE END])'.format(sys.executable, subproccode))
 
-        # To return the number of warnings, we need to capture stdout. This
-        # prevents a continuous updating at the terminal, but there's no
-        # apparent way around this.
-        if self.warnings_returncode:
-            proc = subprocess.Popen([sys.executable, '-c', subproccode],
-                                    stdin=subprocess.PIPE,
-                                    stdout=subprocess.PIPE,
-                                    stderr=subprocess.STDOUT)
+        proc = subprocess.Popen([sys.executable], stdin=subprocess.PIPE)
+        proc.communicate(subproccode.encode('utf-8'))
+        if proc.returncode != 0:
+            retcode = proc.returncode
 
-            retcode = 1
-            with proc.stdout:
-                for line in iter(proc.stdout.readline, b''):
-                    line = line.strip(b'\r\n')
-                    print(line.decode('utf-8'))
-                    if 'build succeeded.' == line.decode('utf-8'):
-                        retcode = 0
-
-            # Poll to set proc.retcode
-            proc.wait()
-
-            if retcode != 0:
-                if os.environ.get('TRAVIS', None) == 'true':
-                    # this means we are in the travis build, so customize
-                    # the message appropriately.
-                    msg = ('The build_docs travis build FAILED '
-                           'because sphinx issued documentation '
-                           'warnings (scroll up to see the warnings).')
-                else:  # standard failure message
-                    msg = ('build_docs returning a non-zero exit '
-                           'code because sphinx issued documentation '
-                           'warnings.')
-                log.warn(msg)
-
-        else:
-            proc = subprocess.Popen([sys.executable], stdin=subprocess.PIPE)
-            proc.communicate(subproccode.encode('utf-8'))
-
-        if proc.returncode == 0:
+        if retcode is None:
             if self.open_docs_in_browser:
                 if self.builder == 'html':
                     absdir = os.path.abspath(self.builder_target_dir)
@@ -258,10 +251,12 @@ class AstropyBuildDocs(SphinxBuildDoc):
                 else:
                     log.warn('open-docs-in-browser option was given, but '
                              'the builder is not html! Ignoring.')
-        else:
+
+        # Here we explicitly check proc.returncode since we only want to output
+        # this for cases where the return code really wasn't 0.
+        if proc.returncode:
             log.warn('Sphinx Documentation subprocess failed with return '
                      'code ' + str(proc.returncode))
-            retcode = proc.returncode
 
         if retcode is not None:
             # this is potentially dangerous in that there might be something
