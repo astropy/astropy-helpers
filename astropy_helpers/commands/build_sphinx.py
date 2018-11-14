@@ -143,17 +143,24 @@ class AstropyBuildDocs(SphinxBuildDoc):
         # have to each be added to the path, we can't add them by simply adding
         # .eggs to the path)
         try:
-            import sphinx_astropy  # noqa
+            from sphinx_astropy import __version__ as sphinx_astropy_version  # noqa
         except ImportError:
             from setuptools import Distribution
             dist = Distribution()
-            dist.fetch_build_eggs('sphinx-astropy')
-            eggs_path = os.path.abspath('.eggs')
+            eggs = dist.fetch_build_eggs('sphinx-astropy')
+            # Find out the version of sphinx-astropy
+            for egg in eggs:
+                if egg.project_name == 'sphinx-astropy':
+                    sphinx_astropy_version = egg.parsed_version.public
+                    break
+            else:
+                sphinx_astropy_version = '0'
             # Note that we use append below because we want to make sure that if
             # a user runs a build which populates the .eggs directory, *then*
             # installs sphinx-astropy at the system-level, we want to make sure
             # the .eggs are only used as a last resort if they build the docs
             # again.
+            eggs_path = os.path.abspath('.eggs')
             for egg in glob.glob(os.path.join(eggs_path, '*.egg')):
                 sys_path_inserts.append(egg)
 
@@ -165,8 +172,11 @@ class AstropyBuildDocs(SphinxBuildDoc):
             argv.append('-W')
 
         if self.no_intersphinx:
-            # NOTE: this requires sphinx-astropy>=1.1
-            argv.extend(['-D', 'disable_intersphinx=1'])
+            if LooseVersion(sphinx_astropy_version) >= LooseVersion('1.1'):
+                argv.extend(['-D', 'disable_intersphinx=1'])
+            else:
+                log.warn('The -n option to disable intersphinx requires '
+                         'sphinx-astropy>=1.1. Ignoring.')
 
         # We now need to adjust the flags based on the parent class's options
 
