@@ -4,6 +4,8 @@ astropy-helpers Changelog
 3.1 (unreleased)
 ----------------
 
+- Fixed the compability of the build_docs command with Sphinx 1.8 and above. [#413]
+
 - Removing deprecated test_helpers.py file. [#369]
 
 - Removing ez_setup.py file and requiring setuptools 1.0 or later. [#384]
