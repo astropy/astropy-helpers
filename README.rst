@@ -4,14 +4,12 @@ astropy-helpers
 * Stable versions: https://pypi.org/project/astropy-helpers/
 * Development version, issue tracker: https://github.com/astropy/astropy-helpers
 
-.. warning::
-
-    Please note that version ``v3.0`` and later of ``astropy-helpers`` does
-    require Python 3.5 or later. If you wish to maintain Python 2 support
-    for your package that uses ``astropy-helpers``, then do not upgrade the
-    helpers to ``v3.0+``. We will still provide Python 2.7 compatible
-    releases on the ``v2.0.x`` branch during the lifetime of the ``astropy``
-    core package LTS of ``v2.0.x``.
+**Warning:** Please note that version ``v3.0`` and later of ``astropy-helpers`` 
+requires Python 3.5 or later. If you wish to maintain Python 2 support
+for your package that uses ``astropy-helpers``, then do not upgrade the
+helpers to ``v3.0+``. We will still provide Python 2.7 compatible
+releases on the ``v2.0.x`` branch during the lifetime of the ``astropy``
+core package LTS of ``v2.0.x``.
 
 About
 -----
@@ -53,7 +51,7 @@ will be available::
 
 and this command is implemented in astropy-helpers.
 
-The commands we provide or customize are::
+The commands we provide or customize are:
 
 **python setup.py test**
 
@@ -117,7 +115,7 @@ to generate a ``packagename.version`` file that includes functions that
 automatically set the version string for developer versions, to e.g.
 ``3.2.dev22213`` so that each developer version has a unique number, and also
 provide variables such as ``major``, ``minor``, and ``bugfix``, as well as
-``version_info`` (a tuple of the three values), a ``release`` flag that
+``version_info`` (a tuple of the previous three values), a ``release`` flag that
 indicates whether we are using a stable release, and several other complementary
 variables.
 
@@ -129,7 +127,10 @@ to automatically add OpenMP flags for C/Cython extensions, based on whether
 OpenMP is available and produces executable code.
 
 .. image:: https://travis-ci.org/astropy/astropy-helpers.svg
-    :target: https://travis-ci.org/astropy/astropy-helpers
+  :target: https://travis-ci.org/astropy/astropy-helpers
 
-.. image:: https://coveralls.io/repos/astropy/astropy-helpers/badge.svg
-    :target: https://coveralls.io/r/astropy/astropy-helpers
+.. image:: https://ci.appveyor.com/api/projects/status/rt9161t9mhx02xp7/branch/master
+  :target: https://ci.appveyor.com/project/Astropy/astropy-helpers
+
+.. image:: https://codecov.io/gh/astropy/astropy-helpers/branch/master/graph/badge.svg
+  :target: https://codecov.io/gh/astropy/astropy-helpers
