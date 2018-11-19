@@ -84,6 +84,10 @@ expand with the following options:
 
 * ``-o``: open the documentation in a browser if a build finishes successfully.
 
+In addition, build_docs will automatically download and temporarily install sphinx-astropy
+(which is a meta-package that provides standardized configuration and
+documentation dependencies for astropy packages).
+
 **python setup.py build_ext**
 
 This is also used when running ``build`` or ``install``. We add several features
