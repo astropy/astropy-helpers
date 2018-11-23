@@ -83,6 +83,7 @@ package. It accepts no options.
 .. _sphinx.ext.inheritance_diagram: http://sphinx-doc.org/latest/ext/inheritance.html
 """
 
+import abc
 import inspect
 import os
 import re
@@ -96,6 +97,10 @@ from docutils.parsers.rst.directives import flag
 
 from .utils import find_mod_objs, cleanup_whitespace
 
+__all__ = ['Automoddiagram', 'Automodsumm', 'automodsumm_to_autosummary_lines',
+           'generate_automodsumm_docs', 'process_automodsumm_generation']
+
+SPHINX_LT_16 = LooseVersion(__version__) < LooseVersion('1.6')
 SPHINX_LT_17 = LooseVersion(__version__) < LooseVersion('1.7')
 
 
@@ -266,7 +271,7 @@ def process_automodsumm_generation(app):
         suffix = os.path.splitext(sfn)[1]
         if len(lines) > 0:
             generate_automodsumm_docs(
-                lines, sfn, app=app, builder=app.builder, warn=app.warn, info=app.info,
+                lines, sfn, app=app, builder=app.builder,
                 suffix=suffix, base_path=app.srcdir,
                 inherited_members=app.config.automodsumm_inherited_members)
 
@@ -401,8 +406,8 @@ def automodsumm_to_autosummary_lines(fn, app):
     return newlines
 
 
-def generate_automodsumm_docs(lines, srcfn, app=None, suffix='.rst', warn=None,
-                              info=None, base_path=None, builder=None,
+def generate_automodsumm_docs(lines, srcfn, app=None, suffix='.rst',
+                              base_path=None, builder=None,
                               template_dir=None,
                               inherited_members=False):
     """
@@ -415,7 +420,6 @@ def generate_automodsumm_docs(lines, srcfn, app=None, suffix='.rst', warn=None,
 
     from sphinx.jinja2glue import BuiltinTemplateLoader
     from sphinx.ext.autosummary import import_by_name, get_documenter
-    from sphinx.ext.autosummary.generate import (_simple_info, _simple_warn)
     from sphinx.util.osutil import ensuredir
     from sphinx.util.inspect import safe_getattr
     from jinja2 import FileSystemLoader, TemplateNotFound
@@ -423,10 +427,14 @@ def generate_automodsumm_docs(lines, srcfn, app=None, suffix='.rst', warn=None,
 
     from .utils import find_autosummary_in_lines_for_automodsumm as find_autosummary_in_lines
 
-    if info is None:
-        info = _simple_info
-    if warn is None:
-        warn = _simple_warn
+    if SPHINX_LT_16:
+        info = app.info
+        warn = app.warn
+    else:
+        from sphinx.util import logging
+        logger = logging.getLogger(__name__)
+        info = logger.info
+        warn = logger.warning
 
     # info('[automodsumm] generating automodsumm for: ' + srcfn)
 
@@ -544,7 +552,18 @@ def generate_automodsumm_docs(lines, srcfn, app=None, suffix='.rst', warn=None,
                 if include_base:
                     names = dir(obj)
                 else:
-                    if hasattr(obj, '__slots__'):
+                    # Classes deriving from an ABC using the `abc` module will
+                    # have an empty `__slots__` attribute in Python 3, unless
+                    # other slots were declared along the inheritance chain. If
+                    # the ABC-derived class has empty slots, we'll use the
+                    # class `__dict__` instead.
+                    declares_slots = (
+                        hasattr(obj, '__slots__') and
+                        not (type(obj) is abc.ABCMeta and
+                             len(obj.__slots__) == 0)
+                    )
+
+                    if declares_slots:
                         names = tuple(getattr(obj, '__slots__'))
                     else:
                         names = getattr(obj, '__dict__').keys()
@@ -662,3 +681,6 @@ def setup(app):
 
     app.add_config_value('automodsumm_writereprocessed', False, True)
     app.add_config_value('automodsumm_inherited_members', False, 'env')
+
+    return {'parallel_read_safe': True,
+            'parallel_write_safe': True}
