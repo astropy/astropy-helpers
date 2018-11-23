@@ -77,7 +77,34 @@ Finally, add::
     import ah_bootstrap
 
 at the top of your ``setup.py`` file. This will ensure that ``astropy_helpers``
-is now available to use in your ``setup.py`` file.
+is now available to use in your ``setup.py`` file. Finally, add then commit your
+changes::
+
+    git add astropy_helpers ah_bootstrap.py setup.py
+    git commit ...
+
+Updating astropy-helpers
+------------------------
+
+If you would like to automatically get pull requests to update astropy-helpers,
+then see the instructions `here
+<https://github.com/astropy/astropy-procedures/tree/master/update-affiliated>`_.
+
+To instead update astropy-helpers manually, go inside the submodule and do::
+
+    cd astropy_helpers
+    git fetch origin
+
+Then checkout the version you want to use, e.g.::
+
+    git checkout v3.0.3
+
+Go back up to the root of the repository and update the ``ah_bootstap.py`` file
+too, then add your changes::
+
+    cp astropy_helpers/ah_bootstrap.py .
+    git add astropy_helpers ah_bootstrap.py
+    git commit ...
 
 What does astropy-helpers provide?
 ----------------------------------
