@@ -35,7 +35,7 @@ from .commands.test import AstropyTest
 # These imports are not used in this module, but are included for backwards
 # compat with older versions of this module
 from .utils import get_numpy_include_path, write_if_different  # noqa
-from .commands.build_ext import should_build_with_cython, get_compiler_version  # noqa
+from .commands.build_ext import should_build_with_cython  # noqa
 
 _module_state = {'registered_commands': None,
                  'have_sphinx': False,
@@ -65,29 +65,10 @@ except SyntaxError:
 
 
 def adjust_compiler(package):
-    """
-    This function detects broken compilers and switches to another.  If
-    the environment variable CC is explicitly set, or a compiler is
-    specified on the commandline, no override is performed -- the purpose
-    here is to only override a default compiler.
-
-    The specific compilers with problems are:
-
-        * The default compiler in XCode-4.2, llvm-gcc-4.2,
-          segfaults when compiling wcslib.
-
-    The set of broken compilers can be updated by changing the
-    compiler_mapping variable.  It is a list of 2-tuples where the
-    first in the pair is a regular expression matching the version
-    of the broken compiler, and the second is the compiler to change
-    to.
-    """
-
     warnings.warn(
-        'Direct use of the adjust_compiler function in setup.py is '
-        'deprecated and can be removed from your setup.py.  This '
-        'functionality is now incorporated directly into the build_ext '
-        'command.', AstropyDeprecationWarning)
+        'The adjust_compiler function in setup.py is '
+        'deprecated and can be removed from your setup.py.',
+        AstropyDeprecationWarning)
 
 
 def get_debug_option(packagename):
