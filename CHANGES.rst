@@ -7,6 +7,8 @@ astropy-helpers Changelog
 - Fixed error that occurs when installing a package in an environment where
   ``numpy`` is not already installed. [#404]
 
+- Updated bundled version of numpydoc to v0.8.0. [#423]
+
 
 2.0.7 (2018-06-01)
 ------------------
