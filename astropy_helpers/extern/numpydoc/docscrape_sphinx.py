@@ -21,6 +21,9 @@ else:
     sixu = lambda s: unicode(s, 'unicode_escape')
 
 
+IMPORT_MATPLOTLIB_RE = r'\b(import +matplotlib|from +matplotlib +import)\b'
+
+
 class SphinxDocString(NumpyDocString):
     def __init__(self, docstring, config={}):
         NumpyDocString.__init__(self, docstring, config=config)
@@ -28,6 +31,7 @@ class SphinxDocString(NumpyDocString):
 
     def load_config(self, config):
         self.use_plots = config.get('use_plots', False)
+        self.use_blockquotes = config.get('use_blockquotes', False)
         self.class_members_toctree = config.get('class_members_toctree', True)
         self.template = config.get('template', None)
         if self.template is None:
@@ -63,37 +67,147 @@ class SphinxDocString(NumpyDocString):
         return self['Extended Summary'] + ['']
 
     def _str_returns(self, name='Returns'):
+        typed_fmt = '**%s** : %s'
+        untyped_fmt = '**%s**'
+
         out = []
         if self[name]:
             out += self._str_field_list(name)
             out += ['']
             for param, param_type, desc in self[name]:
                 if param_type:
-                    out += self._str_indent(['**%s** : %s' % (param.strip(),
-                                                              param_type)])
+                    out += self._str_indent([typed_fmt % (param.strip(),
+                                                          param_type)])
                 else:
-                    out += self._str_indent([param.strip()])
-                if desc:
+                    out += self._str_indent([untyped_fmt % param.strip()])
+                if desc and self.use_blockquotes:
                     out += ['']
-                    out += self._str_indent(desc, 8)
+                elif not desc:
+                    desc = ['..']
+                out += self._str_indent(desc, 8)
                 out += ['']
         return out
 
-    def _str_param_list(self, name):
+    def _process_param(self, param, desc, fake_autosummary):
+        """Determine how to display a parameter
+
+        Emulates autosummary behavior if fake_autosummary
+
+        Parameters
+        ----------
+        param : str
+            The name of the parameter
+        desc : list of str
+            The parameter description as given in the docstring. This is
+            ignored when autosummary logic applies.
+        fake_autosummary : bool
+            If True, autosummary-style behaviour will apply for params
+            that are attributes of the class and have a docstring.
+
+        Returns
+        -------
+        display_param : str
+            The marked up parameter name for display. This may include a link
+            to the corresponding attribute's own documentation.
+        desc : list of str
+            A list of description lines. This may be identical to the input
+            ``desc``, if ``autosum is None`` or ``param`` is not a class
+            attribute, or it will be a summary of the class attribute's
+            docstring.
+
+        Notes
+        -----
+        This does not have the autosummary functionality to display a method's
+        signature, and hence is not used to format methods.  It may be
+        complicated to incorporate autosummary's signature mangling, as it
+        relies on Sphinx's plugin mechanism.
+        """
+        param = param.strip()
+        # XXX: If changing the following, please check the rendering when param
+        # ends with '_', e.g. 'word_'
+        # See https://github.com/numpy/numpydoc/pull/144
+        display_param = '**%s**' % param
+
+        if not fake_autosummary:
+            return display_param, desc
+
+        param_obj = getattr(self._obj, param, None)
+        if not (callable(param_obj)
+                or isinstance(param_obj, property)
+                or inspect.isgetsetdescriptor(param_obj)):
+            param_obj = None
+        obj_doc = pydoc.getdoc(param_obj)
+
+        if not (param_obj and obj_doc):
+            return display_param, desc
+
+        prefix = getattr(self, '_name', '')
+        if prefix:
+            autosum_prefix = '~%s.' % prefix
+            link_prefix = '%s.' % prefix
+        else:
+            autosum_prefix = ''
+            link_prefix = ''
+
+        # Referenced object has a docstring
+        display_param = ':obj:`%s <%s%s>`' % (param,
+                                              link_prefix,
+                                              param)
+        if obj_doc:
+            # Overwrite desc. Take summary logic of autosummary
+            desc = re.split('\n\s*\n', obj_doc.strip(), 1)[0]
+            # XXX: Should this have DOTALL?
+            #      It does not in autosummary
+            m = re.search(r"^([A-Z].*?\.)(?:\s|$)",
+                          ' '.join(desc.split()))
+            if m:
+                desc = m.group(1).strip()
+            else:
+                desc = desc.partition('\n')[0]
+            desc = desc.split('\n')
+        return display_param, desc
+
+    def _str_param_list(self, name, fake_autosummary=False):
+        """Generate RST for a listing of parameters or similar
+
+        Parameter names are displayed as bold text, and descriptions
+        are in blockquotes.  Descriptions may therefore contain block
+        markup as well.
+
+        Parameters
+        ----------
+        name : str
+            Section name (e.g. Parameters)
+        fake_autosummary : bool
+            When True, the parameter names may correspond to attributes of the
+            object beign documented, usually ``property`` instances on a class.
+            In this case, names will be linked to fuller descriptions.
+
+        Returns
+        -------
+        rst : list of str
+        """
         out = []
         if self[name]:
             out += self._str_field_list(name)
             out += ['']
             for param, param_type, desc in self[name]:
+                display_param, desc = self._process_param(param, desc,
+                                                          fake_autosummary)
+
                 if param_type:
-                    out += self._str_indent(['**%s** : %s' % (param.strip(),
-                                                              param_type)])
+                    out += self._str_indent(['%s : %s' % (display_param,
+                                                          param_type)])
                 else:
-                    out += self._str_indent(['**%s**' % param.strip()])
-                if desc:
+                    out += self._str_indent([display_param])
+                if desc and self.use_blockquotes:
                     out += ['']
-                    out += self._str_indent(desc, 8)
+                elif not desc:
+                    # empty definition
+                    desc = ['..']
+                out += self._str_indent(desc, 8)
                 out += ['']
+
         return out
 
     @property
@@ -127,10 +241,10 @@ class SphinxDocString(NumpyDocString):
                 param_obj = getattr(self._obj, param, None)
                 if not (callable(param_obj)
                         or isinstance(param_obj, property)
-                        or inspect.isgetsetdescriptor(param_obj)):
+                        or inspect.isdatadescriptor(param_obj)):
                     param_obj = None
 
-                if param_obj and (pydoc.getdoc(param_obj) or not desc):
+                if param_obj and pydoc.getdoc(param_obj):
                     # Referenced object has a docstring
                     autosum += ["   %s%s" % (prefix, param)]
                 else:
@@ -160,7 +274,6 @@ class SphinxDocString(NumpyDocString):
         out = []
         if self[name]:
             out += self._str_header(name)
-            out += ['']
             content = textwrap.dedent("\n".join(self[name])).split("\n")
             out += content
             out += ['']
@@ -179,6 +292,7 @@ class SphinxDocString(NumpyDocString):
         if self['Warnings']:
             out = ['.. warning::', '']
             out += self._str_indent(self['Warnings'])
+            out += ['']
         return out
 
     def _str_index(self):
@@ -195,6 +309,7 @@ class SphinxDocString(NumpyDocString):
                 out += ['   single: %s' % (', '.join(references))]
             else:
                 out += ['   %s: %s' % (section, ','.join(references))]
+        out += ['']
         return out
 
     def _str_references(self):
@@ -222,7 +337,7 @@ class SphinxDocString(NumpyDocString):
     def _str_examples(self):
         examples_str = "\n".join(self['Examples'])
 
-        if (self.use_plots and 'import matplotlib' in examples_str
+        if (self.use_plots and re.search(IMPORT_MATPLOTLIB_RE, examples_str)
                 and 'plot::' not in examples_str):
             out = []
             out += self._str_header('Examples')
@@ -250,7 +365,8 @@ class SphinxDocString(NumpyDocString):
             'notes': self._str_section('Notes'),
             'references': self._str_references(),
             'examples': self._str_examples(),
-            'attributes': self._str_member_list('Attributes'),
+            'attributes': self._str_param_list('Attributes',
+                                               fake_autosummary=True),
             'methods': self._str_member_list('Methods'),
         }
         ns = dict((k, '\n'.join(v)) for k, v in ns.items())
