@@ -239,7 +239,7 @@ for example what extensions to build, and what package data to include. However,
 for large packages this can become cumbersome. We therefore provide a mechanism
 for defining extensions and package data inside individual sub-packages. To do
 this, you can create ``setup_package.py`` files anywhere in your package, and
-these files can include one or more of the following functions::
+these files can include one or more of the following functions:
 
 * ``get_package_data``:
     This function, if defined, should return a dictionary mapping the name of
