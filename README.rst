@@ -4,7 +4,7 @@ astropy-helpers
 * Stable versions: https://pypi.org/project/astropy-helpers/
 * Development version, issue tracker: https://github.com/astropy/astropy-helpers
 
-**Warning:** Please note that version ``v3.0`` and later of ``astropy-helpers`` 
+**Warning:** Please note that version ``v3.0`` and later of ``astropy-helpers``
 requires Python 3.5 or later. If you wish to maintain Python 2 support
 for your package that uses ``astropy-helpers``, then do not upgrade the
 helpers to ``v3.0+``. We will still provide Python 2.7 compatible
@@ -37,6 +37,48 @@ For examples of how to implement ``astropy-helpers`` in a project,
 see the ``setup.py`` and ``setup.cfg`` files of the
 `Affiliated package template <https://github.com/astropy/package-template>`_.
 
+Using astropy-helpers
+---------------------
+
+The easiest way to get set up with astropy-helpers in a new package is to use
+the `package-template <http://docs.astropy.org/projects/package-template>`_
+that we provide. However, we now go through the steps of adding astropy-helpers
+as a submodule to a package in case you wish to do so manually. First, add
+astropy-helpers as a submodule at the root of your repository::
+
+    git submodule add git://github.com/astropy/astropy-helpers astropy_helpers
+
+Then go inside the submodule and check out a stable version of astropy-helpers.
+You can see the available versions by running::
+
+    $ cd astropy_helpers
+    $ git tag
+    ...
+    v2.0.6
+    v2.0.7
+    ...
+    v3.0.1
+    v3.0.2
+
+If you want to support Python 2, pick the latest v2.0.x version (in the above
+case ``v2.0.7``) and if you don't need to support Python 2, just pick the latest
+stable version (in the above case ``v3.0.2``). Check out this version with e.g.::
+
+    $ git checkout v3.0.2
+
+Then go back up to the root of your repository and copy the ``ah_bootstrap.py``
+file from the submodule to the root of your repository::
+
+    $ cd ..
+    $ cp astropy_helpers/ah_bootstrap.py .
+
+Finally, add::
+
+    import ah_bootstrap
+
+at the top of your ``setup.py`` file. This will ensure that ``astropy_helpers``
+is now available to use in your ``setup.py`` file.
+
 What does astropy-helpers provide?
 ----------------------------------
 
@@ -49,7 +91,22 @@ will be available::
 
     python setup.py build_docs
 
-and this command is implemented in astropy-helpers.
+and this command is implemented in astropy-helpers. To use the custom
+commands described here, add::
+
+    from astropy_helpers.setup_helpers import register_commands
+
+to your ``setup.py`` file, then do::
+
+    cmdclassd = register_commands(NAME, VERSION, RELEASE)
+
+where ``NAME`` is the name of your package, ``VERSION`` is the full version
+string, and ``RELEASE`` is a boolean value indicating whether the version is
+a stable released version (``True``) or a developer version (``False``).
+Finally, pass ``cmdclassd`` to the ``setup`` function::
+
+     setup(...,
+           cmdclass=cmdclassd)
 
 The commands we provide or customize are:
 
@@ -117,18 +174,126 @@ Version helpers
 Another piece of functionality we provide in astropy-helpers is the ability
 to generate a ``packagename.version`` file that includes functions that
 automatically set the version string for developer versions, to e.g.
-``3.2.dev22213`` so that each developer version has a unique number, and also
-provide variables such as ``major``, ``minor``, and ``bugfix``, as well as
+``3.2.dev22213`` so that each developer version has a unique number. To use this,
+import::
+
+    from astropy_helpers.git_helpers import get_git_devstr
+
+in your ``setup.py`` file, and you will then be able to use::
+
+    VERSION += get_git_devstr()
+
+where ``VERSION`` is a version string without any developer version suffix.
+
+We then also provide a function that generates a ``version.py`` file inside your
+package (which can then be imported as ``packagename.version``) that contains
+variables such as ``major``, ``minor``, and ``bugfix``, as well as
 ``version_info`` (a tuple of the previous three values), a ``release`` flag that
 indicates whether we are using a stable release, and several other complementary
-variables.
+variables. To use this, import::
+
+    from astropy_helpers.version_helpers import generate_version_py
+
+in your ``setup.py`` file, and call::
+
+    generate_version_py(NAME, VERSION, RELEASE, uses_git=not RELEASE)
+
+where ``NAME`` is the name of your package, ``VERSION`` is the full version string
+(including any developer suffix), ``RELEASE`` indicates whether the version is a
+stable or developer version, and ``uses_git`` indicates whether we are in a git
+repository (using ``not RELEASE`` is sensible since git is not available in a
+stable release).
+
+Collecting package information
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+The ``setup`` function from setuptools can take a number of options that indicate
+for example what extensions to build, and what package data to include. However,
+for large packages this can become cumbersome. We therefore provide a mechanism
+for defining extensions and package data inside individual sub-packages. To do
+this, you can create ``setup_package.py`` files anywhere in your package, and
+these files can include one or more of the following functions::
+
+* ``get_package_data``:
+    This function, if defined, should return a dictionary mapping the name of
+    the subpackage(s) that need package data to a list of data file paths
+    (possibly including wildcards) relative to the path of the package's source
+    code.  e.g. if the source distribution has a needed data file
+    ``astropy/wcs/tests/data/3d_cd.hdr``, this function should return
+    ``{'astropy.wcs.tests':['data/3d_cd.hdr']}``. See the ``package_data``
+    option of the  :func:`distutils.core.setup` function.
+
+    It is recommended that all such data be in a directory named ``data`` inside
+    the package within which it is supposed to be used.  This package data
+    should be accessed via the ``astropy.utils.data.get_pkg_data_filename`` and
+    ``astropy.utils.data.get_pkg_data_fileobj`` functions.
+
+* ``get_extensions``:
+    This provides information for building C or Cython extensions. If defined,
+    it should return a list of ``distutils.core.Extension`` objects.
+
+* ``get_build_options``:
+    This function allows a package to add extra build options.  It
+    should return a list of tuples, where each element has:
+
+    - *name*: The name of the option as it would appear on the
+      commandline or in the ``setup.cfg`` file.
+
+    - *doc*: A short doc string for the option, displayed by
+      ``setup.py build --help``.
+
+    - *is_bool* (optional): When `True`, the option is a boolean
+      option and doesn't have an associated value.
+
+    Once an option has been added, its value can be looked up using
+    ``astropy_helpers.setup_helpers.get_distutils_build_option``.
+
+* ``get_external_libraries``:
+    This function declares that the package uses libraries that are
+    included in the astropy distribution that may also be distributed
+    elsewhere on the users system.  It should return a list of library
+    names.  For each library, a new build option is created,
+    ``'--use-system-X'`` which allows the user to request to use the
+    system's copy of the library.  The package would typically call
+    ``astropy_helpers.setup_helpers.use_system_library`` from its
+    ``get_extensions`` function to determine if the package should use
+    the system library or the included one.
+
+* ``get_entry_points()``:
+    This function can returns a dict formatted as required by
+    the ``entry_points`` argument to ``setup()``.
+
+With these files in place, you can then add the following to your ``setup.py``
+file::
+
+    from astropy_helpers.setup_helpers import get_package_info
+
+    ...
+
+    package_info = get_package_info()
+
+    ...
+
+    setup(..., **package_info)
 
 OpenMP helpers
 ^^^^^^^^^^^^^^
 
 We provide a helper function ``add_openmp_flags_if_available`` that can be used
 to automatically add OpenMP flags for C/Cython extensions, based on whether
-OpenMP is available and produces executable code.
+OpenMP is available and produces executable code. To use this, edit the
+``setup_package.py`` file where you define a C extension, import the helper
+function::
+
+    from astropy_helpers.openmp_helpers import add_openmp_flags_if_available
+
+then once you have defined the extension and before returning it, use it as::
+
+    extension = Extension(...)
+
+    add_openmp_flags_if_available(extension)
+
+    return [extension]
 
 .. image:: https://travis-ci.org/astropy/astropy-helpers.svg
   :target: https://travis-ci.org/astropy/astropy-helpers
