@@ -4,7 +4,7 @@ astropy-helpers Changelog
 3.2 (unreleased)
 ----------------
 
-
+- Added extensive documentation about astropy-helpers to the README.rst file. [#416]
 
 3.1 (unreleased)
 ----------------
