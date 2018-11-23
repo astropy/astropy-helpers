@@ -174,9 +174,13 @@ expand with the following options:
 
 * ``-o``: open the documentation in a browser if a build finishes successfully.
 
-In addition, build_docs will automatically download and temporarily install sphinx-astropy
-(which is a meta-package that provides standardized configuration and
-documentation dependencies for astropy packages).
+In addition, ``build_docs`` will automatically download and temporarily install
+sphinx-astropy (which is a meta-package that
+provides standardized configuration and documentation dependencies for astropy
+packages) if it isn't already installed. Temporary installation means that the
+package will be installed into an ``.eggs`` directory in the current working
+directory, and it will only be available for the duration of the call to
+``build_docs``.
 
 **python setup.py build_ext**
 
