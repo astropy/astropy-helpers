@@ -1,8 +1,14 @@
 astropy-helpers
 ===============
 
-* Stable versions: https://pypi.org/project/astropy-helpers/
-* Development version, issue tracker: https://github.com/astropy/astropy-helpers
+.. image:: https://travis-ci.org/astropy/astropy-helpers.svg
+  :target: https://travis-ci.org/astropy/astropy-helpers
+
+.. image:: https://ci.appveyor.com/api/projects/status/rt9161t9mhx02xp7/branch/master?svg=true
+  :target: https://ci.appveyor.com/project/Astropy/astropy-helpers
+
+.. image:: https://codecov.io/gh/astropy/astropy-helpers/branch/master/graph/badge.svg
+  :target: https://codecov.io/gh/astropy/astropy-helpers
 
 **Warning:** Please note that version ``v3.0`` and later of ``astropy-helpers``
 requires Python 3.5 or later. If you wish to maintain Python 2 support
@@ -321,12 +327,3 @@ then once you have defined the extension and before returning it, use it as::
     add_openmp_flags_if_available(extension)
 
     return [extension]
-
-.. image:: https://travis-ci.org/astropy/astropy-helpers.svg
-  :target: https://travis-ci.org/astropy/astropy-helpers
-
-.. image:: https://ci.appveyor.com/api/projects/status/rt9161t9mhx02xp7/branch/master?svg=true
-  :target: https://ci.appveyor.com/project/Astropy/astropy-helpers
-
-.. image:: https://codecov.io/gh/astropy/astropy-helpers/branch/master/graph/badge.svg
-  :target: https://codecov.io/gh/astropy/astropy-helpers
