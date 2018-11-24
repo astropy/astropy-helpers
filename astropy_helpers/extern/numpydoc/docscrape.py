@@ -13,6 +13,15 @@ import copy
 import sys
 
 
+def strip_blank_lines(l):
+    "Remove leading and trailing blank lines from a list of lines"
+    while l and not l[0].strip():
+        del l[0]
+    while l and not l[-1].strip():
+        del l[-1]
+    return l
+
+
 class Reader(object):
     """A line-based string reader.
 
@@ -98,6 +107,12 @@ class ParseError(Exception):
 
 
 class NumpyDocString(collections.Mapping):
+    """Parses a numpydoc string to an abstract representation
+
+    Instances define a mapping from section title to structured data.
+
+    """
+
     sections = {
         'Signature': '',
         'Summary': [''],
@@ -136,7 +151,7 @@ class NumpyDocString(collections.Mapping):
 
     def __setitem__(self, key, val):
         if key not in self._parsed_data:
-            warn("Unknown section %s" % key)
+            self._error_location("Unknown section %s" % key, error=False)
         else:
             self._parsed_data[key] = val
 
@@ -208,12 +223,14 @@ class NumpyDocString(collections.Mapping):
 
             desc = r.read_to_next_unindented_line()
             desc = dedent_lines(desc)
+            desc = strip_blank_lines(desc)
 
             params.append((arg_name, arg_type, desc))
 
         return params
 
-    _name_rgx = re.compile(r"^\s*(:(?P<role>\w+):`(?P<name>[a-zA-Z0-9_.-]+)`|"
+    _name_rgx = re.compile(r"^\s*(:(?P<role>\w+):"
+                           r"`(?P<name>(?:~\w+\.)?[a-zA-Z0-9_.-]+)`|"
                            r" (?P<name2>[a-zA-Z0-9_.-]+))\s*", re.X)
 
     def _parse_see_also(self, content):
@@ -331,19 +348,8 @@ class NumpyDocString(collections.Mapping):
                 section = (s.capitalize() for s in section.split(' '))
                 section = ' '.join(section)
                 if self.get(section):
-                    if hasattr(self, '_obj'):
-                        # we know where the docs came from:
-                        try:
-                            filename = inspect.getsourcefile(self._obj)
-                        except TypeError:
-                            filename = None
-                        msg = ("The section %s appears twice in "
-                               "the docstring of %s in %s." %
-                               (section, self._obj, filename))
-                        raise ValueError(msg)
-                    else:
-                        msg = ("The section %s appears twice" % section)
-                        raise ValueError(msg)
+                    self._error_location("The section %s appears twice"
+                                         % section)
 
             if section in ('Parameters', 'Returns', 'Yields', 'Raises',
                            'Warns', 'Other Parameters', 'Attributes',
@@ -355,6 +361,20 @@ class NumpyDocString(collections.Mapping):
                 self['See Also'] = self._parse_see_also(content)
             else:
                 self[section] = content
+
+    def _error_location(self, msg, error=True):
+        if hasattr(self, '_obj'):
+            # we know where the docs came from:
+            try:
+                filename = inspect.getsourcefile(self._obj)
+            except TypeError:
+                filename = None
+            msg = msg + (" in the docstring of %s in %s."
+                         % (self._obj, filename))
+        if error:
+            raise ValueError(msg)
+        else:
+            warn(msg)
 
     # string conversion routines
 
@@ -394,7 +414,8 @@ class NumpyDocString(collections.Mapping):
                     out += ['%s : %s' % (param, param_type)]
                 else:
                     out += [param]
-                out += self._str_indent(desc)
+                if desc and ''.join(desc).strip():
+                    out += self._str_indent(desc)
             out += ['']
         return out
 
@@ -592,7 +613,7 @@ class ClassDoc(NumpyDocString):
         return [name for name, func in inspect.getmembers(self._cls)
                 if (not name.startswith('_') and
                     (func is None or isinstance(func, property) or
-                     inspect.isgetsetdescriptor(func))
+                     inspect.isdatadescriptor(func))
                     and self._is_show_member(name))]
 
     def _is_show_member(self, name):

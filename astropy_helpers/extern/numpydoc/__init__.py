@@ -1,5 +1,8 @@
 from __future__ import division, absolute_import, print_function
 
-__version__ = '0.7.0'
+__version__ = '0.8.0'
 
-from .numpydoc import setup
+
+def setup(app, *args, **kwargs):
+    from .numpydoc import setup
+    return setup(app, *args, **kwargs)
