@@ -7,6 +7,8 @@ astropy-helpers Changelog
 - Fixed error that occurs when installing a package in an environment where
   ``numpy`` is not already installed. [#404]
 
+- Updated bundled version of sphinx-automodapi to v0.9. [#422]
+
 - Updated bundled version of numpydoc to v0.8.0. [#423]
 
 
