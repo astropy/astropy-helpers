@@ -2,7 +2,7 @@ import os
 import sys
 import stat
 import shutil
-import importlib
+import imp
 import contextlib
 
 import pytest
@@ -143,7 +143,7 @@ def extension_test_package(tmpdir, request):
 @pytest.fixture
 def c_extension_test_package(tmpdir, request):
     # Check whether numpy is installed in the test environment
-    has_numpy = bool(importlib.find_loader('numpy'))
+    has_numpy = bool(imp.find_module('numpy'))
     return _extension_test_package(tmpdir, request, extension_type='c',
                                    include_numpy=has_numpy)
 
