@@ -48,7 +48,10 @@ Using astropy-helpers
 
 The easiest way to get set up with astropy-helpers in a new package is to use
 the `package-template <http://docs.astropy.org/projects/package-template>`_
-that we provide. However, we now go through the steps of adding astropy-helpers
+that we provide. This template is specifically designed for use with the helpers,
+so using it avoids some of the tedium of setting up the heleprs.
+
+However, we now go through the steps of adding astropy-helpers
 as a submodule to a package in case you wish to do so manually. First, add
 astropy-helpers as a submodule at the root of your repository::
 
