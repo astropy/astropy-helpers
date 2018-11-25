@@ -90,7 +90,7 @@ is now available to use in your ``setup.py`` file. Finally, add then commit your
 changes::
 
     git add astropy_helpers ah_bootstrap.py setup.py
-    git commit ...
+    git commit -m "started using astropy-helpers"
 
 Updating astropy-helpers
 ------------------------
@@ -117,6 +117,12 @@ too, then add your changes::
 
 What does astropy-helpers provide?
 ----------------------------------
+
+Astropy-helpers' big-picture purpose is to provide customization to Python's
+packaging infrastructure process in ways that the Astropy Project has found to
+help simplifying the developint and releasing packages. This is primarily
+build around ``setup.py`` commands, as outlined below, as well as code to help
+manage version numbers and better control the build process of larger packages.
 
 Custom setup.py commands
 ^^^^^^^^^^^^^^^^^^^^^^^^
@@ -151,7 +157,9 @@ The commands we provide or customize are:
 This command will automatically build the package, install it to a temporary
 directory, and run the tests using `pytest <http://pytest.org/>`_ on this
 installed version. Note that the bulk of this command is actually defined
-in ``astropy.tests.command.AstropyTest`` - here we simply define the custom
+in ``astropy.tests.command.AstropyTest``, because that allows the test 
+machinery to operate outside a setuptools command. This, here we 
+simply define the custom
 setuptools command.
 
 **python setup.py sdist**
@@ -163,7 +171,10 @@ in ``MANIFEST.in``.
 **python setup.py build_docs**
 
 This command will automatically build the package, then run sphinx to build
-the documentation. Sphinx itself provides a custom setuptools command, which we
+the documentation. This makes development much easier because it ensures
+sphinx extensions that use the package's  code to make documentation are 
+actually using the in-development version of the code. Sphinx itself
+provides a custom setuptools command, which we
 expand with the following options:
 
 * ``-w``: set the return code to 1 if there are any warnings during the build
