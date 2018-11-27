@@ -85,10 +85,6 @@ def generate_build_ext_command(packagename, release):
 
         force_rebuild = False
 
-        _broken_compiler_mapping = [
-            ('i686-apple-darwin[0-9]*-llvm-gcc-4.2', 'clang')
-            ]
-
         # Warning: Spaghetti code ahead.
         # During setup.py, the setup_helpers module needs the ability to add
         # items to a command's user_options list.  At this stage we don't know
