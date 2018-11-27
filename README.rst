@@ -153,8 +153,9 @@ Version helpers
 Another piece of functionality we provide in astropy-helpers is the ability
 to generate a ``packagename.version`` file that includes functions that
 automatically set the version string for developer versions, to e.g.
-``3.2.dev22213`` so that each developer version has a unique number. To use this,
-import::
+``3.2.dev22213`` so that each developer version has a unique number (although
+note that branches an equal number of commits away from the master branch will
+share the same version number). To use this, import::
 
     from astropy_helpers.git_helpers import get_git_devstr
 
