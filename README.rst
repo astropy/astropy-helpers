@@ -43,78 +43,6 @@ For examples of how to implement ``astropy-helpers`` in a project,
 see the ``setup.py`` and ``setup.cfg`` files of the
 `Affiliated package template <https://github.com/astropy/package-template>`_.
 
-Using astropy-helpers
----------------------
-
-The easiest way to get set up with astropy-helpers in a new package is to use
-the `package-template <http://docs.astropy.org/projects/package-template>`_
-that we provide. This template is specifically designed for use with the helpers,
-so using it avoids some of the tedium of setting up the heleprs.
-
-However, we now go through the steps of adding astropy-helpers
-as a submodule to a package in case you wish to do so manually. First, add
-astropy-helpers as a submodule at the root of your repository::
-
-    git submodule add git://github.com/astropy/astropy-helpers astropy_helpers
-
-Then go inside the submodule and check out a stable version of astropy-helpers.
-You can see the available versions by running::
-
-    $ cd astropy_helpers
-    $ git tag
-    ...
-    v2.0.6
-    v2.0.7
-    ...
-    v3.0.1
-    v3.0.2
-
-If you want to support Python 2, pick the latest v2.0.x version (in the above
-case ``v2.0.7``) and if you don't need to support Python 2, just pick the latest
-stable version (in the above case ``v3.0.2``). Check out this version with e.g.::
-
-    $ git checkout v3.0.2
-
-Then go back up to the root of your repository and copy the ``ah_bootstrap.py``
-file from the submodule to the root of your repository::
-
-    $ cd ..
-    $ cp astropy_helpers/ah_bootstrap.py .
-
-Finally, add::
-
-    import ah_bootstrap
-
-at the top of your ``setup.py`` file. This will ensure that ``astropy_helpers``
-is now available to use in your ``setup.py`` file. Finally, add then commit your
-changes::
-
-    git add astropy_helpers ah_bootstrap.py setup.py
-    git commit -m "started using astropy-helpers"
-
-Updating astropy-helpers
-------------------------
-
-If you would like to automatically get pull requests to update astropy-helpers,
-then see the instructions `here
-<https://github.com/astropy/astropy-procedures/tree/master/update-affiliated>`_.
-
-To instead update astropy-helpers manually, go inside the submodule and do::
-
-    cd astropy_helpers
-    git fetch origin
-
-Then checkout the version you want to use, e.g.::
-
-    git checkout v3.0.3
-
-Go back up to the root of the repository and update the ``ah_bootstap.py`` file
-too, then add your changes::
-
-    cp astropy_helpers/ah_bootstrap.py .
-    git add astropy_helpers ah_bootstrap.py
-    git commit ...
-
 What does astropy-helpers provide?
 ----------------------------------
 
@@ -157,8 +85,8 @@ The commands we provide or customize are:
 This command will automatically build the package, install it to a temporary
 directory, and run the tests using `pytest <http://pytest.org/>`_ on this
 installed version. Note that the bulk of this command is actually defined
-in ``astropy.tests.command.AstropyTest``, because that allows the test 
-machinery to operate outside a setuptools command. This, here we 
+in ``astropy.tests.command.AstropyTest``, because that allows the test
+machinery to operate outside a setuptools command. This, here we
 simply define the custom
 setuptools command.
 
@@ -172,7 +100,7 @@ in ``MANIFEST.in``.
 
 This command will automatically build the package, then run sphinx to build
 the documentation. This makes development much easier because it ensures
-sphinx extensions that use the package's  code to make documentation are 
+sphinx extensions that use the package's  code to make documentation are
 actually using the in-development version of the code. Sphinx itself
 provides a custom setuptools command, which we
 expand with the following options:
@@ -345,3 +273,75 @@ then once you have defined the extension and before returning it, use it as::
     add_openmp_flags_if_available(extension)
 
     return [extension]
+
+Using astropy-helpers
+---------------------
+
+The easiest way to get set up with astropy-helpers in a new package is to use
+the `package-template <http://docs.astropy.org/projects/package-template>`_
+that we provide. This template is specifically designed for use with the helpers,
+so using it avoids some of the tedium of setting up the heleprs.
+
+However, we now go through the steps of adding astropy-helpers
+as a submodule to a package in case you wish to do so manually. First, add
+astropy-helpers as a submodule at the root of your repository::
+
+    git submodule add git://github.com/astropy/astropy-helpers astropy_helpers
+
+Then go inside the submodule and check out a stable version of astropy-helpers.
+You can see the available versions by running::
+
+    $ cd astropy_helpers
+    $ git tag
+    ...
+    v2.0.6
+    v2.0.7
+    ...
+    v3.0.1
+    v3.0.2
+
+If you want to support Python 2, pick the latest v2.0.x version (in the above
+case ``v2.0.7``) and if you don't need to support Python 2, just pick the latest
+stable version (in the above case ``v3.0.2``). Check out this version with e.g.::
+
+    $ git checkout v3.0.2
+
+Then go back up to the root of your repository and copy the ``ah_bootstrap.py``
+file from the submodule to the root of your repository::
+
+    $ cd ..
+    $ cp astropy_helpers/ah_bootstrap.py .
+
+Finally, add::
+
+    import ah_bootstrap
+
+at the top of your ``setup.py`` file. This will ensure that ``astropy_helpers``
+is now available to use in your ``setup.py`` file. Finally, add then commit your
+changes::
+
+    git add astropy_helpers ah_bootstrap.py setup.py
+    git commit -m "Added astropy-helpers"
+
+Updating astropy-helpers
+------------------------
+
+If you would like to automatically get pull requests to update astropy-helpers,
+then see the instructions `here
+<https://github.com/astropy/astropy-procedures/blob/master/update-packages/README.md>`_.
+
+To instead update astropy-helpers manually, go inside the submodule and do::
+
+    cd astropy_helpers
+    git fetch origin
+
+Then checkout the version you want to use, e.g.::
+
+    git checkout v3.0.3
+
+Go back up to the root of the repository and update the ``ah_bootstap.py`` file
+too, then add your changes::
+
+    cp astropy_helpers/ah_bootstrap.py .
+    git add astropy_helpers ah_bootstrap.py
+    git commit ...
