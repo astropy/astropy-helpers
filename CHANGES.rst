@@ -9,7 +9,9 @@ astropy-helpers Changelog
 3.1 (unreleased)
 ----------------
 
-- Fixed the compability of the build_docs command with Sphinx 1.8 and above. [#413]
+- Added extensive documentation about astropy-helpers to the README.rst file. [#416]
+
+- Fixed the compatibility of the build_docs command with Sphinx 1.8 and above. [#413]
 
 - Removing deprecated test_helpers.py file. [#369]
 
