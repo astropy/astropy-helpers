@@ -283,8 +283,6 @@ def test_build_docs(capsys, tmpdir, mode):
 
     docs_dir = test_pkg.join('docs')
     docs_dir.join('conf.py').write(dedent("""\
-        import sys
-        sys.path.append("../")
         import warnings
         with warnings.catch_warnings():  # ignore matplotlib warning
             warnings.simplefilter("ignore")
