@@ -4,6 +4,8 @@ astropy-helpers Changelog
 2.0.8 (unreleased)
 ------------------
 
+- Fixed compatibility with Sphinx 1.8+. [#428]
+
 - Fixed error that occurs when installing a package in an environment where
   ``numpy`` is not already installed. [#404]
 
