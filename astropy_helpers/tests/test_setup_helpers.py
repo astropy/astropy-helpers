@@ -301,13 +301,13 @@ def test_build_docs(capsys, tmpdir, mode):
     docs_dir = test_pkg.join('docs')
     docs_dir.join('conf.py').write(dedent("""\
         import sys
-        sys.path.append("../")
+        sys.path.insert(0, r'{0}')
         import warnings
         with warnings.catch_warnings():  # ignore matplotlib warning
             warnings.simplefilter("ignore")
             from astropy_helpers.sphinx.conf import *
         exclude_patterns.append('_templates')
-    """))
+    """.format(ASTROPY_HELPERS_PATH)))
 
     docs_dir.join('index.rst').write(dedent("""\
         .. automodapi:: mypackage

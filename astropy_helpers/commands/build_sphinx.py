@@ -71,6 +71,13 @@ class AstropyBuildDocs(SphinxBuildDoc):
 
     def finalize_options(self):
 
+        # We need to make sure this is set before finalize_options otherwise
+        # the default is set to build/sphinx. We also need the absolute path
+        # as in some Sphinx versions, the path is otherwise interpreted as
+        # docs/docs/_build.
+        if self.build_dir is None:
+            self.build_dir = os.path.abspath('docs/_build')
+
         SphinxBuildDoc.finalize_options(self)
 
         # Clear out previous sphinx builds, if requested
