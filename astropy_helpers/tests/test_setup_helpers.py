@@ -268,7 +268,7 @@ def test_missing_cython_c_files(capsys, pyx_extension_test_package, monkeypatch)
         assert msg in stderr
 
 
-@pytest.mark.parametrize('mode', ['cli', 'cli-w', 'deprecated', 'cli-l', 'cli-error'])
+@pytest.mark.parametrize('mode', ['cli', 'cli-w', 'deprecated', 'cli-l'])
 def test_build_docs(capsys, tmpdir, mode):
     """
     Test for build_docs
@@ -309,11 +309,6 @@ def test_build_docs(capsys, tmpdir, mode):
         exclude_patterns.append('_templates')
     """))
 
-    if mode == 'cli-error':
-        docs_dir.join('conf.py').write(dedent("""
-        raise ValueError("TestException")
-        """))
-
     docs_dir.join('index.rst').write(dedent("""\
         .. automodapi:: mypackage
            :no-inheritance-diagram:
@@ -352,6 +347,8 @@ def test_build_docs(capsys, tmpdir, mode):
             run_setup('setup.py', ['build_sphinx'])
             stdout, stderr = capsys.readouterr()
             assert 'AstropyDeprecationWarning' in stderr
+
+    assert os.path.exists(docs_dir.join('_build', 'html', 'index.html').strpath)
 
 
 def test_command_hooks(tmpdir, capsys):
