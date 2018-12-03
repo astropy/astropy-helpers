@@ -274,6 +274,8 @@ def test_build_docs(capsys, tmpdir, mode):
     Test for build_docs
     """
 
+    AH_PATH = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..'))
+
     test_pkg = tmpdir.mkdir('test_pkg')
 
     test_pkg.mkdir('mypackage')
@@ -301,13 +303,13 @@ def test_build_docs(capsys, tmpdir, mode):
     docs_dir = test_pkg.join('docs')
     docs_dir.join('conf.py').write(dedent("""\
         import sys
-        sys.path.append("../")
+        sys.path.insert(0, '{0}')
         import warnings
         with warnings.catch_warnings():  # ignore matplotlib warning
             warnings.simplefilter("ignore")
             from astropy_helpers.sphinx.conf import *
         exclude_patterns.append('_templates')
-    """))
+    """.format(AH_PATH)))
 
     docs_dir.join('index.rst').write(dedent("""\
         .. automodapi:: mypackage
