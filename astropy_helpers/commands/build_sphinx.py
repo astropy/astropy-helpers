@@ -77,6 +77,8 @@ class AstropyBuildDocs(SphinxBuildDoc):
         # docs/docs/_build.
         if self.build_dir is None:
             self.build_dir = os.path.abspath('docs/_build')
+        else:
+            self.build_dir = os.path.abspath(self.build_dir)
 
         SphinxBuildDoc.finalize_options(self)
 
