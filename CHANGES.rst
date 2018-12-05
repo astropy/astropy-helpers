@@ -1,8 +1,8 @@
 astropy-helpers Changelog
 *************************
 
-3.1rc1 (2018-11-14)
--------------------
+3.1 (2018-12-04)
+----------------
 
 - Added extensive documentation about astropy-helpers to the README.rst file. [#416]
 
@@ -52,11 +52,17 @@ astropy-helpers Changelog
   with twine and get registered automatically. [#332]
 
 
-2.0.8 (unreleased)
+2.0.8 (2018-12-04)
 ------------------
+
+- Fixed compatibility with Sphinx 1.8+. [#428]
 
 - Fixed error that occurs when installing a package in an environment where
   ``numpy`` is not already installed. [#404]
+
+- Updated bundled version of sphinx-automodapi to v0.9. [#422]
+
+- Updated bundled version of numpydoc to v0.8.0. [#423]
 
 
 2.0.7 (2018-06-01)
