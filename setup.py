@@ -9,7 +9,7 @@ from astropy_helpers.setup_helpers import (register_commands, get_package_info,
 from astropy_helpers.version_helpers import generate_version_py
 
 NAME = 'astropy_helpers'
-VERSION = '2.0.8'
+VERSION = '2.0.9.dev'
 RELEASE = 'dev' not in VERSION
 
 generate_version_py(NAME, VERSION, RELEASE, False, uses_git=not RELEASE)
