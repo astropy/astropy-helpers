@@ -26,7 +26,7 @@ from distutils.ccompiler import new_compiler
 from distutils.sysconfig import customize_compiler, get_config_var
 from distutils.errors import CompileError, LinkError
 
-from .setup_helpers import get_compiler_option
+from .distutils_helpers import get_compiler_option
 
 __all__ = ['add_openmp_flags_if_available']
 
