@@ -633,8 +633,8 @@ class _Bootstrapper(object):
         # only if the submodule is initialized.  We ignore this information for
         # now
         _git_submodule_status_re = re.compile(
-            '^(?P<status>[+-U ])(?P<commit>[0-9a-f]{40}) '
-            '(?P<submodule>\S+)( .*)?$')
+            r'^(?P<status>[+-U ])(?P<commit>[0-9a-f]{40}) '
+            r'(?P<submodule>\S+)( .*)?$')
 
         # The stdout should only contain one line--the status of the
         # requested submodule
