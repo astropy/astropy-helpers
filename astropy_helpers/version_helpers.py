@@ -232,10 +232,21 @@ def generate_version_py(packagename=None, version=None, release=None, debug=None
         conf = read_configuration('setup.cfg')
 
         if packagename is None:
-            packagename = conf['metadata']['name']
+            if 'name' in conf['metadata']:
+                packagename = conf['metadata']['name']
+            elif 'package_name' in conf['metadata']:
+                # The package-template used package_name instead of name for a while
+                packagename = conf['metadata']['package_name']
+            else:
+                print('ERROR: Could not read package name from setup.cfg', file=sys.stderr)
+                sys.exit(1)
 
         if version is None:
-            version = conf['metadata']['version']
+            if 'version' in conf['metadata']:
+                version = conf['metadata']['version']
+            else:
+                print('ERROR: Could not read package version from setup.cfg', file=sys.stderr)
+                sys.exit(1)
             add_git_devstr = True
         else:
             add_git_devstr = False

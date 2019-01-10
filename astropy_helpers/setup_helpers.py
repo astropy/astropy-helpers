@@ -121,9 +121,21 @@ def register_commands(package=None, version=None, release=None, srcdir='.'):
         conf = read_configuration('setup.cfg')
 
         if package is None:
-            package = conf['metadata']['name']
+            if 'name' in conf['metadata']:
+                package = conf['metadata']['name']
+            elif 'package_name' in conf['metadata']:
+                # The package-template used package_name instead of name for a while
+                package = conf['metadata']['package_name']
+            else:
+                print('ERROR: Could not read package name from setup.cfg', file=sys.stderr)
+                sys.exit(1)
+
         if release is None:
-            version = conf['metadata']['version']
+            if 'version' in conf['metadata']:
+                version = conf['metadata']['version']
+            else:
+                print('ERROR: Could not read package version from setup.cfg', file=sys.stderr)
+                sys.exit(1)
             release = 'dev' not in version
 
     if _module_state['registered_commands'] is not None:
