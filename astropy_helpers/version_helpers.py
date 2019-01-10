@@ -249,6 +249,10 @@ def generate_version_py(packagename=None, version=None, release=None, debug=None
         if uses_git is None:
             uses_git = not release
 
+    # In some cases, packages have a - but this is a _ in the module. Since we
+    # are only interested in the module here, we replace - by _
+    packagename = packagename.replace('-', '_')
+
     try:
         version_module = get_pkg_version_module(packagename)
 
