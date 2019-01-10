@@ -4,6 +4,10 @@ astropy-helpers Changelog
 3.2 (unreleased)
 ----------------
 
+- Make it possible to call ``generate_version_py`` and ``register_commands``
+  without any arguments, which causes information to be read in from the
+  ``setup.cfg`` file.
+
 - Remove functionality to adjust compilers if a broken compiler is detected.
   This is not useful anymore as only a single compiler was previously patched
   (now unlikely to be used) and this was only to fix a compilation issue in the
