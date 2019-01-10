@@ -31,9 +31,11 @@ from distutils import log
 from importlib import invalidate_caches
 
 import pkg_resources
+from setuptools.config import read_configuration
 
 from . import git_helpers
 from .distutils_helpers import is_distutils_display_option
+from .git_helpers import get_git_devstr
 
 
 def _version_split(version):
@@ -221,9 +223,28 @@ def _generate_git_header(packagename, version, githash):
                 verstr=verstr, githash=githash)
 
 
-def generate_version_py(packagename, version, release=None, debug=None,
+def generate_version_py(packagename=None, version=None, release=None, debug=None,
                         uses_git=True, srcdir='.'):
     """Regenerate the version.py module if necessary."""
+
+    if packagename is None or version is None or release is None:
+
+        conf = read_configuration('setup.cfg')
+
+        if packagename is None:
+            packagename = conf['metadata']['name']
+
+        if version is None:
+            version = conf['metadata']['version']
+            add_git_devstr = True
+        else:
+            add_git_devstr = False
+
+        if release is None:
+            release = 'dev' not in version
+
+        if not release and add_git_devstr:
+            version += get_git_devstr(False)
 
     try:
         version_module = get_pkg_version_module(packagename)
@@ -279,6 +300,8 @@ def generate_version_py(packagename, version, release=None, debug=None,
 
         if version_module:
             imp.reload(version_module)
+
+    return version
 
 
 def get_pkg_version_module(packagename, fromlist=None):

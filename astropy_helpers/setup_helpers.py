@@ -21,6 +21,7 @@ from distutils.core import Command
 from distutils.command.sdist import sdist as DistutilsSdist
 
 from setuptools import find_packages as _find_packages
+from setuptools.config import read_configuration
 
 from .distutils_helpers import (add_command_option, get_compiler_option,
                                 get_dummy_distribution, get_distutils_build_option,
@@ -113,7 +114,17 @@ def add_exclude_packages(excludes):
     _module_state['exclude_packages'].update(set(excludes))
 
 
-def register_commands(package, version, release, srcdir='.'):
+def register_commands(package=None, version=None, release=None, srcdir='.'):
+
+    if package is None or release is None:
+
+        conf = read_configuration('setup.cfg')
+
+        if package is None:
+            package = conf['metadata']['name']
+        if release is None:
+            version = conf['metadata']['version']
+            release = 'dev' not in version
 
     if _module_state['registered_commands'] is not None:
         return _module_state['registered_commands']
