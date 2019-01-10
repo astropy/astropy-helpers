@@ -4,7 +4,7 @@ astropy-helpers Changelog
 3.1.1 (unreleased)
 ------------------
 
-- Nothing changed yet.
+- Fixed broken OpenMP detection when building with ``-coverage``. [#434]
 
 
 3.1 (2018-12-04)
