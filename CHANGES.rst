@@ -5,7 +5,7 @@ astropy-helpers Changelog
 2.0.9 (unreleased)
 ------------------
 
-- Nothing changed yet.
+- Updated bundled version of sphinx-automodapi to v0.10. [#439]
 
 
 2.0.8 (2018-12-04)
