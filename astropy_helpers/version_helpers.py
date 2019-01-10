@@ -224,10 +224,10 @@ def _generate_git_header(packagename, version, githash):
 
 
 def generate_version_py(packagename=None, version=None, release=None, debug=None,
-                        uses_git=True, srcdir='.'):
+                        uses_git=None, srcdir='.'):
     """Regenerate the version.py module if necessary."""
 
-    if packagename is None or version is None or release is None:
+    if packagename is None or version is None or release is None or uses_git is None:
 
         conf = read_configuration('setup.cfg')
 
@@ -245,6 +245,9 @@ def generate_version_py(packagename=None, version=None, release=None, debug=None
 
         if not release and add_git_devstr:
             version += get_git_devstr(False)
+
+        if uses_git is None:
+            uses_git = not release
 
     try:
         version_module = get_pkg_version_module(packagename)
