@@ -225,7 +225,26 @@ def _generate_git_header(packagename, version, githash):
 
 def generate_version_py(packagename=None, version=None, release=None, debug=None,
                         uses_git=None, srcdir='.'):
-    """Regenerate the version.py module if necessary."""
+    """
+    Generate a version.py file in the package with version information, and
+    update developer version strings.
+
+    This function should normally be called without any arguments. In this case
+    the package name and version is read in from the setup.cfg file (from the
+    ``name`` or ``package_name`` entry and the ``version`` entry in the
+    ``[metadata]`` section).
+
+    If the version is a developer version (of the form ``3.2.dev``), the
+    version string will automatically be expanded to include a sequential
+    number as a suffix (e.g. ``3.2.dev13312), and the updated version string
+    will be returned by this function.
+
+    Based on this updated version string, a ``version.py`` file will be
+    generated inside the package, containing the version string as well as more
+    detailed information (for example the major, minor, and bugfix version
+    numbers, a ``release`` flag indicating whether the current version is a
+    stable or developer version, and so on.
+    """
 
     if packagename is None or version is None or release is None or uses_git is None:
 

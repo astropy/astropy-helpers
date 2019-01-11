@@ -115,6 +115,10 @@ def add_exclude_packages(excludes):
 
 
 def register_commands(package=None, version=None, release=None, srcdir='.'):
+    """
+    This function generates a dictionary containing customized commands that
+    can then be passed to the ``cmdclass`` argument in ``setup()``.
+    """
 
     if package is None or release is None:
 

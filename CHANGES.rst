@@ -8,6 +8,8 @@ astropy-helpers Changelog
   without any arguments, which causes information to be read in from the
   ``setup.cfg`` file. [#440]
 
+- Updated minimum required version of setuptools to 30.3.0. [#440]
+
 - Remove functionality to adjust compilers if a broken compiler is detected.
   This is not useful anymore as only a single compiler was previously patched
   (now unlikely to be used) and this was only to fix a compilation issue in the
