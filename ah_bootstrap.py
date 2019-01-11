@@ -45,18 +45,80 @@ import re
 import subprocess as sp
 import sys
 
-__minimum_python_version__ = (3, 5)
-
-if sys.version_info < __minimum_python_version__:
-    print("ERROR: Python {} or later is required by astropy-helpers".format(
-        __minimum_python_version__))
-    sys.exit(1)
+from distutils import log
+from distutils.debug import DEBUG
 
 try:
     from ConfigParser import ConfigParser, RawConfigParser
 except ImportError:
     from configparser import ConfigParser, RawConfigParser
 
+import pkg_resources
+
+from setuptools import Distribution
+from setuptools.package_index import PackageIndex
+
+# TODO: Maybe enable checking for a specific version of astropy_helpers?
+DIST_NAME = 'astropy-helpers'
+PACKAGE_NAME = 'astropy_helpers'
+UPPER_VERSION_EXCLUSIVE = None
+
+# Defaults for other options
+DOWNLOAD_IF_NEEDED = True
+INDEX_URL = 'https://pypi.python.org/simple'
+USE_GIT = True
+OFFLINE = False
+AUTO_UPGRADE = True
+
+# A list of all the configuration options and their required types
+CFG_OPTIONS = [
+    ('auto_use', bool), ('path', str), ('download_if_needed', bool),
+    ('index_url', str), ('use_git', bool), ('offline', bool),
+    ('auto_upgrade', bool)
+]
+
+# Start off by parsing the setup.cfg file
+
+if os.path.exists('setup.cfg'):
+
+    SETUP_CFG = ConfigParser()
+
+    try:
+        SETUP_CFG.read('setup.cfg')
+    except Exception as e:
+        if DEBUG:
+            raise
+
+        log.error(
+            "Error reading setup.cfg: {0!r}\n{1} will not be "
+            "automatically bootstrapped and package installation may fail."
+            "\n{2}".format(e, PACKAGE_NAME, _err_help_msg))
+        SETUP_CFG = {}
+
+else:
+
+    SETUP_CFG = {}
+
+__minimum_python_version__ = (3, 5)
+
+if sys.version_info < __minimum_python_version__:
+
+    # We used package_name in the package template for a while instead of name
+    if SETUP_CFG.has_option('metadata', 'name'):
+        parent_package = SETUP_CFG.get('metadata', 'name')
+    elif SETUP_CFG.has_option('metadata', 'package_name'):
+        parent_package = SETUP_CFG.get('metadata', 'package_name')
+    else:
+        parent_package = None
+
+    if parent_package is None:
+        print("ERROR: Python {} or later is required by astropy-helpers".format(
+            __minimum_python_version__))
+    else:
+        print("ERROR: Python {} or later is required by astropy-helpers for {}".format(
+            __minimum_python_version__, parent_package))
+
+    sys.exit(1)
 
 _str_types = (str, bytes)
 
@@ -114,36 +176,6 @@ except:
 
 
 # End compatibility imports...
-
-
-# In case it didn't successfully import before the ez_setup checks
-import pkg_resources
-
-from setuptools import Distribution
-from setuptools.package_index import PackageIndex
-
-from distutils import log
-from distutils.debug import DEBUG
-
-
-# TODO: Maybe enable checking for a specific version of astropy_helpers?
-DIST_NAME = 'astropy-helpers'
-PACKAGE_NAME = 'astropy_helpers'
-UPPER_VERSION_EXCLUSIVE = None
-
-# Defaults for other options
-DOWNLOAD_IF_NEEDED = True
-INDEX_URL = 'https://pypi.python.org/simple'
-USE_GIT = True
-OFFLINE = False
-AUTO_UPGRADE = True
-
-# A list of all the configuration options and their required types
-CFG_OPTIONS = [
-    ('auto_use', bool), ('path', str), ('download_if_needed', bool),
-    ('index_url', str), ('use_git', bool), ('offline', bool),
-    ('auto_upgrade', bool)
-]
 
 
 class _Bootstrapper(object):
@@ -215,36 +247,20 @@ class _Bootstrapper(object):
 
     @classmethod
     def parse_config(cls):
-        if not os.path.exists('setup.cfg'):
-            return {}
 
-        cfg = ConfigParser()
-
-        try:
-            cfg.read('setup.cfg')
-        except Exception as e:
-            if DEBUG:
-                raise
-
-            log.error(
-                "Error reading setup.cfg: {0!r}\n{1} will not be "
-                "automatically bootstrapped and package installation may fail."
-                "\n{2}".format(e, PACKAGE_NAME, _err_help_msg))
-            return {}
-
-        if not cfg.has_section('ah_bootstrap'):
+        if not SETUP_CFG.has_section('ah_bootstrap'):
             return {}
 
         config = {}
 
         for option, type_ in CFG_OPTIONS:
-            if not cfg.has_option('ah_bootstrap', option):
+            if not SETUP_CFG.has_option('ah_bootstrap', option):
                 continue
 
             if type_ is bool:
-                value = cfg.getboolean('ah_bootstrap', option)
+                value = SETUP_CFG.getboolean('ah_bootstrap', option)
             else:
-                value = cfg.get('ah_bootstrap', option)
+                value = SETUP_CFG.get('ah_bootstrap', option)
 
             config[option] = value
 
