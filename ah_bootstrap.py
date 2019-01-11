@@ -79,9 +79,9 @@ CFG_OPTIONS = [
 
 # Start off by parsing the setup.cfg file
 
-if os.path.exists('setup.cfg'):
+SETUP_CFG = ConfigParser()
 
-    SETUP_CFG = ConfigParser()
+if os.path.exists('setup.cfg'):
 
     try:
         SETUP_CFG.read('setup.cfg')
@@ -93,11 +93,6 @@ if os.path.exists('setup.cfg'):
             "Error reading setup.cfg: {0!r}\n{1} will not be "
             "automatically bootstrapped and package installation may fail."
             "\n{2}".format(e, PACKAGE_NAME, _err_help_msg))
-        SETUP_CFG = {}
-
-else:
-
-    SETUP_CFG = {}
 
 __minimum_python_version__ = (3, 5)
 
