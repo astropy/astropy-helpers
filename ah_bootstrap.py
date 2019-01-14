@@ -58,6 +58,9 @@ import pkg_resources
 from setuptools import Distribution
 from setuptools.package_index import PackageIndex
 
+# This is the minimum Python version required for astropy-helpers
+__minimum_python_version__ = (3, 5)
+
 # TODO: Maybe enable checking for a specific version of astropy_helpers?
 DIST_NAME = 'astropy-helpers'
 PACKAGE_NAME = 'astropy_helpers'
@@ -94,17 +97,38 @@ if os.path.exists('setup.cfg'):
             "automatically bootstrapped and package installation may fail."
             "\n{2}".format(e, PACKAGE_NAME, _err_help_msg))
 
-__minimum_python_version__ = (3, 5)
+# We used package_name in the package template for a while instead of name
+if SETUP_CFG.has_option('metadata', 'name'):
+    parent_package = SETUP_CFG.get('metadata', 'name')
+elif SETUP_CFG.has_option('metadata', 'package_name'):
+    parent_package = SETUP_CFG.get('metadata', 'package_name')
+else:
+    parent_package = None
+
+if SETUP_CFG.has_option('options', 'python_requires'):
+
+    python_requires = SETUP_CFG.get('options', 'python_requires')
+
+    # The python_requires key has a syntax that can be parsed by SpecifierSet
+    # in the packaging package. However, we don't want to have to depend on that
+    # package, so instead we can use setuptools (which bundles packaging). We
+    # have to add 'python' to parse it with Requirement.
+
+    from pkg_resources import Requirement
+    req = Requirement.parse('python' + python_requires)
+
+    # We want the Python version as a string, which we can get from the platform module
+    import platform
+    python_version = platform.python_version()
+
+    if not req.specifier.contains(python_version):
+        if parent_package is None:
+            print("ERROR: Python {} is required by this package".format(req.specifier))
+        else:
+            print("ERROR: Python {} is required by {}".format(req.specifier, parent_package))
+        sys.exit(1)
 
 if sys.version_info < __minimum_python_version__:
-
-    # We used package_name in the package template for a while instead of name
-    if SETUP_CFG.has_option('metadata', 'name'):
-        parent_package = SETUP_CFG.get('metadata', 'name')
-    elif SETUP_CFG.has_option('metadata', 'package_name'):
-        parent_package = SETUP_CFG.get('metadata', 'package_name')
-    else:
-        parent_package = None
 
     if parent_package is None:
         print("ERROR: Python {} or later is required by astropy-helpers".format(
