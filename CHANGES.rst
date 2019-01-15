@@ -61,7 +61,8 @@ astropy-helpers Changelog
 2.0.9 (unreleased)
 ------------------
 
-- Nothing changed yet.
+- Include package name in error message for Python version in ``ah_bootstrap.py``.
+  [#441]
 
 
 2.0.8 (2018-12-04)
