@@ -70,7 +70,7 @@ to your ``setup.py`` file, then do::
 
     cmdclassd = register_commands()
 
-Note that this requires that the package name and version are set in the
+This function requires that the package name and full version are set in the
 ``setup.cfg`` file in the ``[metadata]`` section. Then, pass ``cmdclassd`` to
 the ``setup`` function::
 
