@@ -13,6 +13,7 @@ import subprocess
 import sys
 import traceback
 import warnings
+from configparser import ConfigParser
 
 from distutils import log
 from distutils.errors import DistutilsOptionError, DistutilsModuleError
@@ -21,7 +22,6 @@ from distutils.core import Command
 from distutils.command.sdist import sdist as DistutilsSdist
 
 from setuptools import find_packages as _find_packages
-from setuptools.config import read_configuration
 
 from .distutils_helpers import (add_command_option, get_compiler_option,
                                 get_dummy_distribution, get_distutils_build_option,
@@ -120,27 +120,51 @@ def register_commands(package=None, version=None, release=None, srcdir='.'):
     can then be passed to the ``cmdclass`` argument in ``setup()``.
     """
 
-    if package is None or release is None:
+    if package is not None:
+        warnings.warn('The package argument to generate_version_py has '
+                      'been deprecated and will be removed in future. Specify '
+                      'the package name in setup.cfg instead', AstropyDeprecationWarning)
 
-        conf = read_configuration('setup.cfg')
+    if version is not None:
+        warnings.warn('The version argument to generate_version_py has '
+                      'been deprecated and will be removed in future. Specify '
+                      'the version number in setup.cfg instead', AstropyDeprecationWarning)
 
-        if package is None:
-            if 'name' in conf['metadata']:
-                package = conf['metadata']['name']
-            elif 'package_name' in conf['metadata']:
-                # The package-template used package_name instead of name for a while
-                package = conf['metadata']['package_name']
-            else:
-                print('ERROR: Could not read package name from setup.cfg', file=sys.stderr)
-                sys.exit(1)
+    if release is not None:
+        warnings.warn('The release argument to generate_version_py has '
+                      'been deprecated and will be removed in future. We now '
+                      'use the presence of the "dev" string in the version to '
+                      'determine whether this is a release', AstropyDeprecationWarning)
 
-        if release is None:
-            if 'version' in conf['metadata']:
-                version = conf['metadata']['version']
-            else:
-                print('ERROR: Could not read package version from setup.cfg', file=sys.stderr)
-                sys.exit(1)
-            release = 'dev' not in version
+    # We use ConfigParser instead of read_configuration here because the latter
+    # only reads in keys recognized by setuptools, but we need to access
+    # package_name below.
+    conf = ConfigParser()
+    conf.read('setup.cfg')
+
+    if conf.has_option('metadata', 'name'):
+        package = conf.get('metadata', 'name')
+    elif conf.has_option('metadata', 'package_name'):
+        # The package-template used package_name instead of name for a while
+        warnings.warn('Specifying the package name using the "package_name" '
+                      'option in setup.cfg is deprecated - use the "name" '
+                      'option instead.', AstropyDeprecationWarning)
+        package = conf.get('metadata', 'package_name')
+    elif package is not None:  # deprecated
+        pass
+    else:
+        print('ERROR: Could not read package name from setup.cfg', file=sys.stderr)
+        sys.exit(1)
+
+    if conf.has_option('metadata', 'version'):
+        version = conf.get('metadata', 'version')
+    elif version is not None:  # deprecated
+        pass
+    else:
+        print('ERROR: Could not read package version from setup.cfg', file=sys.stderr)
+        sys.exit(1)
+
+    release = 'dev' not in version
 
     if _module_state['registered_commands'] is not None:
         return _module_state['registered_commands']

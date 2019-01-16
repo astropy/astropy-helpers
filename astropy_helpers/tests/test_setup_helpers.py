@@ -359,7 +359,7 @@ def test_command_hooks(tmpdir, capsys):
         from astropy_helpers.setup_helpers import register_commands, get_package_info
 
         NAME = '_welltall_'
-        VERSION = 0.1
+        VERSION = '0.1'
         RELEASE = True
 
         cmdclassd = register_commands(NAME, VERSION, RELEASE)
@@ -401,7 +401,7 @@ def test_invalid_package_exclusion(tmpdir, capsys):
             get_package_info, add_exclude_packages
 
         NAME = {module_name!r}
-        VERSION = 0.1
+        VERSION = '0.1'
         RELEASE = True
 
     """.format(module_name=module_name, astropy_helpers_path=ASTROPY_HELPERS_PATH))
