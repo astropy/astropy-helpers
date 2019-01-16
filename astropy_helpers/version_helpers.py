@@ -37,7 +37,7 @@ import pkg_resources
 from . import git_helpers
 from .distutils_helpers import is_distutils_display_option
 from .git_helpers import get_git_devstr
-from .utils import AstropyDeprecationWarning
+from .utils import AstropyDeprecationWarning, import_file
 
 __all__ = ['generate_version_py']
 
@@ -376,13 +376,8 @@ def get_pkg_version_module(packagename, fromlist=None):
     Raises an `AttributeError` if any of these module members are not found.
     """
 
-    if not fromlist:
-        # Due to a historical quirk of Python's import implementation,
-        # __import__ will not return submodules of a package if 'fromlist' is
-        # empty.
-        # TODO: For Python 3.1 and up it may be preferable to use importlib
-        # instead of the __import__ builtin
-        return __import__(packagename + '.version', fromlist=[''])
+    version = import_file(os.path.join(packagename, 'version.py'), name='version')
+    if fromlist:
+        return tuple(getattr(version, member) for member in fromlist)
     else:
-        mod = __import__(packagename + '.version', fromlist=fromlist)
-        return tuple(getattr(mod, member) for member in fromlist)
+        return version
