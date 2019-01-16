@@ -151,9 +151,9 @@ from distutils.version import LooseVersion
 
 try:
     import setuptools
-    assert LooseVersion(setuptools.__version__) >= LooseVersion('1.0')
+    assert LooseVersion(setuptools.__version__) >= LooseVersion('30.3')
 except (ImportError, AssertionError):
-    print("ERROR: setuptools 1.0 or later is required by astropy-helpers")
+    print("ERROR: setuptools 30.3 or later is required by astropy-helpers")
     sys.exit(1)
 
 # typing as a dependency for 1.6.1+ Sphinx causes issues when imported after

@@ -26,14 +26,18 @@ import os
 import pkgutil
 import sys
 import time
+import warnings
 
 from distutils import log
 from importlib import invalidate_caches
+from configparser import ConfigParser
 
 import pkg_resources
 
 from . import git_helpers
 from .distutils_helpers import is_distutils_display_option
+from .git_helpers import get_git_devstr
+from .utils import AstropyDeprecationWarning
 
 
 def _version_split(version):
@@ -221,9 +225,86 @@ def _generate_git_header(packagename, version, githash):
                 verstr=verstr, githash=githash)
 
 
-def generate_version_py(packagename, version, release=None, debug=None,
-                        uses_git=True, srcdir='.'):
-    """Regenerate the version.py module if necessary."""
+def generate_version_py(packagename=None, version=None, release=None, debug=None,
+                        uses_git=None, srcdir='.'):
+    """
+    Generate a version.py file in the package with version information, and
+    update developer version strings.
+
+    This function should normally be called without any arguments. In this case
+    the package name and version is read in from the setup.cfg file (from the
+    ``name`` or ``package_name`` entry and the ``version`` entry in the
+    ``[metadata]`` section).
+
+    If the version is a developer version (of the form ``3.2.dev``), the
+    version string will automatically be expanded to include a sequential
+    number as a suffix (e.g. ``3.2.dev13312), and the updated version string
+    will be returned by this function.
+
+    Based on this updated version string, a ``version.py`` file will be
+    generated inside the package, containing the version string as well as more
+    detailed information (for example the major, minor, and bugfix version
+    numbers, a ``release`` flag indicating whether the current version is a
+    stable or developer version, and so on.
+    """
+
+    if packagename is not None:
+        warnings.warn('The packagename argument to generate_version_py has '
+                      'been deprecated and will be removed in future. Specify '
+                      'the package name in setup.cfg instead', AstropyDeprecationWarning)
+
+    if version is not None:
+        warnings.warn('The version argument to generate_version_py has '
+                      'been deprecated and will be removed in future. Specify '
+                      'the version number in setup.cfg instead', AstropyDeprecationWarning)
+
+    if release is not None:
+        warnings.warn('The release argument to generate_version_py has '
+                      'been deprecated and will be removed in future. We now '
+                      'use the presence of the "dev" string in the version to '
+                      'determine whether this is a release', AstropyDeprecationWarning)
+
+    # We use ConfigParser instead of read_configuration here because the latter
+    # only reads in keys recognized by setuptools, but we need to access
+    # package_name below.
+    conf = ConfigParser()
+    conf.read('setup.cfg')
+
+    if conf.has_option('metadata', 'name'):
+        packagename = conf.get('metadata', 'name')
+    elif conf.has_option('metadata', 'package_name'):
+        # The package-template used package_name instead of name for a while
+        warnings.warn('Specifying the package name using the "package_name" '
+                      'option in setup.cfg is deprecated - use the "name" '
+                      'option instead.', AstropyDeprecationWarning)
+        packagename = conf.get('metadata', 'package_name')
+    elif packagename is not None:  # deprecated
+        pass
+    else:
+        print('ERROR: Could not read package name from setup.cfg', file=sys.stderr)
+        sys.exit(1)
+
+    if conf.has_option('metadata', 'version'):
+        version = conf.get('metadata', 'version')
+        add_git_devstr = True
+    elif version is not None:  # deprecated
+        add_git_devstr = False
+    else:
+        print('ERROR: Could not read package version from setup.cfg', file=sys.stderr)
+        sys.exit(1)
+
+    if release is None:
+        release = 'dev' not in version
+
+    if not release and add_git_devstr:
+        version += get_git_devstr(False)
+
+    if uses_git is None:
+        uses_git = not release
+
+    # In some cases, packages have a - but this is a _ in the module. Since we
+    # are only interested in the module here, we replace - by _
+    packagename = packagename.replace('-', '_')
 
     try:
         version_module = get_pkg_version_module(packagename)
@@ -279,6 +360,8 @@ def generate_version_py(packagename, version, release=None, debug=None,
 
         if version_module:
             imp.reload(version_module)
+
+    return version
 
 
 def get_pkg_version_module(packagename, fromlist=None):

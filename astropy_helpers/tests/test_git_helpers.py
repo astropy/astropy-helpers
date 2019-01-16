@@ -17,7 +17,7 @@ _DEV_VERSION_RE = re.compile(r'\d+\.\d+(?:\.\d+)?\.dev(\d+)')
 
 ASTROPY_HELPERS_PATH = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..'))
 
-TEST_VERSION_SETUP_PY = """\
+TEST_VERSION_SETUP_PY_OLDSTYLE = """\
 #!/usr/bin/env python
 
 import sys
@@ -40,6 +40,27 @@ generate_version_py(NAME, VERSION, RELEASE, False, uses_git=not RELEASE)
 setup(name=NAME, version=VERSION, packages=['apyhtest_eva'])
 """
 
+TEST_VERSION_SETUP_CFG = """\
+[metadata]
+name = apyhtest_eva
+version = {version}
+"""
+
+TEST_VERSION_SETUP_PY_NEWSTYLE = """\
+#!/usr/bin/env python
+
+import sys
+from setuptools import setup
+
+sys.path.insert(0, r'{astropy_helpers_path}')
+
+from astropy_helpers.version_helpers import generate_version_py
+
+version = generate_version_py()
+
+setup(version=version, packages=['apyhtest_eva'])
+"""
+
 
 TEST_VERSION_INIT = """\
 try:
@@ -50,13 +71,18 @@ except ImportError:
 """
 
 
-@pytest.fixture
+@pytest.fixture(params=["oldstyle", "newstyle"])
 def version_test_package(tmpdir, request):
-    def make_test_package(version='42.42.dev'):
+
+    # We test both the old-style syntax of deermining VERSION, RELEASE, etc.
+    # inside the setup.py, and the new style of getting these from the setup.cfg
+    # file.
+
+    def make_test_package_oldstyle(version='42.42.dev'):
         test_package = tmpdir.mkdir('test_package')
         test_package.join('setup.py').write(
-            TEST_VERSION_SETUP_PY.format(version=version,
-                                         astropy_helpers_path=ASTROPY_HELPERS_PATH))
+            TEST_VERSION_SETUP_PY_OLDSTYLE.format(version=version,
+                                                  astropy_helpers_path=ASTROPY_HELPERS_PATH))
         test_package.mkdir('apyhtest_eva').join('__init__.py').write(TEST_VERSION_INIT)
         with test_package.as_cwd():
             run_cmd('git', ['init'])
@@ -75,7 +101,36 @@ def version_test_package(tmpdir, request):
 
         return test_package
 
-    return make_test_package
+    def make_test_package_newstyle(version='42.42.dev'):
+        test_package = tmpdir.mkdir('test_package')
+        test_package.join('setup.cfg').write(
+            TEST_VERSION_SETUP_CFG.format(version=version))
+
+        test_package.join('setup.py').write(
+            TEST_VERSION_SETUP_PY_NEWSTYLE.format(astropy_helpers_path=ASTROPY_HELPERS_PATH))
+
+        test_package.mkdir('apyhtest_eva').join('__init__.py').write(TEST_VERSION_INIT)
+        with test_package.as_cwd():
+            run_cmd('git', ['init'])
+            run_cmd('git', ['add', '--all'])
+            run_cmd('git', ['commit', '-m', 'test package'])
+
+        if '' in sys.path:
+            sys.path.remove('')
+
+        sys.path.insert(0, '')
+
+        def finalize():
+            cleanup_import('apyhtest_eva')
+
+        request.addfinalizer(finalize)
+
+        return test_package
+
+    if request.param == 'oldstyle':
+        return make_test_package_oldstyle
+    else:
+        return make_test_package_newstyle
 
 
 def test_update_git_devstr(version_test_package, capsys):

@@ -296,24 +296,23 @@ def test_build_docs(capsys, tmpdir, mode):
            :no-inheritance-diagram:
     """))
 
+    # For this test we try out the new way of calling register_commands without
+    # arugments, instead getting the information from setup.cfg.
+    test_pkg.join('setup.cfg').write(dedent("""
+        [metadata]
+        name = 'mypackage'
+        version = 0.1
+    """))
+
     test_pkg.join('setup.py').write(dedent("""\
         import sys
         sys.path.insert(0, r'{astropy_helpers_path}')
-        from os.path import join
-        from setuptools import setup, Extension
+        from setuptools import setup
         from astropy_helpers.setup_helpers import register_commands, get_package_info
 
-        NAME = 'mypackage'
-        VERSION = 0.1
-        RELEASE = True
+        cmdclassd = register_commands()
 
-        cmdclassd = register_commands(NAME, VERSION, RELEASE)
-
-        setup(
-            name=NAME,
-            version=VERSION,
-            cmdclass=cmdclassd,
-            **get_package_info()
+        setup(cmdclass=cmdclassd, **get_package_info()
         )
     """.format(astropy_helpers_path=ASTROPY_HELPERS_PATH)))
 
@@ -360,7 +359,7 @@ def test_command_hooks(tmpdir, capsys):
         from astropy_helpers.setup_helpers import register_commands, get_package_info
 
         NAME = '_welltall_'
-        VERSION = 0.1
+        VERSION = '0.1'
         RELEASE = True
 
         cmdclassd = register_commands(NAME, VERSION, RELEASE)
@@ -402,7 +401,7 @@ def test_invalid_package_exclusion(tmpdir, capsys):
             get_package_info, add_exclude_packages
 
         NAME = {module_name!r}
-        VERSION = 0.1
+        VERSION = '0.1'
         RELEASE = True
 
     """.format(module_name=module_name, astropy_helpers_path=ASTROPY_HELPERS_PATH))

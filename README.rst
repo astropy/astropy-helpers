@@ -68,12 +68,18 @@ commands described here, add::
 
 to your ``setup.py`` file, then do::
 
-    cmdclassd = register_commands(NAME, VERSION, RELEASE)
+    # Create a dictionary with setup command overrides. Note that this gets
+    # information about the package (name and version) from the setup.cfg file.
+    cmdclassd = register_commands()
 
-where ``NAME`` is the name of your package, ``VERSION`` is the full version
-string, and ``RELEASE`` is a boolean value indicating whether the version is
-a stable released version (``True``) or a developer version (``False``).
-Finally, pass ``cmdclassd`` to the ``setup`` function::
+This function requires that the package name and full version are set in the
+``setup.cfg`` file in the ``[metadata]`` section, e.g.::
+
+    [metadata]
+    name = mypackage
+    version = 0.4.dev
+
+Then, pass ``cmdclassd`` to the ``setup`` function in ``setup.py``::
 
      setup(...,
            cmdclass=cmdclassd)
@@ -151,38 +157,50 @@ Version helpers
 ^^^^^^^^^^^^^^^^
 
 Another piece of functionality we provide in astropy-helpers is the ability
-to generate a ``packagename.version`` file that includes functions that
+to generate a ``packagename.version`` module that includes functions that
 automatically set the version string for developer versions, to e.g.
 ``3.2.dev22213`` so that each developer version has a unique number (although
 note that branches an equal number of commits away from the master branch will
-share the same version number). To use this, import::
+share the same version number).
 
-    from astropy_helpers.git_helpers import get_git_devstr
-
-in your ``setup.py`` file, and you will then be able to use::
-
-    VERSION += get_git_devstr()
-
-where ``VERSION`` is a version string without any developer version suffix.
-
-We then also provide a function that generates a ``version.py`` file inside your
-package (which can then be imported as ``packagename.version``) that contains
-variables such as ``major``, ``minor``, and ``bugfix``, as well as
-``version_info`` (a tuple of the previous three values), a ``release`` flag that
-indicates whether we are using a stable release, and several other complementary
-variables. To use this, import::
+In addition, this module contains variables such as ``major``, ``minor``, and
+``bugfix``, as well as ``version_info`` (a tuple of the previous three values),
+a ``release`` flag that indicates whether we are using a stable release, and
+several other complementary variables. To use this, import::
 
     from astropy_helpers.version_helpers import generate_version_py
 
 in your ``setup.py`` file, and call::
 
-    generate_version_py(NAME, VERSION, RELEASE, uses_git=not RELEASE)
+    # Freeze build information in version.py. Note that this gets information
+    # about the package (name and version) from the setup.cfg file.
+    version = generate_version_py()
 
-where ``NAME`` is the name of your package, ``VERSION`` is the full version string
-(including any developer suffix), ``RELEASE`` indicates whether the version is a
-stable or developer version, and ``uses_git`` indicates whether we are in a git
-repository (using ``not RELEASE`` is sensible since git is not available in a
-stable release).
+The ``version`` variable will be set to the version number of your package
+including any developer suffix. Note that this requires that the package name
+and version are set in the ``setup.cfg`` file in the ``[metadata]`` section,
+e.g.::
+
+    [metadata]
+    name = mypackage
+    version = 0.4.dev
+
+Then, pass ``version`` to the ``setup`` function in ``setup.py``::
+
+     setup(...,
+           version=version)
+
+Note that if you want to be able to generate developer versions such as
+``3.2.dev22213`` without having to use the ``generate_version_py`` machinery,
+you can instead just import the following helper function::
+
+    from astropy_helpers.git_helpers import get_git_devstr
+
+and you will then be able to use e.g.::
+
+    version += get_git_devstr()
+
+to add the developer suffix to the version string.
 
 Collecting package information
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -368,10 +386,10 @@ package that already uses astropy-helpers, install astropy-helpers from your
 branch of the repository in editable mode::
 
     pip install -e .
-    
+
 Then go to your package and add the ``--use-system-astropy-helpers`` for any
 ``setup.py`` command you want to check, e.g.::
 
     python setup.py build_docs --use-system-astropy-helpers
-    
+
 This will cause the installed version to be used instead of any local submodule.
