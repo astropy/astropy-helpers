@@ -190,6 +190,18 @@ Then, pass ``version`` to the ``setup`` function in ``setup.py``::
      setup(...,
            version=version)
 
+Note that if you want to be able to generate developer versions such as
+``3.2.dev22213`` without having to use the ``generate_version_py`` machinery,
+you can instead just import the following helper function::
+
+    from astropy_helpers.git_helpers import get_git_devstr
+
+and you will then be able to use e.g.::
+
+    version += get_git_devstr()
+
+to add the developer suffix to the version string.
+
 Collecting package information
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
