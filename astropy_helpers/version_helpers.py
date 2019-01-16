@@ -376,7 +376,11 @@ def get_pkg_version_module(packagename, fromlist=None):
     Raises an `AttributeError` if any of these module members are not found.
     """
 
-    version = import_file(os.path.join(packagename, 'version.py'), name='version')
+    try:
+        version = import_file(os.path.join(packagename, 'version.py'), name='version')
+    except FileNotFoundError:
+        raise ImportError('Could not import ' + os.path.join(packagename, 'version.py'))
+
     if fromlist:
         return tuple(getattr(version, member) for member in fromlist)
     else:
