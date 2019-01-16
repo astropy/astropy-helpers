@@ -68,11 +68,18 @@ commands described here, add::
 
 to your ``setup.py`` file, then do::
 
+    # Create a dictionary with setup command overrides. Note that this gets
+    # information about the package (name and version) from the setup.cfg file.
     cmdclassd = register_commands()
 
 This function requires that the package name and full version are set in the
-``setup.cfg`` file in the ``[metadata]`` section. Then, pass ``cmdclassd`` to
-the ``setup`` function::
+``setup.cfg`` file in the ``[metadata]`` section, e.g.::
+
+    [metadata]
+    name = mypackage
+    version = 0.4.dev
+
+Then, pass ``cmdclassd`` to the ``setup`` function in ``setup.py``::
 
      setup(...,
            cmdclass=cmdclassd)
@@ -165,12 +172,20 @@ several other complementary variables. To use this, import::
 
 in your ``setup.py`` file, and call::
 
+    # Freeze build information in version.py. Note that this gets information
+    # about the package (name and version) from the setup.cfg file.
     version = generate_version_py()
 
 The ``version`` variable will be set to the version number of your package
 including any developer suffix. Note that this requires that the package name
-and version are set in the ``setup.cfg`` file in the ``[metadata]`` section.
-Then, pass ``version`` to the ``setup`` function::
+and version are set in the ``setup.cfg`` file in the ``[metadata]`` section,
+e.g.::
+
+    [metadata]
+    name = mypackage
+    version = 0.4.dev
+
+Then, pass ``version`` to the ``setup`` function in ``setup.py``::
 
      setup(...,
            version=version)
@@ -359,10 +374,10 @@ package that already uses astropy-helpers, install astropy-helpers from your
 branch of the repository in editable mode::
 
     pip install -e .
-    
+
 Then go to your package and add the ``--use-system-astropy-helpers`` for any
 ``setup.py`` command you want to check, e.g.::
 
     python setup.py build_docs --use-system-astropy-helpers
-    
+
 This will cause the installed version to be used instead of any local submodule.
