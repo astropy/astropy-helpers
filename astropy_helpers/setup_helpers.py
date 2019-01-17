@@ -37,6 +37,8 @@ from .commands.test import AstropyTest
 from .utils import get_numpy_include_path, write_if_different  # noqa
 from .commands.build_ext import should_build_with_cython, get_compiler_version  # noqa
 
+__all__ = ['register_commands', 'get_package_info']
+
 _module_state = {'registered_commands': None,
                  'have_sphinx': False,
                  'package_cache': None,

@@ -35,6 +35,8 @@ import pkg_resources
 from . import git_helpers
 from .distutils_helpers import is_distutils_display_option
 
+__all__ = ['generate_version_py']
+
 
 def _version_split(version):
     """

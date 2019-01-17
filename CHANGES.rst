@@ -1,8 +1,11 @@
 astropy-helpers Changelog
 *************************
 
+
 3.1.1 (unreleased)
 ------------------
+
+- Moved documentation from README to Sphinx. [#444]
 
 - Fixed broken OpenMP detection when building with ``-coverage``. [#434]
 
