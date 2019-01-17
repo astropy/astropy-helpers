@@ -12,6 +12,10 @@ astropy-helpers Changelog
 
 - Simplified setup.py and moved most of the configuration to setup.cfg. [#445]
 
+- Add a new ``astropy_helpers.setup_helpers.setup`` function that does all
+  the default boilerplate in typical ``setup.py`` files that use
+  astropy-helpers. [#443]
+
 - Updated minimum required version of setuptools to 30.3.0. [#440]
 
 - Remove functionality to adjust compilers if a broken compiler is detected.
