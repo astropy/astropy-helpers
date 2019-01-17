@@ -39,3 +39,9 @@ pygments_style = 'sphinx'
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
 html_theme = 'bootstrap-astropy'
+
+html_theme_options = {
+    'logotext1': 'astropy',  # white,  semi-bold
+    'logotext2': '-helpers',  # orange, light
+    'logotext3': ':docs'   # white,  light
+    }

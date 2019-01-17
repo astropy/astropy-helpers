@@ -1,6 +1,3 @@
-astropy-helpers documentation
-=============================
-
 About
 -----
 
