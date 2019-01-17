@@ -1,7 +1,8 @@
 #!/usr/bin/env python
 # Licensed under a 3-clause BSD style license - see LICENSE.rst
 
-# NOTE: most of the configuration is defined in setup.cfg
+# NOTE: most of the configuration, including the version number,
+# is defined in setup.cfg
 
 import sys
 from distutils.version import LooseVersion
