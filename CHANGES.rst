@@ -10,6 +10,8 @@ astropy-helpers Changelog
   without any arguments, which causes information to be read in from the
   ``setup.cfg`` file. [#440]
 
+- Simplified setup.py and moved most of the configuration to setup.cfg. [#445]
+
 - Updated minimum required version of setuptools to 30.3.0. [#440]
 
 - Remove functionality to adjust compilers if a broken compiler is detected.

@@ -1,54 +1,20 @@
 #!/usr/bin/env python
 # Licensed under a 3-clause BSD style license - see LICENSE.rst
 
-import ah_bootstrap
-import pkg_resources
+# NOTE: most of the configuration, including the version number,
+# is defined in setup.cfg
+
+import sys
+from distutils.version import LooseVersion
+
+import setuptools
 from setuptools import setup
-from astropy_helpers.setup_helpers import (register_commands, get_package_info,
-                                           add_exclude_packages)
-from astropy_helpers.version_helpers import generate_version_py
 
-NAME = 'astropy_helpers'
-VERSION = '3.2.dev'
-RELEASE = 'dev' not in VERSION
+if LooseVersion(setuptools.__version__) < '30.3':
+    print("ERROR: setuptools 30.3 or later is required by astropy-helpers")
+    sys.exit(1)
 
-generate_version_py(NAME, VERSION, RELEASE, False, uses_git=not RELEASE)
+from astropy_helpers.version_helpers import generate_version_py  # noqa
+version = generate_version_py()
 
-# Use the updated version including the git rev count
-from astropy_helpers.version import version as VERSION
-
-add_exclude_packages(['astropy_helpers.tests'])
-cmdclass = register_commands(NAME, VERSION, RELEASE)
-# This package actually doesn't use the Astropy test command
-del cmdclass['test']
-
-setup(
-    name=pkg_resources.safe_name(NAME),  # astropy_helpers -> astropy-helpers
-    version=VERSION,
-    description='Utilities for building and installing Astropy, Astropy '
-                'affiliated packages, and their respective documentation.',
-    author='The Astropy Developers',
-    author_email='astropy.team@gmail.com',
-    license='BSD',
-    url=' https://github.com/astropy/astropy-helpers',
-    long_description=open('README.rst').read(),
-    classifiers=[
-        'Development Status :: 5 - Production/Stable',
-        'Intended Audience :: Developers',
-        'Framework :: Setuptools Plugin',
-        'Framework :: Sphinx :: Extension',
-        'Framework :: Sphinx :: Theme',
-        'License :: OSI Approved :: BSD License',
-        'Operating System :: OS Independent',
-        'Programming Language :: Python',
-        'Programming Language :: Python :: 3',
-        'Topic :: Software Development :: Build Tools',
-        'Topic :: Software Development :: Libraries :: Python Modules',
-        'Topic :: System :: Archiving :: Packaging'
-    ],
-    extras_require={'docs': ['sphinx-astropy']},
-    cmdclass=cmdclass,
-    python_requires='>=3.5',
-    zip_safe=False,
-    **get_package_info()
-)
+setup(version=version)

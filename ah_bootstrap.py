@@ -146,7 +146,7 @@ _str_types = (str, bytes)
 # issues with either missing or misbehaving pacakges (including making sure
 # setuptools itself is installed):
 
-# Check that setuptools 1.0 or later is present
+# Check that setuptools 30.3 or later is present
 from distutils.version import LooseVersion
 
 try:
