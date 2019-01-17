@@ -15,6 +15,7 @@ jobs:
       - run:
           name: Build Documentation
           command: |
+            . venv/bin/activate
             cd docs
             make html
             make linkcheck
