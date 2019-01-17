@@ -46,7 +46,7 @@ setup(
         'Topic :: Software Development :: Libraries :: Python Modules',
         'Topic :: System :: Archiving :: Packaging'
     ],
-    extras_require={'docs': ['sphinx', 'sphinx-automodapi', 'numpydoc']},
+    extras_require={'docs': ['sphinx-astropy']},
     cmdclass=cmdclass,
     python_requires='>=3.5',
     zip_safe=False,
