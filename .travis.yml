@@ -108,7 +108,7 @@ before_script:
     - git config --global user.email "author@example.com"
 
 script:
-    - py.test --cov astropy_helpers astropy_helpers
+    - pytest --cov astropy_helpers astropy_helpers
 
     # In conftest.py we produce a .coverage.subprocess that contains coverage
     # statistics for sub-processes, so we combine it with the main one here.
