@@ -1,6 +1,5 @@
-
-Using astropy-helpers
-=====================
+Using astropy-helpers in a package
+==================================
 
 astropy-helpers includes a special "bootstrap" module called ``ah_bootstrap.py``
 which is intended to be used by a project's setup.py in order to ensure that the

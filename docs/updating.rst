@@ -1,9 +1,15 @@
-Updating astropy-helpers
-========================
+Updating astropy-helpers in a package
+=====================================
+
+Automatic update
+----------------
 
 If you would like the Astropy team to automatically open pull requests to update
 astropy-helpers in your package, then see the instructions `here
 <https://github.com/astropy/astropy-procedures/blob/master/update-packages/README.md>`_.
+
+Manual update
+-------------
 
 To instead update astropy-helpers manually, go inside the submodule and do::
 

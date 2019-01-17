@@ -1,7 +1,7 @@
 Basic functionality
 ===================
 
-Astropy-helpers' big-picture purpose is to provide customization to Python's
+The big-picture purpose of astropy-helpers is to provide customization to Python's
 packaging infrastructure process in ways that the Astropy Project has found to
 help simplifying the developing and releasing packages. This is primarily
 built around ``setup.py`` commands, as outlined below, as well as code to help
@@ -153,7 +153,7 @@ Then, pass ``version`` to the ``setup`` function in ``setup.py``::
 
 Note that if you want to be able to generate developer versions such as
 ``3.2.dev22213`` without having to use the ``generate_version_py`` machinery,
-you can instead just import :func:`~astropy_helpers.git_helpers.get_git_devstr`:
+you can instead just import :func:`~astropy_helpers.git_helpers.get_git_devstr`::
 
     from astropy_helpers.git_helpers import get_git_devstr
 
