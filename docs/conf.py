@@ -10,7 +10,10 @@ extensions = [
     'sphinx.ext.autodoc',
     'sphinx.ext.doctest',
     'sphinx.ext.intersphinx',
+    'sphinx_automodapi.automodapi'
 ]
+
+numpydoc_show_class_members = False
 
 intersphinx_mapping = {'https://docs.python.org/': None}
 
