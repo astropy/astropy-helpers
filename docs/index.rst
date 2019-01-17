@@ -31,7 +31,7 @@ v2.0.x releases until the end of 2019.
 User/developer guide
 --------------------
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 1
 
    basic.rst
    advanced.rst

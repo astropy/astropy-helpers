@@ -18,7 +18,7 @@ will be available::
 
 and this command is implemented in astropy-helpers. To use the custom commands
 described here, you can use the
-:func:`astropy_helpers.setup_helpers.register_commands` function by adding::
+:func:`~astropy_helpers.setup_helpers.register_commands` function by adding::
 
     from astropy_helpers.setup_helpers import register_commands
 
@@ -127,7 +127,7 @@ In addition, this module contains variables such as ``major``, ``minor``, and
 ``bugfix``, as well as ``version_info`` (a tuple of the previous three values),
 a ``release`` flag that indicates whether we are using a stable release, and
 several other complementary variables. To use the
-:func:`astropy_helpers.version_helpers.generate_version_py`, import::
+:func:`~astropy_helpers.version_helpers.generate_version_py`, import::
 
     from astropy_helpers.version_helpers import generate_version_py
 
@@ -153,7 +153,7 @@ Then, pass ``version`` to the ``setup`` function in ``setup.py``::
 
 Note that if you want to be able to generate developer versions such as
 ``3.2.dev22213`` without having to use the ``generate_version_py`` machinery,
-you can instead just import the following helper function::
+you can instead just import :func:`~astropy_helpers.git_helpers.get_git_devstr`:
 
     from astropy_helpers.git_helpers import get_git_devstr
 
