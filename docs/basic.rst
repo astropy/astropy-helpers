@@ -17,8 +17,10 @@ will be available::
     python setup.py build_docs
 
 and this command is implemented in astropy-helpers. To use the custom commands
-described here, you can use the
-:func:`~astropy_helpers.setup_helpers.register_commands` function by adding::
+described here, you can either use the simplified method of opting in to
+astropy-helpers described in :ref:`setup_all`, or if you want more control, use
+the :func:`~astropy_helpers.setup_helpers.register_commands` function by
+adding::
 
     from astropy_helpers.setup_helpers import register_commands
 
@@ -126,7 +128,9 @@ share the same version number).
 In addition, this module contains variables such as ``major``, ``minor``, and
 ``bugfix``, as well as ``version_info`` (a tuple of the previous three values),
 a ``release`` flag that indicates whether we are using a stable release, and
-several other complementary variables. To use the
+several other complementary variables.  To use the version helpers, you can
+either use the simplified method of opting in to astropy-helpers described in
+:ref:`setup_all`, or if you want more control, use the
 :func:`~astropy_helpers.version_helpers.generate_version_py`, import::
 
     from astropy_helpers.version_helpers import generate_version_py
@@ -222,7 +226,9 @@ these files can include one or more of the following functions:
     This function can returns a dict formatted as required by
     the ``entry_points`` argument to ``setup()``.
 
-With these files in place, you can then make use of the
+With these files in place, you can either use the simplified method of opting in
+to astropy-helpers described in :ref:`setup_all`, or if you want more control,
+use theyou can then make use of the
 :func:`~astropy_helpers.setup_helpers.get_package_info`  function in your
 ``setup.py`` file with::
 
@@ -235,3 +241,35 @@ With these files in place, you can then make use of the
     ...
 
     setup(..., **package_info)
+
+
+.. _setup_all:
+
+Opting in to all basic functionality
+------------------------------------
+
+If you are happy to opt in to all the functionality described on this page, you
+can make use of the :func:`~astropy_helpers.setup_helpers.setup` function from
+:mod:`astropy_helpers.setup_helpers` which wraps the function of the same name
+from setuptools and automatically runs
+:func:`~astropy_helpers.setup_helpers.register_commands`,
+:func:`~astropy_helpers.version_helpers.generate_version_py`, and
+:func:`~astropy_helpers.setup_helpers.get_package_info`. If you want to do this,
+make sure the package name and version number are defined in ``setup.cfg``::
+
+    [metadata]
+    name = mypackage
+    version = 0.4.dev
+
+then use the :func:`~astropy_helpers.setup_helpers.setup` function from
+astropy-helpers in your ``setup.py`` file as follows::
+
+    import ah_bootstrap
+    from astropy_helpers.setup_helpers import setup
+    setup()
+
+We recommend that you also include a comment along the following lines in your
+``setup.py`` file::
+
+    # The configuration for the package, including the name, version, and other
+    # information are set in the setup.cfg file.
