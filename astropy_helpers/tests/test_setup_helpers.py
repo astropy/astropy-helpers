@@ -300,7 +300,7 @@ def test_build_docs(capsys, tmpdir, mode):
     # arugments, instead getting the information from setup.cfg.
     test_pkg.join('setup.cfg').write(dedent("""
         [metadata]
-        name = 'mypackage'
+        name = mypackage
         version = 0.1
     """))
 
