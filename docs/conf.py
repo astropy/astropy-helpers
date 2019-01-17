@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 project = 'astropy-helpers'
-copyright = '2019, The Astropy Developers'
+copyright = '2014, The Astropy Developers'
 author = 'The Astropy Developers'
 
 # We need to get the version number from the package
