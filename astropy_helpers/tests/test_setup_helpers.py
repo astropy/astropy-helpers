@@ -307,13 +307,8 @@ def test_build_docs(capsys, tmpdir, mode):
     test_pkg.join('setup.py').write(dedent("""\
         import sys
         sys.path.insert(0, r'{astropy_helpers_path}')
-        from setuptools import setup
-        from astropy_helpers.setup_helpers import register_commands, get_package_info
-
-        cmdclassd = register_commands()
-
-        setup(cmdclass=cmdclassd, **get_package_info()
-        )
+        from astropy_helpers.setup_helpers import setup
+        setup()
     """.format(astropy_helpers_path=ASTROPY_HELPERS_PATH)))
 
     with test_pkg.as_cwd():

@@ -50,15 +50,10 @@ TEST_VERSION_SETUP_PY_NEWSTYLE = """\
 #!/usr/bin/env python
 
 import sys
-from setuptools import setup
-
 sys.path.insert(0, r'{astropy_helpers_path}')
 
-from astropy_helpers.version_helpers import generate_version_py
-
-version = generate_version_py()
-
-setup(version=version, packages=['apyhtest_eva'])
+from astropy_helpers.setup_helpers import setup
+setup()
 """
 
 
