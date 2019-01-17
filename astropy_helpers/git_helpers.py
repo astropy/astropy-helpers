@@ -15,6 +15,8 @@ import os
 import subprocess
 import warnings
 
+__all__ = ['get_git_devstr']
+
 
 def _decode_stdio(stream):
     try:

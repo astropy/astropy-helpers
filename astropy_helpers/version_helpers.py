@@ -39,6 +39,8 @@ from .distutils_helpers import is_distutils_display_option
 from .git_helpers import get_git_devstr
 from .utils import AstropyDeprecationWarning
 
+__all__ = ['generate_version_py']
+
 
 def _version_split(version):
     """
@@ -232,13 +234,13 @@ def generate_version_py(packagename=None, version=None, release=None, debug=None
     update developer version strings.
 
     This function should normally be called without any arguments. In this case
-    the package name and version is read in from the setup.cfg file (from the
-    ``name`` or ``package_name`` entry and the ``version`` entry in the
+    the package name and version is read in from the ``setup.cfg`` file (from
+    the ``name`` or ``package_name`` entry and the ``version`` entry in the
     ``[metadata]`` section).
 
     If the version is a developer version (of the form ``3.2.dev``), the
     version string will automatically be expanded to include a sequential
-    number as a suffix (e.g. ``3.2.dev13312), and the updated version string
+    number as a suffix (e.g. ``3.2.dev13312``), and the updated version string
     will be returned by this function.
 
     Based on this updated version string, a ``version.py`` file will be
