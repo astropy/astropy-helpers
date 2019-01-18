@@ -77,8 +77,10 @@ def setup(**kwargs):
     via the ``setup_package.py`` files.
     """
 
-    # Store the package name in a built-in variable so it's easy
-    # to get from other parts of the setup infrastructure
+    # DEPRECATED: store the package name in a built-in variable so it's easy
+    # to get from other parts of the setup infrastructure. We should phase this
+    # out in packages that use it - the cookiecutter template should now be
+    # able to put the right package name where needed.
     conf = read_configuration('setup.cfg')
     builtins._ASTROPY_PACKAGE_NAME_ = conf['metadata']['name']
 
