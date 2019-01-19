@@ -14,6 +14,7 @@ import sys
 import traceback
 import warnings
 from configparser import ConfigParser
+import builtins
 
 from distutils import log
 from distutils.errors import DistutilsOptionError, DistutilsModuleError
@@ -21,12 +22,14 @@ from distutils.core import Extension
 from distutils.core import Command
 from distutils.command.sdist import sdist as DistutilsSdist
 
+from setuptools import setup as setuptools_setup
+from setuptools.config import read_configuration
 from setuptools import find_packages as _find_packages
 
 from .distutils_helpers import (add_command_option, get_compiler_option,
                                 get_dummy_distribution, get_distutils_build_option,
                                 get_distutils_build_or_install_option)
-from .version_helpers import get_pkg_version_module
+from .version_helpers import get_pkg_version_module, generate_version_py
 from .utils import (walk_skip_hidden, import_file, extends_doc,
                     resolve_name, AstropyDeprecationWarning)
 
@@ -65,6 +68,41 @@ except ImportError:
 except SyntaxError:
     # occurs if markupsafe is recent version, which doesn't support Python 3.2
     pass
+
+
+def setup(**kwargs):
+    """
+    A wrapper around setuptools' setup() function that automatically sets up
+    custom commands, generates a version file, and customizes the setup process
+    via the ``setup_package.py`` files.
+    """
+
+    # DEPRECATED: store the package name in a built-in variable so it's easy
+    # to get from other parts of the setup infrastructure. We should phase this
+    # out in packages that use it - the cookiecutter template should now be
+    # able to put the right package name where needed.
+    conf = read_configuration('setup.cfg')
+    builtins._ASTROPY_PACKAGE_NAME_ = conf['metadata']['name']
+
+    # Create a dictionary with setup command overrides. Note that this gets
+    # information about the package (name and version) from the setup.cfg file.
+    cmdclass = register_commands()
+
+    # Freeze build information in version.py. Note that this gets information
+    # about the package (name and version) from the setup.cfg file.
+    version = generate_version_py()
+
+    # Get configuration information from all of the various subpackages.
+    # See the docstring for setup_helpers.update_package_files for more
+    # details.
+    package_info = get_package_info()
+    package_info['cmdclass'] = cmdclass
+    package_info['version'] = version
+
+    # Override using any specified keyword arguments
+    package_info.update(kwargs)
+
+    setuptools_setup(**package_info)
 
 
 def adjust_compiler(package):
