@@ -200,10 +200,8 @@ def test_compiler_module(capsys, c_extension_test_package):
         dirname = os.path.abspath(os.path.dirname(apyhtest_eva.__file__))
         assert dirname == str(install_temp.join('apyhtest_eva'))
 
-        import apyhtest_eva._compiler
-        import apyhtest_eva.version
-        assert apyhtest_eva.version.compiler == apyhtest_eva._compiler.compiler
-        assert apyhtest_eva.version.compiler != 'unknown'
+        import apyhtest_eva.compiler_version
+        assert apyhtest_eva.compiler_version != 'unknown'
 
 
 def test_no_cython_buildext(capsys, c_extension_test_package, monkeypatch):
