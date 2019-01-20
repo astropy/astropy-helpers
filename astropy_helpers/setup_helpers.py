@@ -33,13 +33,12 @@ from .version_helpers import get_pkg_version_module, generate_version_py
 from .utils import (walk_skip_hidden, import_file, extends_doc,
                     resolve_name, AstropyDeprecationWarning)
 
-from .commands.build_ext import generate_build_ext_command
+from .commands.build_ext import AstropyBuildExt
 from .commands.test import AstropyTest
 
 # These imports are not used in this module, but are included for backwards
 # compat with older versions of this module
 from .utils import get_numpy_include_path, write_if_different  # noqa
-from .commands.build_ext import should_build_with_cython  # noqa
 
 __all__ = ['register_commands', 'get_package_info']
 
@@ -228,7 +227,7 @@ def register_commands(package=None, version=None, release=None, srcdir='.'):
 
         # The exact form of the build_ext command depends on whether or not
         # we're building a release version
-        'build_ext': generate_build_ext_command(package, release),
+        'build_ext': AstropyBuildExt,
 
         'build_sphinx': AstropyBuildSphinx,
         'build_docs': AstropyBuildDocs
