@@ -416,9 +416,6 @@ def get_package_info(srcdir='.', exclude=()):
     - ``get_external_libraries()`` returns
       a list of libraries that can optionally be built using external
       dependencies.
-
-    - ``get_entry_points()`` returns a dict formatted as required by
-      the ``entry_points`` argument to ``setup()``.
     """
     ext_modules = []
     packages = []
