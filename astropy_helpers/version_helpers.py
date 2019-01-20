@@ -29,7 +29,6 @@ import time
 import warnings
 
 from distutils import log
-from importlib import invalidate_caches
 from configparser import ConfigParser
 
 import pkg_resources
@@ -348,11 +347,6 @@ def generate_version_py(packagename=None, version=None, release=None, debug=None
             f.write(_get_version_py_str(packagename, version, last_githash,
                                         release, debug, uses_git=uses_git))
 
-        invalidate_caches()
-
-        if version_module:
-            imp.reload(version_module)
-
     return version
 
 
@@ -366,10 +360,7 @@ def get_pkg_version_module(packagename, fromlist=None):
     Raises an `AttributeError` if any of these module members are not found.
     """
 
-    try:
-        version = import_file(os.path.join(packagename, 'version.py'), name='version')
-    except FileNotFoundError:
-        raise ImportError('Could not import ' + os.path.join(packagename, 'version.py'))
+    version = import_file(os.path.join(packagename, 'version.py'), name='version')
 
     if fromlist:
         return tuple(getattr(version, member) for member in fromlist)
