@@ -4,8 +4,6 @@ astropy-helpers Changelog
 3.2 (unreleased)
 ----------------
 
-- Moved documentation from README to Sphinx. [#444]
-
 - Make it possible to call ``generate_version_py`` and ``register_commands``
   without any arguments, which causes information to be read in from the
   ``setup.cfg`` file. [#440]
@@ -26,6 +24,8 @@ astropy-helpers Changelog
 
 3.1.1 (unreleased)
 ------------------
+
+- Moved documentation from README to Sphinx. [#444]
 
 - Fixed broken OpenMP detection when building with ``-coverage``. [#434]
 
