@@ -222,10 +222,6 @@ these files can include one or more of the following functions:
     ``get_extensions`` function to determine if the package should use
     the system library or the included one.
 
-* ``get_entry_points()``:
-    This function can returns a dict formatted as required by
-    the ``entry_points`` argument to ``setup()``.
-
 With these files in place, you can either use the simplified method of opting in
 to astropy-helpers described in :ref:`setup_all`, or if you want more control,
 use theyou can then make use of the
