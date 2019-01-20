@@ -63,154 +63,34 @@ def should_build_with_cython(package, release=None):
 _compiler_versions = {}
 
 
-# TODO: I think this can be reworked without having to create the class
-# programmatically.
 def generate_build_ext_command(packagename, release):
-    """
-    Creates a custom 'build_ext' command that allows for manipulating some of
-    the C extension options at build time.  We use a function to build the
-    class since the base class for build_ext may be different depending on
-    certain build-time parameters (for example, we may use Cython's build_ext
-    instead of the default version in distutils).
 
-    Uses the default distutils.command.build_ext by default.
-    """
+    class AstropyBuildExt(SetuptoolsBuildExt):
+        """
+        A custom 'build_ext' command that allows for manipulating some of the C
+        extension options at build time.
+        """
 
-    class build_ext(SetuptoolsBuildExt, object):
+        uses_cython = False
+        force_rebuild = False
         package_name = packagename
         is_release = release
-        _user_options = SetuptoolsBuildExt.user_options[:]
-        _boolean_options = SetuptoolsBuildExt.boolean_options[:]
-        _help_options = SetuptoolsBuildExt.help_options[:]
-
-        force_rebuild = False
-
-        # Warning: Spaghetti code ahead.
-        # During setup.py, the setup_helpers module needs the ability to add
-        # items to a command's user_options list.  At this stage we don't know
-        # whether or not we can build with Cython, and so don't know for sure
-        # what base class will be used for build_ext; nevertheless we want to
-        # be able to provide a list to add options into.
-        #
-        # Later, once setup() has been called we should have all build
-        # dependencies included via setup_requires available.  distutils needs
-        # to be able to access the user_options as a *class* attribute before
-        # the class has been initialized, but we do need to be able to
-        # enumerate the options for the correct base class at that point
-
-        @classproperty
-        def user_options(cls):
-            from distutils import core
-
-            if core._setup_distribution is None:
-                # We haven't gotten into setup() yet, and the Distribution has
-                # not yet been initialized
-                return cls._user_options
-
-            return cls._final_class.user_options
-
-        @classproperty
-        def boolean_options(cls):
-            # Similar to user_options above
-            from distutils import core
-
-            if core._setup_distribution is None:
-                # We haven't gotten into setup() yet, and the Distribution has
-                # not yet been initialized
-                return cls._boolean_options
-
-            return cls._final_class.boolean_options
-
-        @classproperty
-        def help_options(cls):
-            # Similar to user_options above
-            from distutils import core
-
-            if core._setup_distribution is None:
-                # We haven't gotten into setup() yet, and the Distribution has
-                # not yet been initialized
-                return cls._help_options
-
-            return cls._final_class.help_options
-
-        @classproperty(lazy=True)
-        def _final_class(cls):
-            """
-            Late determination of what the build_ext base class should be,
-            depending on whether or not Cython is available.
-            """
-
-            uses_cython = should_build_with_cython(cls.package_name,
-                                                   cls.is_release)
-
-            if uses_cython:
-                # We need to decide late on whether or not to use Cython's
-                # build_ext (since Cython may not be available earlier in the
-                # setup.py if it was brought in via setup_requires)
-                try:
-                    from Cython.Distutils.old_build_ext import old_build_ext as base_cls
-                except ImportError:
-                    from Cython.Distutils import build_ext as base_cls
-            else:
-                base_cls = SetuptoolsBuildExt
-
-            # Create and return an instance of a new class based on this class
-            # using one of the above possible base classes
-            def merge_options(attr):
-                base = getattr(base_cls, attr)
-                ours = getattr(cls, '_' + attr)
-
-                all_base = set(opt[0] for opt in base)
-
-                return base + [opt for opt in ours if opt[0] not in all_base]
-
-            boolean_options = (base_cls.boolean_options +
-                               [opt for opt in cls._boolean_options
-                                if opt not in base_cls.boolean_options])
-
-            members = dict(cls.__dict__)
-            members.update({
-                'user_options': merge_options('user_options'),
-                'help_options': merge_options('help_options'),
-                'boolean_options': boolean_options,
-                'uses_cython': uses_cython,
-            })
-
-            # Update the base class for the original build_ext command
-            build_ext.__bases__ = (base_cls, object)
-
-            # Create a new class for the existing class, but now with the
-            # appropriate base class depending on whether or not to use Cython.
-            # Ensure that object is one of the bases to make a new-style class.
-            return type(cls.__name__, (build_ext,), members)
-
-        def __new__(cls, *args, **kwargs):
-            # By the time the command is actually instantialized, the
-            # Distribution instance for the build has been instantiated, which
-            # means setup_requires has been processed--now we can determine
-            # what base class we can use for the actual build, and return an
-            # instance of a build_ext command that uses that base class (right
-            # now the options being Cython.Distutils.build_ext, or the stock
-            # setuptools build_ext)
-            new_cls = super(build_ext, cls._final_class).__new__(cls._final_class)
-
-            # Since the new cls is not a subclass of the original cls, we must
-            # manually call its __init__
-            new_cls.__init__(*args, **kwargs)
-            return new_cls
 
         def finalize_options(self):
+
+            self.uses_cython = should_build_with_cython(self.package_name,
+                                                        self.is_release)
+
             # Add a copy of the _compiler.so module as well, but only if there
             # are in fact C modules to compile (otherwise there's no reason to
-            # include a record of the compiler used)
-            # Note, self.extensions may not be set yet, but
-            # self.distribution.ext_modules is where any extension modules
-            # passed to setup() can be found
-
+            # include a record of the compiler used). Note that self.extensions
+            # may not be set yet, but self.distribution.ext_modules is where any
+            # extension modules passed to setup() can be found
             extensions = self.distribution.ext_modules
+
             if extensions:
                 build_py = self.get_finalized_command('build_py')
-                package_dir = build_py.get_package_dir(packagename)
+                package_dir = build_py.get_package_dir(self.package_name)
                 src_path = os.path.relpath(
                     os.path.join(os.path.dirname(__file__), 'src'))
                 shutil.copy(os.path.join(src_path, 'compiler.c'),
@@ -219,20 +99,15 @@ def generate_build_ext_command(packagename, release):
                                 [os.path.join(package_dir, '_compiler.c')])
                 extensions.insert(0, ext)
 
-            super(build_ext, self).finalize_options()
+            super().finalize_options()
 
-            # Generate
+            # If we are using Cython, then make sure we re-build if the version
+            # of Cython that is installed is different from the version last
+            # used to generate the C files.
             if self.uses_cython:
-                try:
-                    from Cython import __version__ as cython_version
-                except ImportError:
-                    # This shouldn't happen if we made it this far
-                    cython_version = None
-
-                if (cython_version is not None and
-                        cython_version != self.uses_cython):
+                from Cython import __version__ as cython_version
+                if (cython_version is not None and cython_version != self.uses_cython):
                     self.force_rebuild = True
-                    # Update the used cython version
                     self.uses_cython = cython_version
 
             # Regardless of the value of the '--force' option, force a rebuild
@@ -241,6 +116,7 @@ def generate_build_ext_command(packagename, release):
                 self.force = True
 
         def run(self):
+
             # For extensions that require 'numpy' in their include dirs,
             # replace 'numpy' with the actual paths
             np_include = None
@@ -254,17 +130,22 @@ def generate_build_ext_command(packagename, release):
 
                 self._check_cython_sources(extension)
 
-            super(build_ext, self).run()
+            # Note that setuptools automatically uses Cython to doscover and
+            # build extensions if available, so we don't have to explicitly call
+            # e.g. cythonize.
+
+            super().run()
 
             # Update cython_version.py if building with Cython
+
             try:
-                cython_version = get_pkg_version_module(
-                    packagename, fromlist=['cython_version'])[0]
+                cython_version = get_pkg_version_module(packagename, fromlist=['cython_version'])[0]
             except (AttributeError, ImportError):
                 cython_version = 'unknown'
+
             if self.uses_cython and self.uses_cython != cython_version:
                 build_py = self.get_finalized_command('build_py')
-                package_dir = build_py.get_package_dir(packagename)
+                package_dir = build_py.get_package_dir(self.package_name)
                 cython_py = os.path.join(package_dir, 'cython_version.py')
                 with open(cython_py, 'w') as f:
                     f.write('# Generated file; do not modify\n')
@@ -277,8 +158,6 @@ def generate_build_ext_command(packagename, release):
                     self.copy_file(cython_py,
                                    os.path.join(self.build_lib, cython_py),
                                    preserve_mode=False)
-
-                invalidate_caches()
 
         def _check_cython_sources(self, extension):
             """
@@ -326,4 +205,4 @@ def generate_build_ext_command(packagename, release):
                     extension.extra_compile_args.extend([
                         '-Wp,-w', '-Wno-unused-function'])
 
-    return build_ext
+    return AstropyBuildExt
