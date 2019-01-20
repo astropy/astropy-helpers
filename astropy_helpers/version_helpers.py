@@ -21,7 +21,6 @@ or::
 from __future__ import division
 
 import datetime
-import imp
 import os
 import pkgutil
 import sys
