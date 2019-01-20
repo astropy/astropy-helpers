@@ -14,6 +14,9 @@ astropy-helpers Changelog
   the default boilerplate in typical ``setup.py`` files that use
   astropy-helpers. [#443]
 
+- Remove ``deprecated``, ``deprecated_attribute``, and ``minversion`` from
+  ``astropy_helpers.utils``. [#447]
+
 - Updated minimum required version of setuptools to 30.3.0. [#440]
 
 - Remove functionality to adjust compilers if a broken compiler is detected.
