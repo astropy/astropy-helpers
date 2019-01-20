@@ -108,16 +108,6 @@ timestamp = {timestamp!r}
 debug = {debug}
 
 astropy_helpers_version = "{ahver}"
-
-try:
-    from ._compiler import compiler
-except ImportError:
-    compiler = "unknown"
-
-try:
-    from .cython_version import cython_version
-except ImportError:
-    cython_version = "unknown"
 """[1:]
 
 
