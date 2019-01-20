@@ -11,6 +11,31 @@ from ..utils import get_numpy_include_path, import_file
 from ..version_helpers import get_pkg_version_module
 
 
+def should_build_with_cython(previous_cython_version, is_release):
+    """
+    Returns the previously used Cython version (or 'unknown' if not
+    previously built) if Cython should be used to build extension modules from
+    pyx files
+    """
+
+    # Only build with Cython if, of course, Cython is installed, we're in a
+    # development version (i.e. not release) or the Cython-generated source
+    # files haven't been created yet (cython_version == 'unknown'). The latter
+    # case can happen even when release is True if checking out a release tag
+    # from the repository
+    have_cython = False
+    try:
+        from Cython import __version__ as cython_version  # noqa
+        have_cython = True
+    except ImportError:
+        pass
+
+    if have_cython and (not is_release or previous_cython_version == 'unknown'):
+        return cython_version
+    else:
+        return False
+
+
 class AstropyBuildExt(SetuptoolsBuildExt):
     """
     A custom 'build_ext' command that allows for manipulating some of the C
@@ -37,22 +62,7 @@ class AstropyBuildExt(SetuptoolsBuildExt):
         except (FileNotFoundError, ImportError):
             self.previous_cython_version = 'unknown'
 
-        # Only build with Cython if, of course, Cython is installed, we're in a
-        # development version (i.e. not release) or the Cython-generated source
-        # files haven't been created yet (cython_version == 'unknown'). The latter
-        # case can happen even when release is True if checking out a release tag
-        # from the repository
-        have_cython = False
-        try:
-            from Cython import __version__ as cython_version  # noqa
-            have_cython = True
-        except ImportError:
-            pass
-
-        if have_cython and (not self.is_release or self.previous_cython_version == 'unknown'):
-            self.uses_cython = cython_version
-        else:
-            self.uses_cython = False
+        should_build_with_cython(self.previous_cython_version, self.is_release)
 
         # Add a copy of the _compiler.so module as well, but only if there
         # are in fact C modules to compile (otherwise there's no reason to
