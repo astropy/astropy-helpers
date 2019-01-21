@@ -61,7 +61,7 @@ class AstropyBuildExt(SetuptoolsBuildExt):
         except (FileNotFoundError, ImportError):
             self.previous_cython_version = 'unknown'
 
-        should_build_with_cython(self.previous_cython_version, self.is_release)
+        self.uses_cython = should_build_with_cython(self.previous_cython_version, self.is_release)
 
         # Add a copy of the _compiler.so module as well, but only if there
         # are in fact C modules to compile (otherwise there's no reason to
