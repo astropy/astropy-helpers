@@ -35,7 +35,7 @@ def should_build_with_cython(previous_cython_version, is_release):
         return False
 
 
-class AstropyBuildExt(SetuptoolsBuildExt):
+class AstropyHelpersBuildExt(SetuptoolsBuildExt):
     """
     A custom 'build_ext' command that allows for manipulating some of the C
     extension options at build time.

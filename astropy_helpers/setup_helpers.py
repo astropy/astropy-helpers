@@ -33,7 +33,7 @@ from .version_helpers import get_pkg_version_module, generate_version_py
 from .utils import (walk_skip_hidden, import_file, extends_doc,
                     resolve_name, AstropyDeprecationWarning)
 
-from .commands.build_ext import AstropyBuildExt
+from .commands.build_ext import AstropyHelpersBuildExt
 from .commands.test import AstropyTest
 
 # These imports are not used in this module, but are included for backwards
@@ -227,7 +227,7 @@ def register_commands(package=None, version=None, release=None, srcdir='.'):
 
         # The exact form of the build_ext command depends on whether or not
         # we're building a release version
-        'build_ext': AstropyBuildExt,
+        'build_ext': AstropyHelpersBuildExt,
 
         'build_sphinx': AstropyBuildSphinx,
         'build_docs': AstropyBuildDocs
