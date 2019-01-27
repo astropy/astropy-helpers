@@ -14,7 +14,7 @@ def should_build_with_cython(previous_cython_version, is_release):
     """
     Returns the previously used Cython version (or 'unknown' if not
     previously built) if Cython should be used to build extension modules from
-    pyx files
+    pyx files.
     """
 
     # Only build with Cython if, of course, Cython is installed, we're in a
@@ -109,7 +109,7 @@ class AstropyBuildExt(SetuptoolsBuildExt):
 
             self._check_cython_sources(extension)
 
-        # Note that setuptools automatically uses Cython to doscover and
+        # Note that setuptools automatically uses Cython to discover and
         # build extensions if available, so we don't have to explicitly call
         # e.g. cythonize.
 
@@ -170,7 +170,7 @@ class AstropyBuildExt(SetuptoolsBuildExt):
                         'checkout.'.format(base, pyxfn, extension.name))
                     raise IOError(errno.ENOENT, msg, cfn)
 
-            # Current versions of Cython use deprecated Numpy API features
+            # Cython (at least as of 0.29.2) uses deprecated Numpy API features
             # the use of which produces a few warnings when compiling.
             # These additional flags should squelch those warnings.
             # TODO: Feel free to remove this if/when a Cython update
