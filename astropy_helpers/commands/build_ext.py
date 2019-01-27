@@ -43,8 +43,8 @@ class AstropyHelpersBuildExt(SetuptoolsBuildExt):
     extension options at build time.
     """
 
-    uses_cython = False
-    force_rebuild = False
+    _uses_cython = False
+    _force_rebuild = False
 
     def finalize_options(self):
 
@@ -63,7 +63,7 @@ class AstropyHelpersBuildExt(SetuptoolsBuildExt):
         except (FileNotFoundError, ImportError):
             self.previous_cython_version = 'unknown'
 
-        self.uses_cython = should_build_with_cython(self.previous_cython_version, self.is_release)
+        self._uses_cython = should_build_with_cython(self.previous_cython_version, self.is_release)
 
         # Add a copy of the _compiler.so module as well, but only if there
         # are in fact C modules to compile (otherwise there's no reason to
@@ -87,12 +87,12 @@ class AstropyHelpersBuildExt(SetuptoolsBuildExt):
         # If we are using Cython, then make sure we re-build if the version
         # of Cython that is installed is different from the version last
         # used to generate the C files.
-        if self.uses_cython and self.uses_cython != self.previous_cython_version:
-            self.force_rebuild = True
+        if self._uses_cython and self._uses_cython != self.previous_cython_version:
+            self._force_rebuild = True
 
         # Regardless of the value of the '--force' option, force a rebuild
         # if the debug flag changed from the last build
-        if self.force_rebuild:
+        if self._force_rebuild:
             self.force = True
 
     def run(self):
@@ -118,13 +118,13 @@ class AstropyHelpersBuildExt(SetuptoolsBuildExt):
 
         # Update cython_version.py if building with Cython
 
-        if self.uses_cython and self.uses_cython != self.previous_cython_version:
+        if self._uses_cython and self._uses_cython != self.previous_cython_version:
             build_py = self.get_finalized_command('build_py')
             package_dir = build_py.get_package_dir(self.package_dir)
             cython_py = os.path.join(package_dir, 'cython_version.py')
             with open(cython_py, 'w') as f:
                 f.write('# Generated file; do not modify\n')
-                f.write('cython_version = {0!r}\n'.format(self.uses_cython))
+                f.write('cython_version = {0!r}\n'.format(self._uses_cython))
 
             if os.path.isdir(self.build_lib):
                 # The build/lib directory may not exist if the build_py
@@ -156,7 +156,7 @@ class AstropyHelpersBuildExt(SetuptoolsBuildExt):
             if not os.path.isfile(pyxfn):
                 continue
 
-            if self.uses_cython:
+            if self._uses_cython:
                 extension.sources[jdx] = pyxfn
             else:
                 if os.path.isfile(cfn):

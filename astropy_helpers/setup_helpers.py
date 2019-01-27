@@ -138,7 +138,7 @@ def get_debug_option(packagename):
 
     if current_debug is not None and current_debug != debug:
         build_ext_cmd = dist.get_command_class('build_ext')
-        build_ext_cmd.force_rebuild = True
+        build_ext_cmd._force_rebuild = True
 
     return debug
 
