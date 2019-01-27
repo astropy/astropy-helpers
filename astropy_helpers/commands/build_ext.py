@@ -9,6 +9,8 @@ from setuptools.command.build_ext import build_ext as SetuptoolsBuildExt
 from ..distutils_helpers import get_main_package_directory
 from ..utils import get_numpy_include_path, import_file
 
+__all__ = ['AstropyHelpersBuildExt']
+
 
 def should_build_with_cython(previous_cython_version, is_release):
     """
