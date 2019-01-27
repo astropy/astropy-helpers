@@ -97,8 +97,10 @@ python setup.py build_ext
 This is also used when running ``build`` or ``install``. We add several features
 compared to the default ``build_ext`` command:
 
-* For packages with C/Cython extensions, we create a ``packagename._compiler``
-  submodule that contains information about the compilers used.
+* For packages with C/Cython extensions, we create a
+  ``packagename.compiler_version`` submodule and a
+  ``packagename.cython_version`` submodule that contain information about the
+  compilers used.
 
 * Packages that need to build C extensions using the Numpy C API, we allow
   those packages to define the include path as ``'numpy'`` as opposed to having
