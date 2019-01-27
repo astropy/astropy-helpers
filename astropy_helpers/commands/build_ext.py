@@ -71,7 +71,6 @@ class AstropyHelpersBuildExt(SetuptoolsBuildExt):
         # may not be set yet, but self.distribution.ext_modules is where any
         # extension modules passed to setup() can be found
         extensions = self.distribution.ext_modules
-
         if extensions:
             build_py = self.get_finalized_command('build_py')
             package_dir = build_py.get_package_dir(self.package_dir)
