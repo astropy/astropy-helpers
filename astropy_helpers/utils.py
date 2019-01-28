@@ -216,6 +216,9 @@ def import_file(filename, name=None):
         basename = os.path.splitext(filename)[0]
         name = '_'.join(os.path.relpath(basename).split(os.sep)[1:])
 
+    if not os.path.exists(filename):
+        raise ImportError('Could not import file {0}'.format(filename))
+
     if import_machinery:
         loader = import_machinery.SourceFileLoader(name, filename)
         mod = loader.load_module()

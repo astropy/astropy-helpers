@@ -21,7 +21,6 @@ or::
 from __future__ import division
 
 import datetime
-import imp
 import os
 import pkgutil
 import sys
@@ -29,7 +28,6 @@ import time
 import warnings
 
 from distutils import log
-from importlib import invalidate_caches
 from configparser import ConfigParser
 
 import pkg_resources
@@ -37,7 +35,7 @@ import pkg_resources
 from . import git_helpers
 from .distutils_helpers import is_distutils_display_option
 from .git_helpers import get_git_devstr
-from .utils import AstropyDeprecationWarning
+from .utils import AstropyDeprecationWarning, import_file
 
 __all__ = ['generate_version_py']
 
@@ -108,16 +106,6 @@ timestamp = {timestamp!r}
 debug = {debug}
 
 astropy_helpers_version = "{ahver}"
-
-try:
-    from ._compiler import compiler
-except ImportError:
-    compiler = "unknown"
-
-try:
-    from .cython_version import cython_version
-except ImportError:
-    cython_version = "unknown"
 """[1:]
 
 
@@ -358,11 +346,6 @@ def generate_version_py(packagename=None, version=None, release=None, debug=None
             f.write(_get_version_py_str(packagename, version, last_githash,
                                         release, debug, uses_git=uses_git))
 
-        invalidate_caches()
-
-        if version_module:
-            imp.reload(version_module)
-
     return version
 
 
@@ -376,13 +359,9 @@ def get_pkg_version_module(packagename, fromlist=None):
     Raises an `AttributeError` if any of these module members are not found.
     """
 
-    if not fromlist:
-        # Due to a historical quirk of Python's import implementation,
-        # __import__ will not return submodules of a package if 'fromlist' is
-        # empty.
-        # TODO: For Python 3.1 and up it may be preferable to use importlib
-        # instead of the __import__ builtin
-        return __import__(packagename + '.version', fromlist=[''])
+    version = import_file(os.path.join(packagename, 'version.py'), name='version')
+
+    if fromlist:
+        return tuple(getattr(version, member) for member in fromlist)
     else:
-        mod = __import__(packagename + '.version', fromlist=fromlist)
-        return tuple(getattr(mod, member) for member in fromlist)
+        return version
