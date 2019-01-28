@@ -78,7 +78,7 @@ class AstropyHelpersBuildExt(SetuptoolsBuildExt):
                 os.path.join(os.path.dirname(__file__), 'src'))
             shutil.copy(os.path.join(src_path, 'compiler.c'),
                         os.path.join(package_dir, '_compiler.c'))
-            ext = Extension(self.package_dir + '._compiler',
+            ext = Extension(self.package_dir + '.compiler_version',
                             [os.path.join(package_dir, '_compiler.c')])
             extensions.insert(0, ext)
 
