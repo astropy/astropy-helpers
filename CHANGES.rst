@@ -4,6 +4,8 @@ astropy-helpers Changelog
 3.2 (unreleased)
 ----------------
 
+- Simplified the code for the custom build_ext command. [#446]
+
 - Make it possible to call ``generate_version_py`` and ``register_commands``
   without any arguments, which causes information to be read in from the
   ``setup.cfg`` file. [#440]
