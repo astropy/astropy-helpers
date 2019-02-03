@@ -11,7 +11,7 @@ import setuptools
 from setuptools import setup
 
 if LooseVersion(setuptools.__version__) < '30.3':
-    print("ERROR: setuptools 30.3 or later is required by astropy-helpers")
+    sys.stderr.write("ERROR: setuptools 30.3 or later is required by astropy-helpers\n")
     sys.exit(1)
 
 from astropy_helpers.version_helpers import generate_version_py  # noqa

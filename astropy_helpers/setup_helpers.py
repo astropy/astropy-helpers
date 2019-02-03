@@ -4,7 +4,7 @@ This module contains a number of utilities for use during
 setup/build/packaging that are useful to astropy as a whole.
 """
 
-from __future__ import absolute_import, print_function
+from __future__ import absolute_import
 
 import collections
 import os
@@ -192,7 +192,7 @@ def register_commands(package=None, version=None, release=None, srcdir='.'):
     elif package is not None:  # deprecated
         pass
     else:
-        print('ERROR: Could not read package name from setup.cfg', file=sys.stderr)
+        sys.stderr.write('ERROR: Could not read package name from setup.cfg\n')
         sys.exit(1)
 
     if conf.has_option('metadata', 'version'):
@@ -200,7 +200,7 @@ def register_commands(package=None, version=None, release=None, srcdir='.'):
     elif version is not None:  # deprecated
         pass
     else:
-        print('ERROR: Could not read package version from setup.cfg', file=sys.stderr)
+        sys.stderr.write('ERROR: Could not read package version from setup.cfg\n')
         sys.exit(1)
 
     release = 'dev' not in version

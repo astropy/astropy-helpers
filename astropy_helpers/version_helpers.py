@@ -271,7 +271,7 @@ def generate_version_py(packagename=None, version=None, release=None, debug=None
     elif packagename is not None:  # deprecated
         pass
     else:
-        print('ERROR: Could not read package name from setup.cfg', file=sys.stderr)
+        sys.stderr.write('ERROR: Could not read package name from setup.cfg\n')
         sys.exit(1)
 
     if conf.has_option('metadata', 'version'):
@@ -280,7 +280,7 @@ def generate_version_py(packagename=None, version=None, release=None, debug=None
     elif version is not None:  # deprecated
         add_git_devstr = False
     else:
-        print('ERROR: Could not read package version from setup.cfg', file=sys.stderr)
+        sys.stderr.write('ERROR: Could not read package version from setup.cfg\n')
         sys.exit(1)
 
     if release is None:
