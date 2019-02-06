@@ -6,6 +6,9 @@ astropy-helpers Changelog
 
 - Simplified the code for the custom build_ext command. [#446]
 
+- Avoid importing the astropy package when trying to get the test command
+  when testing astropy itself. [#450]
+
 - Avoid importing whole package when trying to get version information. Note
   that this has also introduced a small API change - ``cython_version`` and
   ``compiler`` can no longer be imported from the ``package.version`` module
