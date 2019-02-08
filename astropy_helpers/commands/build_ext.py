@@ -4,7 +4,7 @@ import shutil
 
 from distutils.core import Extension
 from distutils.ccompiler import get_default_compiler
-from setuptools.command.build_ext import build_ext as SetuptoolsBuildExt
+from distutils.command.build_ext import build_ext as DistutilsBuildExt
 
 from ..distutils_helpers import get_main_package_directory
 from ..utils import get_numpy_include_path, import_file
@@ -37,7 +37,7 @@ def should_build_with_cython(previous_cython_version, is_release):
         return False
 
 
-class AstropyHelpersBuildExt(SetuptoolsBuildExt):
+class AstropyHelpersBuildExt(DistutilsBuildExt):
     """
     A custom 'build_ext' command that allows for manipulating some of the C
     extension options at build time.
@@ -45,6 +45,31 @@ class AstropyHelpersBuildExt(SetuptoolsBuildExt):
 
     _uses_cython = False
     _force_rebuild = False
+
+    def __new__(cls, value, **kwargs):
+
+        # NOTE: we need to wait until AstropyHelpersBuildExt is initialized to
+        # import setuptools.command.build_ext because when that package is
+        # imported, setuptools tries to import Cython - and if it's not found
+        # it will affect the rest of the build process. This is an issue because
+        # if we import that module at the top of this one, setup_requires won't
+        # have been honored yet, so Cython may not yet be available - and if we
+        # import build_ext too soon, it will think Cython is not available even
+        # if it is then intalled when setup_requires is processed. To get around
+        # this we dynamically create a new class that inherits from the
+        # setuptools build_ext, and by this point setup_requires has been
+        # processed.
+
+        from setuptools.command.build_ext import build_ext as SetuptoolsBuildExt
+
+        class FinalBuildExt(AstropyHelpersBuildExt, SetuptoolsBuildExt):
+            pass
+
+        new_type = type(cls.__name__, (FinalBuildExt,), dict(cls.__dict__))
+        obj = SetuptoolsBuildExt.__new__(new_type)
+        obj.__init__(value)
+
+        return obj
 
     def finalize_options(self):
 
