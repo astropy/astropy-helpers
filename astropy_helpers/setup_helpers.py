@@ -418,8 +418,18 @@ def get_package_info(srcdir='.', exclude=()):
     """
     ext_modules = []
     packages = []
-    package_data = {}
     package_dir = {}
+
+    # Read in existing package data, and add to it below
+    setup_cfg = os.path.join(srcdir, 'setup.cfg')
+    if os.path.exists(setup_cfg):
+        conf = read_configuration(setup_cfg)
+        if 'options' in conf and 'package_data' in conf['options']:
+            package_data = conf['options']['package_data']
+        else:
+            package_data = {}
+    else:
+        package_data = {}
 
     if exclude:
         warnings.warn(
