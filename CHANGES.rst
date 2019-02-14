@@ -4,6 +4,9 @@ astropy-helpers Changelog
 3.2 (unreleased)
 ----------------
 
+- Make sure that ``[options.package_data]`` in setup.cfg is taken into account
+  when collecting package data. [#453]
+
 - Simplified the code for the custom build_ext command. [#446]
 
 - Avoid importing the astropy package when trying to get the test command
