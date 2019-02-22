@@ -22,6 +22,11 @@ environment:
       - PYTHON_VERSION: "3.6"
       - PYTHON_VERSION: "3.7"
 
+matrix:
+    fast_finish: true
+    allow_failures:
+      - PYTHON_VERSION: "2.7"
+
 platform:
     -x64
 
@@ -42,4 +47,3 @@ build: false
 
 test_script:
   - "%CMD_IN_ENV% py.test astropy_helpers"
-
