@@ -7,6 +7,8 @@ astropy-helpers Changelog
 
 - Updated bundled version of sphinx-automodapi to v0.10. [#439]
 
+- Updated bundled sphinx extensions version to sphinx-astropy v1.1.1. [#454]
+
 - Include package name in error message for Python version in
   ``ah_bootstrap.py``. [#441]
 
