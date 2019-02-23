@@ -39,7 +39,13 @@ astropy-helpers Changelog
   core astropy package. [#421]
 
 
-3.1.1 (unreleased)
+3.1.2 (unreleased)
+------------------
+
+- Nothing changed yet.
+
+
+3.1.1 (2019-02-22)
 ------------------
 
 - Moved documentation from README to Sphinx. [#444]
@@ -98,11 +104,21 @@ astropy-helpers Changelog
   with twine and get registered automatically. [#332]
 
 
-2.0.9 (unreleased)
+2.0.10 (unreleased)
+-------------------
+
+- Nothing changed yet.
+
+
+2.0.9 (2019-02-22)
 ------------------
 
-- Include package name in error message for Python version in ``ah_bootstrap.py``.
-  [#441]
+- Updated bundled version of sphinx-automodapi to v0.10. [#439]
+
+- Updated bundled sphinx extensions version to sphinx-astropy v1.1.1. [#454]
+
+- Include package name in error message for Python version in
+  ``ah_bootstrap.py``. [#441]
 
 
 2.0.8 (2018-12-04)
