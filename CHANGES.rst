@@ -2,6 +2,12 @@ astropy-helpers Changelog
 *************************
 
 
+3.1.2 (unreleased)
+------------------
+
+- Nothing changed yet.
+
+
 3.1.1 (2019-02-22)
 ------------------
 
@@ -59,6 +65,12 @@ astropy-helpers Changelog
 
 - Removing unused 'register' command since packages should be uploaded
   with twine and get registered automatically. [#332]
+
+
+2.0.10 (unreleased)
+-------------------
+
+- Nothing changed yet.
 
 
 2.0.9 (2019-02-22)
