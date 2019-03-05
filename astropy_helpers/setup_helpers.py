@@ -195,16 +195,6 @@ def register_commands(package=None, version=None, release=None, srcdir='.'):
         sys.stderr.write('ERROR: Could not read package name from setup.cfg\n')
         sys.exit(1)
 
-    if conf.has_option('metadata', 'version'):
-        version = conf.get('metadata', 'version')
-    elif version is not None:  # deprecated
-        pass
-    else:
-        sys.stderr.write('ERROR: Could not read package version from setup.cfg\n')
-        sys.exit(1)
-
-    release = 'dev' not in version
-
     if _module_state['registered_commands'] is not None:
         return _module_state['registered_commands']
 
@@ -225,10 +215,7 @@ def register_commands(package=None, version=None, release=None, srcdir='.'):
         # MANIFEST.in
         'sdist': DistutilsSdist,
 
-        # The exact form of the build_ext command depends on whether or not
-        # we're building a release version
         'build_ext': AstropyHelpersBuildExt,
-
         'build_sphinx': AstropyBuildSphinx,
         'build_docs': AstropyBuildDocs
     }
