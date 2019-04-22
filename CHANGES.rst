@@ -1,8 +1,8 @@
 astropy-helpers Changelog
 *************************
 
-3.2 (unreleased)
-----------------
+3.2rc1 (2019-04-22)
+-------------------
 
 - Make sure that ``[options.package_data]`` in setup.cfg is taken into account
   when collecting package data. [#453]
@@ -37,12 +37,6 @@ astropy-helpers Changelog
   This is not useful anymore as only a single compiler was previously patched
   (now unlikely to be used) and this was only to fix a compilation issue in the
   core astropy package. [#421]
-
-
-3.1.2 (unreleased)
-------------------
-
-- Nothing changed yet.
 
 
 3.1.1 (2019-02-22)
@@ -102,12 +96,6 @@ astropy-helpers Changelog
 
 - Removing unused 'register' command since packages should be uploaded
   with twine and get registered automatically. [#332]
-
-
-2.0.10 (unreleased)
--------------------
-
-- Nothing changed yet.
 
 
 2.0.9 (2019-02-22)
