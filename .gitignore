@@ -45,10 +45,10 @@ distribute-*.tar.gz
 .coverage
 cover
 htmlcov
+.pytest_cache
 
 # Mac OSX
 .DS_Store
 
 # PyCharm
 .idea
-
