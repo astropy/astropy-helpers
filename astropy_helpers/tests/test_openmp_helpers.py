@@ -11,17 +11,10 @@ from ..setup_helpers import _module_state, register_commands
 IS_TRAVIS_LINUX = os.environ.get('TRAVIS_OS_NAME', None) == 'linux'
 IS_TRAVIS_OSX = os.environ.get('TRAVIS_OS_NAME', None) == 'osx'
 IS_APPVEYOR = os.environ.get('APPVEYOR', None) == 'True'
+OPENMP_EXPECTED = os.environ.get('OPENMP_EXPECTED', False) == 'True'
 PY3_LT_35 = sys.version_info[0] == 3 and sys.version_info[1] < 5
 
 _state = None
-
-
-try:
-    OPENMP_EXPECTED = 'True' == os.environ['OPENMP_EXPECTED']
-except KeyError:
-    raise Exception("The OPENMP_EXPECTED environment variable should be set to "
-                    "True or False and should indicate whether OpenMP should "
-                    "work on your platform.")
 
 
 def setup_function(function):
