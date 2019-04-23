@@ -50,25 +50,35 @@ def test_add_openmp_flags_if_available():
         assert not using_openmp
 
 
-def test_generate_openmp_enabled_py():
+class TestOpenMPEnabled:
+    @classmethod
+    def setup_class(cls):
+        cls.tmpfile = 'openmp_enabled.py'
 
-    register_commands('openmp_autogeneration_testing', '0.0', False)
+    @classmethod
+    def teardown_class(cls):
+        # Remove generated file
+        if os.path.exists(cls.tmpfile):
+            os.remove(cls.tmpfile)
 
-    # Test file generation
-    generate_openmp_enabled_py('')
-    assert os.path.isfile('openmp_enabled.py')
+    def test_generate_openmp_enabled_py(self):
+        register_commands('openmp_autogeneration_testing', '0.0', False)
 
-    # Load openmp_enabled file as a module to check the result
-    loader = machinery.SourceFileLoader('openmp_enabled', 'openmp_enabled.py')
-    mod = types.ModuleType(loader.name)
-    loader.exec_module(mod)
+        # Test file generation
+        generate_openmp_enabled_py('')
+        assert os.path.isfile(self.tmpfile)
 
-    is_openmp_enabled = mod.is_openmp_enabled()
+        # Load openmp_enabled file as a module to check the result
+        loader = machinery.SourceFileLoader('openmp_enabled', self.tmpfile)
+        mod = types.ModuleType(loader.name)
+        loader.exec_module(mod)
 
-    # Test is_openmp_enabled()
-    assert isinstance(is_openmp_enabled, bool)
+        is_openmp_enabled = mod.is_openmp_enabled()
 
-    if OPENMP_EXPECTED:
-        assert is_openmp_enabled
-    else:
-        assert not is_openmp_enabled
+        # Test is_openmp_enabled()
+        assert isinstance(is_openmp_enabled, bool)
+
+        if OPENMP_EXPECTED:
+            assert is_openmp_enabled
+        else:
+            assert not is_openmp_enabled
