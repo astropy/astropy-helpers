@@ -12,9 +12,7 @@ sudo: false
 
 env:
   matrix:
-    # CONDA_DEPENDENCIES are necessary for python3.5 build as sphinx-gallery doesn't
-    # recognize mpl python requirement (see jobs below, too)
-    - PYTHON_VERSION=3.5 CONDA_DEPENDENCIES="`echo $CONDA_DEPENDENCIES 'matplotlib<3.1'`"
+    - PYTHON_VERSION=3.5
     - PYTHON_VERSION=3.6
     - PYTHON_VERSION=3.7 SETUPTOOLS_VERSION=dev DEBUG=True
       CONDA_DEPENDENCIES='sphinx cython numpy pytest-cov'
@@ -36,7 +34,6 @@ matrix:
       env: PYTHON_VERSION=3.6 SPHINX_VERSION='1.5' SETUPTOOLS_VERSION=30
     - os: linux
       env: PYTHON_VERSION=3.5 SPHINX_VERSION='1.4' SETUPTOOLS_VERSION=30
-           CONDA_DEPENDENCIES="`echo $CONDA_DEPENDENCIES 'matplotlib<3.1'`"
     - os: linux
       env: PYTHON_VERSION=3.6 PIP_DEPENDENCIES='git+https://github.com/sphinx-doc/sphinx.git#egg=sphinx codecov'
            CONDA_DEPENDENCIES="setuptools cython numpy pytest-cov" EVENT_TYPE='push pull_request cron'
@@ -49,7 +46,7 @@ matrix:
     - os: osx
       env:
         - PYTHON_VERSION=3.5
-        - CONDA_DEPENDENCIES="setuptools sphinx cython numpy pytest-cov clang llvm-openmp 'matplotlib<3.1'"
+        - CONDA_DEPENDENCIES="setuptools sphinx cython numpy pytest-cov clang llvm-openmp matplotlib"
         - OPENMP_EXPECTED=True
         - CCOMPILER=clang
 
@@ -57,7 +54,7 @@ matrix:
     - os: osx
       env:
         - PYTHON_VERSION=3.5
-        - CONDA_DEPENDENCIES="setuptools sphinx cython numpy pytest-cov gcc 'matplotlib<3.1'"
+        - CONDA_DEPENDENCIES="setuptools sphinx cython numpy pytest-cov gcc sphinx-astropy"
         - OPENMP_EXPECTED=True
         - CCOMPILER=gcc
 
