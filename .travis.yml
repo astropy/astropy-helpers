@@ -15,11 +15,11 @@ env:
     - PYTHON_VERSION=3.5
     - PYTHON_VERSION=3.6
     - PYTHON_VERSION=3.7 SETUPTOOLS_VERSION=dev DEBUG=True
-      CONDA_DEPENDENCIES='sphinx cython numpy pytest-cov'
+      CONDA_DEPENDENCIES='sphinx cython numpy pytest-cov Pillow'
       EVENT_TYPE='push pull_request cron'
 
   global:
-    - CONDA_DEPENDENCIES="setuptools sphinx cython numpy pytest-cov"
+    - CONDA_DEPENDENCIES="setuptools sphinx cython numpy pytest-cov Pillow"
     - PIP_DEPENDENCIES="codecov"
     - EVENT_TYPE='push pull_request'
     - DEBUG=True
@@ -35,18 +35,21 @@ matrix:
     - os: linux
       env: PYTHON_VERSION=3.5 SPHINX_VERSION='1.4' SETUPTOOLS_VERSION=30
     - os: linux
-      env: PYTHON_VERSION=3.6 PIP_DEPENDENCIES='git+https://github.com/sphinx-doc/sphinx.git#egg=sphinx codecov'
-           CONDA_DEPENDENCIES="setuptools cython numpy pytest-cov" EVENT_TYPE='push pull_request cron'
+      env:
+        - PYTHON_VERSION=3.6
+        - PIP_DEPENDENCIES='git+https://github.com/sphinx-doc/sphinx.git#egg=sphinx codecov'
+        - CONDA_DEPENDENCIES="setuptools cython numpy pytest-cov Pillow"
+        - EVENT_TYPE='push pull_request cron'
     # Test without installing numpy beforehand to make sure everything works
     # without assuming numpy is already installed
     - os: linux
-      env: PYTHON_VERSION=3.6 CONDA_DEPENDENCIES='sphinx cython pytest-cov'
+      env: PYTHON_VERSION=3.6 CONDA_DEPENDENCIES='sphinx cython pytest-cov Pillow'
 
     # Test conda's clang
     - os: osx
       env:
         - PYTHON_VERSION=3.5
-        - CONDA_DEPENDENCIES="setuptools sphinx cython numpy pytest-cov clang llvm-openmp matplotlib"
+        - CONDA_DEPENDENCIES="setuptools sphinx cython numpy pytest-cov clang llvm-openmp matplotlib Pillow"
         - OPENMP_EXPECTED=True
         - CCOMPILER=clang
 
@@ -54,7 +57,7 @@ matrix:
     - os: osx
       env:
         - PYTHON_VERSION=3.5
-        - CONDA_DEPENDENCIES="setuptools sphinx cython numpy pytest-cov gcc sphinx-astropy"
+        - CONDA_DEPENDENCIES="setuptools sphinx cython numpy pytest-cov gcc sphinx-astropy Pillow"
         - OPENMP_EXPECTED=True
         - CCOMPILER=gcc
 
