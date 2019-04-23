@@ -17,6 +17,7 @@ from sphinx.setup_command import BuildDoc as SphinxBuildDoc
 
 from ..utils import AstropyDeprecationWarning
 
+SPHINX_LT_16 = LooseVersion(sphinx_version) < LooseVersion('1.6')
 SPHINX_LT_17 = LooseVersion(sphinx_version) < LooseVersion('1.7')
 
 SUBPROCESS_TEMPLATE = """
@@ -57,6 +58,11 @@ def ensure_sphinx_astropy_installed():
 
         from setuptools import Distribution
         dist = Distribution()
+
+        # Numpydoc 0.9.0 requires sphinx 1.6+, we can limit the version here
+        # until we also makes our minimum required version Sphinx 1.6
+        if SPHINX_LT_16:
+            dist.fetch_build_eggs('numpydoc<0.9')
 
         # This egg build doesn't respect python_requires, not aware of
         # pre-releases. We know that mpl 3.1+ requires Python 3.6+, so this
