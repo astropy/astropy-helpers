@@ -57,6 +57,14 @@ def ensure_sphinx_astropy_installed():
 
         from setuptools import Distribution
         dist = Distribution()
+
+        # This egg build doesn't respect python_requires, not aware of
+        # pre-releases. We know that mpl 3.1+ requires Python 3.6+, so this
+        # ugly workaround takes care of it until there is a solution for
+        # https://github.com/astropy/astropy-helpers/issues/462
+        if LooseVersion(sys.version) < LooseVersion('3.6'):
+            dist.fetch_build_eggs('matplotlib<3.1')
+
         eggs = dist.fetch_build_eggs('sphinx-astropy')
 
         # Find out the version of sphinx-astropy if possible. For some old

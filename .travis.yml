@@ -18,11 +18,11 @@ env:
       CONDA_DEPENDENCIES='sphinx cython numpy pytest-cov'
       EVENT_TYPE='push pull_request cron'
 
-
   global:
     - CONDA_DEPENDENCIES="setuptools sphinx cython numpy pytest-cov"
     - PIP_DEPENDENCIES="codecov"
     - EVENT_TYPE='push pull_request'
+    - DEBUG=True
 
 matrix:
   include:
@@ -46,7 +46,7 @@ matrix:
     - os: osx
       env:
         - PYTHON_VERSION=3.5
-        - CONDA_DEPENDENCIES="setuptools sphinx cython numpy pytest-cov clang llvm-openmp"
+        - CONDA_DEPENDENCIES="setuptools sphinx cython numpy pytest-cov clang llvm-openmp matplotlib"
         - OPENMP_EXPECTED=True
         - CCOMPILER=clang
 
@@ -54,7 +54,7 @@ matrix:
     - os: osx
       env:
         - PYTHON_VERSION=3.5
-        - CONDA_DEPENDENCIES="setuptools sphinx cython numpy pytest-cov gcc"
+        - CONDA_DEPENDENCIES="setuptools sphinx cython numpy pytest-cov gcc sphinx-astropy"
         - OPENMP_EXPECTED=True
         - CCOMPILER=gcc
 
