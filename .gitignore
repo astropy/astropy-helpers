@@ -43,6 +43,7 @@ distribute-*.tar.gz
 .pydevproject
 .settings
 .coverage
+.coverage.subprocess
 cover
 htmlcov
 .pytest_cache
