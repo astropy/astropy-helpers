@@ -33,7 +33,7 @@ matrix:
     - os: linux
       env: PYTHON_VERSION=3.6 SPHINX_VERSION='1.5' SETUPTOOLS_VERSION=30
     - os: linux
-      env: PYTHON_VERSION=3.5 SPHINX_VERSION='1.4' SETUPTOOLS_VERSION=30
+      env: PYTHON_VERSION=3.5 SPHINX_VERSION='1.5' SETUPTOOLS_VERSION=30
            CONDA_DEPENDENCIES=`echo $CONDA_DEPENDENCIES sphinx-astropy 'numpydoc<0.9'`"
     - os: linux
       env: PYTHON_VERSION=3.6 PIP_DEPENDENCIES='git+https://github.com/sphinx-doc/sphinx.git#egg=sphinx codecov'
