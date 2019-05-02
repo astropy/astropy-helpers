@@ -15,11 +15,11 @@ env:
     - PYTHON_VERSION=3.5
     - PYTHON_VERSION=3.6
     - PYTHON_VERSION=3.7 SETUPTOOLS_VERSION=dev DEBUG=True
-      CONDA_DEPENDENCIES='sphinx cython numpy pytest-cov'
+      CONDA_DEPENDENCIES="cython numpy pytest-cov sphinx-astropy'
       EVENT_TYPE='push pull_request cron'
 
   global:
-    - CONDA_DEPENDENCIES="setuptools sphinx cython numpy pytest-cov"
+    - CONDA_DEPENDENCIES="setuptools sphinx-astropy cython numpy pytest-cov"
     - PIP_DEPENDENCIES="codecov"
     - EVENT_TYPE='push pull_request'
     - DEBUG=True
@@ -29,25 +29,26 @@ matrix:
     # Do one build with sphinx-astropy as one of the tests bypasses the auto-
     # installation but we want to make sure that test runs for coverage.
     - os: linux
-      env: PYTHON_VERSION=3.6 PIP_DEPENDENCIES='codecov sphinx-astropy'
+      env: PYTHON_VERSION=3.6 PIP_DEPENDENCIES='codecov'
     - os: linux
       env: PYTHON_VERSION=3.6 SPHINX_VERSION='1.5' SETUPTOOLS_VERSION=30
     - os: linux
       env: PYTHON_VERSION=3.5 SPHINX_VERSION='1.5' SETUPTOOLS_VERSION=30
-           CONDA_DEPENDENCIES=`echo $CONDA_DEPENDENCIES sphinx-astropy 'numpydoc<0.9'`"
+           CONDA_DEPENDENCIES=`echo $CONDA_DEPENDENCIES 'numpydoc<0.9'`"
     - os: linux
       env: PYTHON_VERSION=3.6 PIP_DEPENDENCIES='git+https://github.com/sphinx-doc/sphinx.git#egg=sphinx codecov'
-           CONDA_DEPENDENCIES="setuptools cython numpy pytest-cov" EVENT_TYPE='push pull_request cron'
+           CONDA_DEPENDENCIES="setuptools cython numpy pytest-cov sphinx-astropy"
+           EVENT_TYPE='push pull_request cron'
     # Test without installing numpy beforehand to make sure everything works
     # without assuming numpy is already installed
     - os: linux
-      env: PYTHON_VERSION=3.6 CONDA_DEPENDENCIES='sphinx cython pytest-cov'
+      env: PYTHON_VERSION=3.6 CONDA_DEPENDENCIES='sphinx-astropy cython pytest-cov'
 
     # Test conda's clang
     - os: osx
       env:
         - PYTHON_VERSION=3.5
-        - CONDA_DEPENDENCIES="setuptools sphinx cython numpy pytest-cov clang llvm-openmp matplotlib"
+        - CONDA_DEPENDENCIES="setuptools sphinx-astropy cython numpy pytest-cov clang llvm-openmp matplotlib"
         - OPENMP_EXPECTED=True
         - CCOMPILER=clang
 
@@ -55,7 +56,7 @@ matrix:
     - os: osx
       env:
         - PYTHON_VERSION=3.5
-        - CONDA_DEPENDENCIES="setuptools sphinx cython numpy pytest-cov gcc sphinx-astropy"
+        - CONDA_DEPENDENCIES="setuptools sphinx-astropy cython numpy pytest-cov gcc"
         - OPENMP_EXPECTED=True
         - CCOMPILER=gcc
 
@@ -65,7 +66,7 @@ matrix:
   #
   # allow_failures:
   #   - env: PYTHON_VERSION=3.6 SETUPTOOLS_VERSION=dev DEBUG=True
-  #          CONDA_DEPENDENCIES='sphinx cython numpy pytest-cov'
+  #          CONDA_DEPENDENCIES='sphinx-astropy cython numpy pytest-cov'
   #          EVENT_TYPE='push pull_request cron'
 
 before_install:
