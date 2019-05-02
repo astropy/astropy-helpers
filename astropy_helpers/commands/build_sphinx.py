@@ -6,7 +6,6 @@ import re
 import shutil
 import subprocess
 import sys
-import glob
 import warnings
 from distutils.version import LooseVersion
 
@@ -39,7 +38,7 @@ for builder in {builders!r}:
 
 def ensure_sphinx_astropy_installed():
     """
-    Make sure that sphinx-astropy is available, installing it temporarily if not.
+    Make sure that sphinx-astropy is available.
 
     This returns the available version of sphinx-astropy as well as any
     paths that should be added to sys.path for sphinx-astropy to be available.
@@ -55,36 +54,9 @@ def ensure_sphinx_astropy_installed():
     try:
         from sphinx_astropy import __version__ as sphinx_astropy_version  # noqa
     except ImportError:
-
-        from setuptools import Distribution
-        dist = Distribution()
-
-        # Numpydoc 0.9.0 requires sphinx 1.6+, we can limit the version here
-        # until we also makes our minimum required version Sphinx 1.6
-        if SPHINX_LT_16:
-            dist.fetch_build_eggs('numpydoc<0.9')
-
-        # This egg build doesn't respect python_requires, not aware of
-        # pre-releases. We know that mpl 3.1+ requires Python 3.6+, so this
-        # ugly workaround takes care of it until there is a solution for
-        # https://github.com/astropy/astropy-helpers/issues/462
-        if LooseVersion(sys.version) < LooseVersion('3.6'):
-            dist.fetch_build_eggs('matplotlib<3.1')
-
-        eggs = dist.fetch_build_eggs('sphinx-astropy')
-
-        # Find out the version of sphinx-astropy if possible. For some old
-        # setuptools version, eggs will be None even if sphinx-astropy was
-        # successfully installed.
-        if eggs is not None:
-            for egg in eggs:
-                if egg.project_name == 'sphinx-astropy':
-                    sphinx_astropy_version = egg.parsed_version.public
-                    break
-
-        eggs_path = os.path.abspath('.eggs')
-        for egg in glob.glob(os.path.join(eggs_path, '*.egg')):
-            sys_path_inserts.append(egg)
+        raise ImportError("sphinx-astropy is required to build documentation "
+                          "using the astropy machinery. Please install the "
+                          "package and try again.")
 
     return sphinx_astropy_version, sys_path_inserts
 
@@ -187,8 +159,7 @@ class AstropyBuildDocs(SphinxBuildDoc):
         else:
             build_main = 'from sphinx.cmd.build import build_main'
 
-        # We need to make sure sphinx-astropy is installed and install it
-        # temporarily if not
+        # We need to make sure sphinx-astropy is installed
         sphinx_astropy_version, extra_paths = ensure_sphinx_astropy_installed()
 
         sys_path_inserts = [build_cmd_path, ah_path] + extra_paths
@@ -280,7 +251,7 @@ class AstropyBuildDocs(SphinxBuildDoc):
             sys.exit(retcode)
 
 
-class AstropyBuildSphinx(AstropyBuildDocs): # pragma: no cover
+class AstropyBuildSphinx(AstropyBuildDocs):  # pragma: no cover
     description = 'deprecated alias to the build_docs command'
 
     def run(self):
