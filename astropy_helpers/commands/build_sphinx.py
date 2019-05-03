@@ -54,9 +54,8 @@ def ensure_sphinx_astropy_installed():
     try:
         from sphinx_astropy import __version__ as sphinx_astropy_version  # noqa
     except ImportError:
-        raise ImportError("sphinx-astropy is required to build documentation "
-                          "using the astropy machinery. Please install the "
-                          "package and try again.")
+        raise ImportError("sphinx-astropy needs to be installed to build"
+                          "the documentation.")
 
     return sphinx_astropy_version, sys_path_inserts
 
