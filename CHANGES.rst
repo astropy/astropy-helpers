@@ -38,6 +38,9 @@ astropy-helpers Changelog
   (now unlikely to be used) and this was only to fix a compilation issue in the
   core astropy package. [#421]
 
+- ``sphinx-astropy`` is now a required dependency to build the docs, the
+  machinery to install it as eggs have been removed. [#474]
+
 
 3.1.1 (2019-02-22)
 ------------------
