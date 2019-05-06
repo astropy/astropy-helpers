@@ -101,6 +101,12 @@ astropy-helpers Changelog
   with twine and get registered automatically. [#332]
 
 
+2.0.10 (unreleased)
+-------------------
+
+- Allow Python dev versions to pass the python version check. [#476]
+
+
 2.0.9 (2019-02-22)
 ------------------
 
