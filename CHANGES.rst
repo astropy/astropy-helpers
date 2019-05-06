@@ -110,7 +110,7 @@ astropy-helpers Changelog
 2.0.10 (unreleased)
 -------------------
 
-- Nothing changed yet.
+- Allow Python dev versions to pass the python version check. [#476]
 
 
 2.0.9 (2019-02-22)
