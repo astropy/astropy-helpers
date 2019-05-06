@@ -8,6 +8,7 @@ astropy-helpers Changelog
 - Removed ``tocdepthfix`` sphinx extension that worked around a big in
   Sphinx that has been long fixed. [#475]
 
+- Allow Python dev versions to pass the python version check. [#476]
 
 
 2.0.9 (2019-02-22)
