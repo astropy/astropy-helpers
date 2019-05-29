@@ -2,7 +2,7 @@ astropy-helpers Changelog
 *************************
 
 
-2.0.10 (unreleased)
+2.0.10 (2019-05-29)
 -------------------
 
 - Removed ``tocdepthfix`` sphinx extension that worked around a big in
