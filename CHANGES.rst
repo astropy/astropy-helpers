@@ -1,8 +1,8 @@
 astropy-helpers Changelog
 *************************
 
-3.2rc1 (2019-04-22)
--------------------
+3.2 (2019-05-29)
+----------------
 
 - Make sure that ``[options.package_data]`` in setup.cfg is taken into account
   when collecting package data. [#453]
@@ -101,10 +101,15 @@ astropy-helpers Changelog
   with twine and get registered automatically. [#332]
 
 
-2.0.10 (unreleased)
+2.0.10 (2019-05-29)
 -------------------
 
+- Removed ``tocdepthfix`` sphinx extension that worked around a big in
+  Sphinx that has been long fixed. [#475]
+
 - Allow Python dev versions to pass the python version check. [#476]
+
+- Updated bundled version of sphinx-automodapi to v0.11. [#478]
 
 
 2.0.9 (2019-02-22)
