@@ -10,6 +10,8 @@ astropy-helpers Changelog
 
 - Allow Python dev versions to pass the python version check. [#476]
 
+- Updated bundled version of sphinx-automodapi to v0.11. [#478]
+
 
 2.0.9 (2019-02-22)
 ------------------
