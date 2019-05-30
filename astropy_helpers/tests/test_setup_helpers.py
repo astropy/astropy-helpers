@@ -1,23 +1,17 @@
 import os
 import sys
-import stat
-import shutil
 import importlib
-import contextlib
 
 import pytest
 
 from textwrap import dedent
 
-from setuptools import Distribution
-
 from ..setup_helpers import get_package_info, register_commands
-from ..commands import build_ext
 
 from . import reset_setup_helpers, reset_distutils_log  # noqa
 from . import run_setup, cleanup_import
 
-ASTROPY_HELPERS_PATH = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..'))
+ASTROPY_HELPERS_PATH = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..'))  # noqa
 
 
 def teardown_module(module):
@@ -28,7 +22,8 @@ def teardown_module(module):
         os.remove(tmpfile)
 
 
-def _extension_test_package(tmpdir, request, extension_type='c', include_numpy=False):
+def _extension_test_package(tmpdir, request, extension_type='c',
+                            include_numpy=False):
     """Creates a simple test package with an extension module."""
 
     test_pkg = tmpdir.mkdir('test_pkg')
@@ -41,15 +36,7 @@ def _extension_test_package(tmpdir, request, extension_type='c', include_numpy=F
         # A minimal C extension for testing
         test_pkg.join('apyhtest_eva', 'unit01.c').write(dedent("""\
             #include <Python.h>
-            #ifndef PY3K
-            #if PY_MAJOR_VERSION >= 3
-            #define PY3K 1
-            #else
-            #define PY3K 0
-            #endif
-            #endif
 
-            #if PY3K
             static struct PyModuleDef moduledef = {
                 PyModuleDef_HEAD_INIT,
                 "unit01",
@@ -61,12 +48,6 @@ def _extension_test_package(tmpdir, request, extension_type='c', include_numpy=F
             PyInit_unit01(void) {
                 return PyModule_Create(&moduledef);
             }
-            #else
-            PyMODINIT_FUNC
-            initunit01(void) {
-                Py_InitModule3("unit01", NULL, NULL);
-            }
-            #endif
         """))
 
     if extension_type in ('pyx', 'both'):
@@ -240,7 +221,8 @@ def test_no_cython_buildext(capsys, c_extension_test_package, monkeypatch):
         sys.path.remove(str(test_pkg))
 
 
-def test_missing_cython_c_files(capsys, pyx_extension_test_package, monkeypatch):
+def test_missing_cython_c_files(capsys, pyx_extension_test_package,
+                                monkeypatch):
     """
     Regression test for https://github.com/astropy/astropy-helpers/pull/181
 
@@ -258,8 +240,8 @@ def test_missing_cython_c_files(capsys, pyx_extension_test_package, monkeypatch)
         stdout, stderr = capsys.readouterr()
         assert "No git repository present at" in stderr
 
-        msg = ('Could not find C/C++ file '
-               '{0}.(c/cpp)'.format('apyhtest_eva/unit02'.replace('/', os.sep)))
+        msg = ('Could not find C/C++ file {0}'
+               '.(c/cpp)'.format('apyhtest_eva/unit02'.replace('/', os.sep)))
 
         assert msg in stderr
 
@@ -295,7 +277,7 @@ def test_build_docs(capsys, tmpdir, mode):
             from sphinx_astropy.conf import *
         exclude_patterns.append('_templates')
         suppress_warnings = ['app.add_directive', 'app.add_node', 'app.add_role']
-    """))
+    """))  # noqa
 
     docs_dir.join('index.rst').write(dedent("""\
         .. automodapi:: mypackage
@@ -405,7 +387,8 @@ def test_invalid_package_exclusion(tmpdir, capsys):
         VERSION = '0.1'
         RELEASE = True
 
-    """.format(module_name=module_name, astropy_helpers_path=ASTROPY_HELPERS_PATH))
+    """.format(module_name=module_name,
+               astropy_helpers_path=ASTROPY_HELPERS_PATH))
 
     setup_footer = dedent("""\
         setup(
