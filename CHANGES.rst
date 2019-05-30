@@ -1,7 +1,19 @@
 astropy-helpers Changelog
 *************************
 
-3.2 (unreleased)
+4.0 (unreleased)
+------------------
+
+- No changes yet.
+
+
+3.2.1 (unreleased)
+------------------
+
+- No changes yet.
+
+
+3.2 (2019-05-29)
 ----------------
 
 - Make sure that ``[options.package_data]`` in setup.cfg is taken into account
@@ -107,10 +119,21 @@ astropy-helpers Changelog
   with twine and get registered automatically. [#332]
 
 
-2.0.10 (unreleased)
+2.0.11 (unreleased)
 -------------------
 
-- Allow Python dev versions to pass the python version check. [#476]
+- No changes yet.
+
+
+2.0.10 (2019-05-29)
+-------------------
+
+- Updated bundled version of sphinx-automodapi to v0.10. [#439]
+
+- Updated bundled sphinx extensions version to sphinx-astropy v1.1.1. [#454]
+
+- Include package name in error message for Python version in
+  ``ah_bootstrap.py``. [#441]
 
 
 2.0.9 (2019-02-22)
