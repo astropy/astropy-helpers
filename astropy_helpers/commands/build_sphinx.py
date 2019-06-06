@@ -6,15 +6,12 @@ import re
 import shutil
 import subprocess
 import sys
-import warnings
 from distutils.version import LooseVersion
 
 from distutils import log
 
 from sphinx import __version__ as sphinx_version
 from sphinx.setup_command import BuildDoc as SphinxBuildDoc
-
-from ..utils import AstropyDeprecationWarning
 
 SPHINX_LT_16 = LooseVersion(sphinx_version) < LooseVersion('1.6')
 SPHINX_LT_17 = LooseVersion(sphinx_version) < LooseVersion('1.7')
@@ -251,10 +248,5 @@ class AstropyBuildDocs(SphinxBuildDoc):
 
 
 class AstropyBuildSphinx(AstropyBuildDocs):  # pragma: no cover
-    description = 'deprecated alias to the build_docs command'
-
     def run(self):
-        warnings.warn(
-            'The "build_sphinx" command is now deprecated. Use'
-            '"build_docs" instead.', AstropyDeprecationWarning)
         AstropyBuildDocs.run(self)

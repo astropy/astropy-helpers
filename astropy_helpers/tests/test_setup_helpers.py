@@ -309,8 +309,6 @@ def test_build_docs(capsys, tmpdir, mode):
             run_setup('setup.py', ['build_docs', '-l'])
         elif mode == 'deprecated':
             run_setup('setup.py', ['build_sphinx'])
-            stdout, stderr = capsys.readouterr()
-            assert 'AstropyDeprecationWarning' in stderr
 
     assert os.path.exists(docs_dir.join('_build', 'html', 'index.html').strpath)
 
