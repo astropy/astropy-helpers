@@ -122,7 +122,7 @@ astropy-helpers Changelog
 2.0.11 (unreleased)
 -------------------
 
-- No changes yet.
+- Reverting issuing deprecation warning for the ``build_sphinx`` command. [#482]
 
 
 2.0.10 (2019-05-29)
