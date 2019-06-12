@@ -2,7 +2,7 @@ include README.rst
 include CHANGES.rst
 include LICENSE.rst
 recursive-include licenses *
-include astropy_helpers\commands\src\compiler.c
+include astropy_helpers/commands/src/compiler.c
 
 include ah_bootstrap.py
 
