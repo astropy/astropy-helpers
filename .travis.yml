@@ -110,6 +110,8 @@ before_script:
     - git config --global user.email "author@example.com"
 
 script:
+
+    # First run tests in the repository
     - pytest --cov astropy_helpers astropy_helpers
 
     # In conftest.py we produce a .coverage.subprocess that contains coverage
@@ -117,6 +119,17 @@ script:
     - mv .coverage .coverage.main
     - coverage combine .coverage.main .coverage.subprocess
     - coverage report
+
+    # Now we need to make sure that things work correctly in the tar file.
+    # However by default we remove the tests from the tar file, so we need to
+    # copy those in.
+    - python setup.py sdist
+    - cd dist
+    - tar xvzf *.tar.gz
+    - rm *.tar.gz
+    - cd astropy-helpers*
+    - cp -RP ../../astropy_helpers/tests astropy_helpers/tests
+    - pytest astropy_helpers
 
 after_success:
     - codecov
