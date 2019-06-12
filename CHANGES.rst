@@ -5,7 +5,7 @@ astropy-helpers Changelog
 3.2.1 (unreleased)
 ------------------
 
-- No changes yet.
+- Make sure that all data files get included in tar file releases. [#485]
 
 
 3.2 (2019-05-29)
