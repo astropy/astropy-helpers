@@ -2,8 +2,10 @@ astropy-helpers Changelog
 *************************
 
 
-3.2.1 (unreleased)
+3.2.1 (2019-06-13)
 ------------------
+
+- Reverting issuing deprecation warning for the ``build_sphinx`` command. [#482]
 
 - Make sure that all data files get included in tar file releases. [#485]
 
@@ -106,12 +108,6 @@ astropy-helpers Changelog
 
 - Removing unused 'register' command since packages should be uploaded
   with twine and get registered automatically. [#332]
-
-
-2.0.11 (unreleased)
--------------------
-
-- Reverting issuing deprecation warning for the ``build_sphinx`` command. [#482]
 
 
 2.0.10 (2019-05-29)
