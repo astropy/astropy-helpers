@@ -7,8 +7,16 @@ astropy-helpers Changelog
 - No changes yet.
 
 
-3.2.1 (unreleased)
+3.2.2 (unreleased)
 ------------------
+
+- No changes yet.
+
+
+3.2.1 (2019-06-13)
+------------------
+
+- Reverting issuing deprecation warning for the ``build_sphinx`` command. [#482]
 
 - Make sure that all data files get included in tar file releases. [#485]
 
@@ -52,12 +60,6 @@ astropy-helpers Changelog
 
 - ``sphinx-astropy`` is now a required dependency to build the docs, the
   machinery to install it as eggs have been removed. [#474]
-
-
-3.1.2 (unreleased)
-------------------
-
-- Nothing changed yet.
 
 
 3.1.1 (2019-02-22)
@@ -122,18 +124,18 @@ astropy-helpers Changelog
 2.0.11 (unreleased)
 -------------------
 
-- Reverting issuing deprecation warning for the ``build_sphinx`` command. [#482]
+- No changes yet.
 
 
 2.0.10 (2019-05-29)
 -------------------
 
-- Updated bundled version of sphinx-automodapi to v0.10. [#439]
+- Removed ``tocdepthfix`` sphinx extension that worked around a big in
+  Sphinx that has been long fixed. [#475]
 
-- Updated bundled sphinx extensions version to sphinx-astropy v1.1.1. [#454]
+- Allow Python dev versions to pass the python version check. [#476]
 
-- Include package name in error message for Python version in
-  ``ah_bootstrap.py``. [#441]
+- Updated bundled version of sphinx-automodapi to v0.11. [#478]
 
 
 2.0.9 (2019-02-22)
