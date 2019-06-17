@@ -57,7 +57,7 @@ def get_main_package_directory(distribution):
     """
     Given a Distribution object, return the main package directory.
     """
-    return min(distribution.packages, key=len)
+    return min(distribution.packages, key=len).replace('.', os.sep)
 
 def get_distutils_option(option, commands):
     """ Returns the value of the given distutils option.
