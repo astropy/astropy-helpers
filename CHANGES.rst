@@ -10,7 +10,7 @@ astropy-helpers Changelog
 3.2.2 (unreleased)
 ------------------
 
-- No changes yet.
+- Correctly handle main package directory inside namespace package. [#486]
 
 
 3.2.1 (2019-06-13)
