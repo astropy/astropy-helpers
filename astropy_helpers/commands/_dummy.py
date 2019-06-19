@@ -61,7 +61,7 @@ class _DummyCommandMeta(type):
                 "attribute.")
 
     def __getattribute__(cls, attr):
-        if attr in ('description', 'error_msg'):
+        if attr in ('description', 'error_msg') or attr.startswith('_'):
             # Allow cls.description to work so that `./setup.py
             # --help-commands` still works
             return super(_DummyCommandMeta, cls).__getattribute__(attr)
