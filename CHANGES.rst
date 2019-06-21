@@ -7,6 +7,9 @@ astropy-helpers Changelog
 
 - Fixed deprecation warning in sphinx theme. [#493]
 
+- Fixed an issue that caused pytest to crash if it tried to collect
+  tests. [#488]
+
 
 2.0.10 (2019-05-29)
 -------------------
