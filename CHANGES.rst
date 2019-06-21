@@ -119,7 +119,8 @@ astropy-helpers Changelog
 2.0.11 (unreleased)
 -------------------
 
-- No changes yet.
+- Fixed an issue that caused pytest to crash if it tried to collect
+  tests. [#488]
 
 
 2.0.10 (2019-05-29)
