@@ -4,8 +4,6 @@ This module contains a number of utilities for use during
 setup/build/packaging that are useful to astropy as a whole.
 """
 
-from __future__ import absolute_import
-
 import collections
 import os
 import re
