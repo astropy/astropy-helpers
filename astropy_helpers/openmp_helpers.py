@@ -174,11 +174,6 @@ def check_openmp_support(openmp_flags=None):
     compile_flags = openmp_flags.get('compiler_flags')
     link_flags = openmp_flags.get('linker_flags')
 
-    # Pass -coverage flag to linker.
-    # https://github.com/astropy/astropy-helpers/pull/374
-    if '-coverage' in compile_flags and '-coverage' not in link_flags:
-        link_flags.append('-coverage')
-
     tmp_dir = tempfile.mkdtemp()
     start_dir = os.path.abspath('.')
 
