@@ -2,7 +2,7 @@ astropy-helpers Changelog
 *************************
 
 
-2.0.11 (unreleased)
+2.0.11 (2019-10-25)
 -------------------
 
 - Fixed deprecation warning in sphinx theme. [#493]
