@@ -18,9 +18,10 @@ this package and details of its implementation are in the accepted
 
 Astropy-helpers is not a traditional package in the sense that it is not
 intended to be installed directly by users or developers. Instead, it is meant
-to be accessed when the ``setup.py`` command is run - see the "Using
-astropy-helpers in a package" section in the documentation for how
-to do this. For a real-life example of how to implement astropy-helpers in a
+to be accessed when the ``setup.py`` command is run - see the 
+"`Using astropy-helpers in a package <https://astropy-helpers.readthedocs.io/en/stable/using.html>`_"
+section in the documentation for how to do this.
+For a real-life example of how to implement astropy-helpers in a
 project, see the ``setup.py`` and ``setup.cfg`` files of the
 `Affiliated package template <https://github.com/astropy/package-template>`_.
 
