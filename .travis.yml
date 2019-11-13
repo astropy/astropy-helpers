@@ -12,7 +12,6 @@ sudo: false
 
 env:
   matrix:
-    - PYTHON_VERSION=3.5
     - PYTHON_VERSION=3.6
     - PYTHON_VERSION=3.7 SETUPTOOLS_VERSION=dev DEBUG=True
       CONDA_DEPENDENCIES="cython numpy pytest-cov sphinx-astropy'
@@ -31,10 +30,7 @@ matrix:
     - os: linux
       env: PYTHON_VERSION=3.6 PIP_DEPENDENCIES='codecov'
     - os: linux
-      env: PYTHON_VERSION=3.6 SPHINX_VERSION='1.5' SETUPTOOLS_VERSION=30
-    - os: linux
-      env: PYTHON_VERSION=3.5 SPHINX_VERSION='1.5' SETUPTOOLS_VERSION=30
-           CONDA_DEPENDENCIES=`echo $CONDA_DEPENDENCIES 'numpydoc<0.9'`"
+      env: PYTHON_VERSION=3.6 SPHINX_VERSION='1.7' SETUPTOOLS_VERSION=30
     - os: linux
       env: PYTHON_VERSION=3.6 PIP_DEPENDENCIES='git+https://github.com/sphinx-doc/sphinx.git#egg=sphinx codecov'
            CONDA_DEPENDENCIES="setuptools cython numpy pytest-cov sphinx-astropy"
@@ -47,7 +43,7 @@ matrix:
     # Test conda's clang
     - os: osx
       env:
-        - PYTHON_VERSION=3.5
+        - PYTHON_VERSION=3.7
         - CONDA_DEPENDENCIES="setuptools sphinx-astropy cython numpy pytest-cov clang llvm-openmp matplotlib"
         - OPENMP_EXPECTED=True
         - CCOMPILER=clang
@@ -55,7 +51,7 @@ matrix:
     # Test gcc on OSX
     - os: osx
       env:
-        - PYTHON_VERSION=3.5
+        - PYTHON_VERSION=3.7
         - CONDA_DEPENDENCIES="setuptools sphinx-astropy cython numpy pytest-cov gcc"
         - OPENMP_EXPECTED=True
         - CCOMPILER=gcc
