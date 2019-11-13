@@ -39,7 +39,7 @@ def ensure_sphinx_astropy_installed():
         sphinx_astropy_version = None
 
     if (sphinx_astropy_version is None
-            or LooseVersion(sphinx_astropy_version) <= LooseVersion('1.2')):
+            or LooseVersion(sphinx_astropy_version) < LooseVersion('1.2')):
         raise ImportError("sphinx-astropy 1.2 or later needs to be installed to build "
                             "the documentation.")
 

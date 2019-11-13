@@ -4,6 +4,7 @@
 language: c
 
 os:
+    - windows
     - osx
     - linux
 
@@ -22,6 +23,7 @@ env:
     - PIP_DEPENDENCIES="codecov"
     - EVENT_TYPE='push pull_request'
     - DEBUG=True
+    - CONDA_CHANNELS="astropy"
 
 matrix:
   include:
