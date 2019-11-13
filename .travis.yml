@@ -65,7 +65,7 @@ matrix:
     # Test gcc on OSX
     - os: osx
       env:
-        - PYTHON_VERSION=3.7
+        - PYTHON_VERSION=3.6
         - CONDA_DEPENDENCIES="setuptools sphinx-astropy cython numpy pytest-cov gcc"
         - OPENMP_EXPECTED=True
         - CCOMPILER=gcc
