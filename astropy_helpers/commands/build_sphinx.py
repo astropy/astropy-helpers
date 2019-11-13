@@ -83,6 +83,11 @@ class AstropyBuildDocs(SphinxBuildDoc):
         ('open-docs-in-browser', 'o',
          'Open the docs in a browser (using the webbrowser module) if the '
          'build finishes successfully.'))
+    user_options.append(
+        ('parallel=', 'j',
+         'Build the docs in parallel on the specified number of '
+         'processes. If "auto", all the cores on the machine will be '
+         'used.'))
 
     boolean_options = SphinxBuildDoc.boolean_options[:]
     boolean_options.append('warnings-returncode')
@@ -99,6 +104,7 @@ class AstropyBuildDocs(SphinxBuildDoc):
         self.open_docs_in_browser = False
         self.warnings_returncode = False
         self.traceback = False
+        self.parallel = None
 
     def finalize_options(self):
 
@@ -197,6 +203,9 @@ class AstropyBuildDocs(SphinxBuildDoc):
             argv.append('-q')
         elif self.verbose > 1:
             argv.append('-v')
+
+        if self.parallel is not None:
+            argv.append(f'-j={self.parallel}')
 
         if SPHINX_LT_17:
             argv.insert(0, 'sphinx-build')
