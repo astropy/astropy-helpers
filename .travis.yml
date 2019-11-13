@@ -68,6 +68,7 @@ matrix:
         - PYTHON_VERSION=3.6
         - CONDA_DEPENDENCIES="setuptools sphinx-astropy cython numpy pytest-cov gcc"
         - OPENMP_EXPECTED=True
+        - CONDA_CHANNELS="astropy conda-forge"
         - CCOMPILER=gcc
 
   # Uncomment the following if there are issues in setuptools that we
