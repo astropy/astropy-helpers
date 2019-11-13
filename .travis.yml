@@ -4,7 +4,6 @@
 language: c
 
 os:
-    - windows
     - osx
     - linux
 
@@ -27,6 +26,7 @@ env:
 
 matrix:
   include:
+
     # Do one build with sphinx-astropy as one of the tests bypasses the auto-
     # installation but we want to make sure that test runs for coverage.
     - os: linux
@@ -37,10 +37,22 @@ matrix:
       env: PYTHON_VERSION=3.6 PIP_DEPENDENCIES='git+https://github.com/sphinx-doc/sphinx.git#egg=sphinx codecov'
            CONDA_DEPENDENCIES="setuptools cython numpy pytest-cov sphinx-astropy"
            EVENT_TYPE='push pull_request cron'
+
     # Test without installing numpy beforehand to make sure everything works
     # without assuming numpy is already installed
     - os: linux
       env: PYTHON_VERSION=3.6 CONDA_DEPENDENCIES='sphinx-astropy cython pytest-cov'
+
+    # Windows builds - for now we need to install sphinx-astropy with pip since
+    # there is not a recent enough version of graphviz according to conda on Windows
+    - os: windows
+      env: PYTHON_VERSION=3.6
+           CONDA_DEPENDENCIES="setuptools cython numpy pytest-cov"
+           PIP_DEPENDENCIES="codecov sphinx-astropy"
+    - os: windows
+      env: PYTHON_VERSION=3.7
+           CONDA_DEPENDENCIES="setuptools cython numpy pytest-cov"
+           PIP_DEPENDENCIES="codecov sphinx-astropy"
 
     # Test conda's clang
     - os: osx
