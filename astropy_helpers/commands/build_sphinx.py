@@ -31,25 +31,17 @@ for builder in {builders!r}:
 def ensure_sphinx_astropy_installed():
     """
     Make sure that sphinx-astropy is available.
-
-    This returns the available version of sphinx-astropy as well as any
-    paths that should be added to sys.path for sphinx-astropy to be available.
     """
-    # We've split out the Sphinx part of astropy-helpers into sphinx-astropy
-    # but we want it to be auto-installed seamlessly for anyone using
-    # build_docs. We check if it's already installed, and if not, we install
-    # it to a local .eggs directory and add the eggs to the path (these
-    # have to each be added to the path, we can't add them by simply adding
-    # .eggs to the path)
-    sys_path_inserts = []
-    sphinx_astropy_version = None
+
     try:
         from sphinx_astropy import __version__ as sphinx_astropy_version  # noqa
     except ImportError:
-        raise ImportError("sphinx-astropy 1.2 or later needs to be installed to build "
-                          "the documentation.")
+        sphinx_astropy_version = None
 
-    return sphinx_astropy_version, sys_path_inserts
+    if (sphinx_astropy_version is None
+            or LooseVersion(sphinx_astropy_version) <= LooseVersion('1.2')):
+        raise ImportError("sphinx-astropy 1.2 or later needs to be installed to build "
+                            "the documentation.")
 
 
 class AstropyBuildDocs(SphinxBuildDoc):
@@ -154,14 +146,9 @@ class AstropyBuildDocs(SphinxBuildDoc):
         build_main = 'from sphinx.cmd.build import build_main'
 
         # We need to make sure sphinx-astropy is installed
-        sphinx_astropy_version, extra_paths = ensure_sphinx_astropy_installed()
+        ensure_sphinx_astropy_installed()
 
-        # Require sphinx-astropy 1.2 which also enforces a requirement of sphinx>=1.7
-        if LooseVersion(sphinx_astropy_version) <= LooseVersion('1.2'):
-            raise ImportError("sphinx-astropy 1.2 or later needs to be installed to build "
-                              "the documentation.")
-
-        sys_path_inserts = [build_cmd_path, ah_path] + extra_paths
+        sys_path_inserts = [build_cmd_path, ah_path]
         sys_path_inserts = os.linesep.join(['sys.path.insert(0, {0!r})'.format(path) for path in sys_path_inserts])
 
         argv = []
