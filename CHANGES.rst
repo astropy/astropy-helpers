@@ -6,6 +6,8 @@ astropy-helpers Changelog
 
 - Changed minimum required Python version to 3.6. [#498]
 
+- Changed minimum required Sphinx version to 1.7. [#498]
+
 - Added a --parallel option for build_docs. [#498]
 
 
