@@ -22,7 +22,6 @@ env:
     - PIP_DEPENDENCIES="codecov"
     - EVENT_TYPE='push pull_request'
     - DEBUG=True
-    - CONDA_CHANNELS="astropy"
 
 matrix:
   include:
@@ -36,12 +35,13 @@ matrix:
     - os: linux
       env: PYTHON_VERSION=3.6 PIP_DEPENDENCIES='git+https://github.com/sphinx-doc/sphinx.git#egg=sphinx codecov'
            CONDA_DEPENDENCIES="setuptools cython numpy pytest-cov sphinx-astropy"
-           EVENT_TYPE='push pull_request cron'
+           EVENT_TYPE='push pull_request cron' CONDA_CHANNELS="astropy"
 
     # Test without installing numpy beforehand to make sure everything works
     # without assuming numpy is already installed
     - os: linux
       env: PYTHON_VERSION=3.6 CONDA_DEPENDENCIES='sphinx-astropy cython pytest-cov'
+           CONDA_CHANNELS="astropy"
 
     # Windows builds - for now we need to install sphinx-astropy with pip since
     # there is not a recent enough version of graphviz according to conda on Windows
@@ -59,6 +59,7 @@ matrix:
       env:
         - PYTHON_VERSION=3.7
         - CONDA_DEPENDENCIES="setuptools sphinx-astropy cython numpy pytest-cov clang llvm-openmp matplotlib"
+        - CONDA_CHANNELS="astropy"
         - OPENMP_EXPECTED=True
         - CCOMPILER=clang
 
@@ -67,6 +68,7 @@ matrix:
       env:
         - PYTHON_VERSION=3.6
         - CONDA_DEPENDENCIES="setuptools sphinx-astropy cython numpy pytest-cov gcc"
+        - CONDA_CHANNELS="astropy"
         - OPENMP_EXPECTED=True
         - CONDA_CHANNELS="astropy conda-forge"
         - CCOMPILER=gcc
