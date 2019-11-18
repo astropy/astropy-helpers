@@ -16,6 +16,7 @@ env:
     - PYTHON_VERSION=3.7 SETUPTOOLS_VERSION=dev DEBUG=True
       CONDA_DEPENDENCIES="cython numpy pytest-cov sphinx-astropy'
       EVENT_TYPE='push pull_request cron'
+    - PYTHON_VERSION=3.8
 
   global:
     - CONDA_DEPENDENCIES="setuptools sphinx-astropy cython numpy pytest-cov"
