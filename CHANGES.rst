@@ -1,8 +1,8 @@
 astropy-helpers Changelog
 *************************
 
-4.0 (unreleased)
-------------------
+4.0.rc1 (2019-11-17)
+--------------------
 
 - Changed minimum required Python version to 3.6. [#498]
 
