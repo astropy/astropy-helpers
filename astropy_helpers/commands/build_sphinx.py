@@ -9,11 +9,7 @@ from distutils.version import LooseVersion
 
 from distutils import log
 
-from sphinx import __version__ as sphinx_version
 from sphinx.setup_command import BuildDoc as SphinxBuildDoc
-
-SPHINX_LT_16 = LooseVersion(sphinx_version) < LooseVersion('1.6')
-SPHINX_LT_17 = LooseVersion(sphinx_version) < LooseVersion('1.7')
 
 SUBPROCESS_TEMPLATE = """
 import os
@@ -35,25 +31,17 @@ for builder in {builders!r}:
 def ensure_sphinx_astropy_installed():
     """
     Make sure that sphinx-astropy is available.
-
-    This returns the available version of sphinx-astropy as well as any
-    paths that should be added to sys.path for sphinx-astropy to be available.
     """
-    # We've split out the Sphinx part of astropy-helpers into sphinx-astropy
-    # but we want it to be auto-installed seamlessly for anyone using
-    # build_docs. We check if it's already installed, and if not, we install
-    # it to a local .eggs directory and add the eggs to the path (these
-    # have to each be added to the path, we can't add them by simply adding
-    # .eggs to the path)
-    sys_path_inserts = []
-    sphinx_astropy_version = None
+
     try:
         from sphinx_astropy import __version__ as sphinx_astropy_version  # noqa
     except ImportError:
-        raise ImportError("sphinx-astropy needs to be installed to build "
-                          "the documentation.")
+        sphinx_astropy_version = None
 
-    return sphinx_astropy_version, sys_path_inserts
+    if (sphinx_astropy_version is None
+            or LooseVersion(sphinx_astropy_version) < LooseVersion('1.2')):
+        raise ImportError("sphinx-astropy 1.2 or later needs to be installed to build "
+                            "the documentation.")
 
 
 class AstropyBuildDocs(SphinxBuildDoc):
@@ -83,6 +71,11 @@ class AstropyBuildDocs(SphinxBuildDoc):
         ('open-docs-in-browser', 'o',
          'Open the docs in a browser (using the webbrowser module) if the '
          'build finishes successfully.'))
+    user_options.append(
+        ('parallel=', 'j',
+         'Build the docs in parallel on the specified number of '
+         'processes. If "auto", all the cores on the machine will be '
+         'used.'))
 
     boolean_options = SphinxBuildDoc.boolean_options[:]
     boolean_options.append('warnings-returncode')
@@ -99,6 +92,7 @@ class AstropyBuildDocs(SphinxBuildDoc):
         self.open_docs_in_browser = False
         self.warnings_returncode = False
         self.traceback = False
+        self.parallel = None
 
     def finalize_options(self):
 
@@ -149,15 +143,12 @@ class AstropyBuildDocs(SphinxBuildDoc):
         else:
             ah_path = os.path.abspath(ah_importer.path)
 
-        if SPHINX_LT_17:
-            build_main = 'from sphinx import build_main'
-        else:
-            build_main = 'from sphinx.cmd.build import build_main'
+        build_main = 'from sphinx.cmd.build import build_main'
 
         # We need to make sure sphinx-astropy is installed
-        sphinx_astropy_version, extra_paths = ensure_sphinx_astropy_installed()
+        ensure_sphinx_astropy_installed()
 
-        sys_path_inserts = [build_cmd_path, ah_path] + extra_paths
+        sys_path_inserts = [build_cmd_path, ah_path]
         sys_path_inserts = os.linesep.join(['sys.path.insert(0, {0!r})'.format(path) for path in sys_path_inserts])
 
         argv = []
@@ -166,14 +157,7 @@ class AstropyBuildDocs(SphinxBuildDoc):
             argv.append('-W')
 
         if self.no_intersphinx:
-            # Note, if sphinx_astropy_version is None, this could indicate an
-            # old version of setuptools, but sphinx-astropy is likely ok, so
-            # we can proceed.
-            if sphinx_astropy_version is None or LooseVersion(sphinx_astropy_version) >= LooseVersion('1.1'):
-                argv.extend(['-D', 'disable_intersphinx=1'])
-            else:
-                log.warn('The -n option to disable intersphinx requires '
-                         'sphinx-astropy>=1.1. Ignoring.')
+            argv.extend(['-D', 'disable_intersphinx=1'])
 
         # We now need to adjust the flags based on the parent class's options
 
@@ -198,8 +182,8 @@ class AstropyBuildDocs(SphinxBuildDoc):
         elif self.verbose > 1:
             argv.append('-v')
 
-        if SPHINX_LT_17:
-            argv.insert(0, 'sphinx-build')
+        if self.parallel is not None:
+            argv.append(f'-j={self.parallel}')
 
         if isinstance(self.builder, str):
             builders = [self.builder]
@@ -207,11 +191,11 @@ class AstropyBuildDocs(SphinxBuildDoc):
             builders = self.builder
 
         subproccode = SUBPROCESS_TEMPLATE.format(build_main=build_main,
-                                             srcdir=self.source_dir,
-                                             sys_path_inserts=sys_path_inserts,
-                                             builders=builders,
-                                             argv=argv,
-                                             output_dir=os.path.abspath(self.build_dir))
+                                                 srcdir=self.source_dir,
+                                                 sys_path_inserts=sys_path_inserts,
+                                                 builders=builders,
+                                                 argv=argv,
+                                                 output_dir=os.path.abspath(self.build_dir))
 
         log.debug('Starting subprocess of {0} with python code:\n{1}\n'
                   '[CODE END])'.format(sys.executable, subproccode))

@@ -4,7 +4,11 @@ astropy-helpers Changelog
 4.0 (unreleased)
 ------------------
 
-- No changes yet.
+- Changed minimum required Python version to 3.6. [#498]
+
+- Changed minimum required Sphinx version to 1.7. [#498]
+
+- Added a --parallel option for build_docs. [#498]
 
 
 3.2.2 (unreleased)

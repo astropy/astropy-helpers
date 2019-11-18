@@ -246,7 +246,7 @@ def test_missing_cython_c_files(capsys, pyx_extension_test_package,
         assert msg in stderr
 
 
-@pytest.mark.parametrize('mode', ['cli', 'cli-w', 'cli-sphinx', 'cli-l'])
+@pytest.mark.parametrize('mode', ['cli', 'cli-w', 'cli-sphinx', 'cli-l', 'cli-parallel'])
 def test_build_docs(capsys, tmpdir, mode):
     """
     Test for build_docs
@@ -309,6 +309,8 @@ def test_build_docs(capsys, tmpdir, mode):
             run_setup('setup.py', ['build_docs', '-l'])
         elif mode == 'cli-sphinx':
             run_setup('setup.py', ['build_sphinx'])
+        elif mode == 'cli-parallel':
+            run_setup('setup.py', ['build_docs', '--parallel=2'])
 
     assert os.path.exists(docs_dir.join('_build', 'html', 'index.html').strpath)
 
