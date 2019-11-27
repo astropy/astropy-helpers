@@ -6,7 +6,7 @@ import pytest
 
 from textwrap import dedent
 
-from ..setup_helpers import get_package_info
+from ..setup_helpers import get_extensions
 
 from . import reset_distutils_log  # noqa
 from . import run_setup, cleanup_import
@@ -82,13 +82,13 @@ def _extension_test_package(tmpdir, request, extension_type='c',
         from os.path import join
         from setuptools import setup
         sys.path.insert(0, r'{extension_helpers_path}')
-        from extension_helpers.setup_helpers import get_package_info
+        from extension_helpers.setup_helpers import get_extensions
 
         NAME = 'apyhtest_eva'
         VERSION = '0.1'
         RELEASE = True
 
-        package_info = get_package_info()
+        package_info = get_extensions()
 
         setup(
             name=NAME,
@@ -144,8 +144,8 @@ def test_cython_autoextensions(tmpdir):
     test_pkg.join('yoda', 'luke', 'dagobah.pyx').write(
         """def testfunc(): pass""")
 
-    # Required, currently, for get_package_info to work
-    package_info = get_package_info(str(test_pkg))
+    # Required, currently, for get_extensions to work
+    package_info = get_extensions(str(test_pkg))
 
     assert len(package_info['ext_modules']) == 2
     assert package_info['ext_modules'][0].name == 'yoda.luke.dagobah'

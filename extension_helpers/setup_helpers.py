@@ -19,25 +19,10 @@ from setuptools.config import read_configuration
 from .distutils_helpers import get_compiler_option
 from .utils import walk_skip_hidden, import_file
 
-__all__ = ['get_package_info']
+__all__ = ['get_extensions']
 
 
-def update_package_files(srcdir, extensions, package_data, packagenames,
-                         package_dirs):
-    """
-    This function is deprecated and maintained for backward compatibility
-    with affiliated packages.  Affiliated packages should update their
-    setup.py to use `get_package_info` instead.
-    """
-
-    info = get_package_info(srcdir)
-    extensions.extend(info['ext_modules'])
-    package_data.update(info['package_data'])
-    packagenames = list(set(packagenames + info['packages']))
-    package_dirs.update(info['package_dir'])
-
-
-def get_package_info(srcdir='.'):
+def get_extensions(srcdir='.'):
     """
     Collates all of the information for building all subpackages
     and returns a dictionary of keyword arguments that can
@@ -52,31 +37,13 @@ def get_package_info(srcdir='.'):
 
     This function obtains that information by iterating through all
     packages in ``srcdir`` and locating a ``setup_package.py`` module.
-    This module can contain the following functions:
-    ``get_extensions()``, ``get_package_data()``.
+    This module can contain the ``get_extensions()`` function which returns
+    a list of `distutils.extension.Extension` objects.
 
-    Each of those functions take no arguments.
-
-    - ``get_extensions`` returns a list of
-      `distutils.extension.Extension` objects.
-
-    - ``get_package_data()`` returns a dict formatted as required by
-      the ``package_data`` argument to ``setup()``.
     """
     ext_modules = []
     packages = []
     package_dir = {}
-
-    # Read in existing package data, and add to it below
-    setup_cfg = os.path.join(srcdir, 'setup.cfg')
-    if os.path.exists(setup_cfg):
-        conf = read_configuration(setup_cfg)
-        if 'options' in conf and 'package_data' in conf['options']:
-            package_data = conf['options']['package_data']
-        else:
-            package_data = {}
-    else:
-        package_data = {}
 
     # Use the find_packages tool to locate all packages and modules
     packages = find_packages(srcdir)
@@ -90,8 +57,6 @@ def get_package_info(srcdir='.'):
         # filename.
         if hasattr(setuppkg, 'get_extensions'):
             ext_modules.extend(setuppkg.get_extensions())
-        if hasattr(setuppkg, 'get_package_data'):
-            package_data.update(setuppkg.get_package_data())
 
     # Locate any .pyx files not already specified, and add their extensions in.
     # The default include dirs include numpy to facilitate numerical work.
@@ -125,7 +90,6 @@ def get_package_info(srcdir='.'):
         'ext_modules': ext_modules,
         'packages': packages,
         'package_dir': package_dir,
-        'package_data': package_data,
         }
 
 

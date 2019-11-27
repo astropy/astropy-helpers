@@ -227,14 +227,14 @@ these files can include one or more of the following functions:
 With these files in place, you can either use the simplified method of opting in
 to extension-helpers described in :ref:`setup_all`, or if you want more control,
 use theyou can then make use of the
-:func:`~extension_helpers.setup_helpers.get_package_info`  function in your
+:func:`~extension_helpers.setup_helpers.get_extensions`  function in your
 ``setup.py`` file with::
 
-    from extension_helpers.setup_helpers import get_package_info
+    from extension_helpers.setup_helpers import get_extensions
 
     ...
 
-    package_info = get_package_info()
+    package_info = get_extensions()
 
     ...
 
@@ -252,7 +252,7 @@ can make use of the :func:`~extension_helpers.setup_helpers.setup` function from
 from setuptools and automatically runs
 :func:`~extension_helpers.setup_helpers.register_commands`,
 :func:`~extension_helpers.version_helpers.generate_version_py`, and
-:func:`~extension_helpers.setup_helpers.get_package_info`. If you want to do this,
+:func:`~extension_helpers.setup_helpers.get_extensions`. If you want to do this,
 make sure the package name and version number are defined in ``setup.cfg``::
 
     [metadata]
