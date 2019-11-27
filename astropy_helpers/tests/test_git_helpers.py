@@ -11,11 +11,11 @@ from warnings import catch_warnings
 
 from . import reset_setup_helpers, reset_distutils_log  # noqa
 from . import run_cmd, run_setup, cleanup_import
-from astropy_helpers.git_helpers import get_git_devstr
+from extension_helpers.git_helpers import get_git_devstr
 
 _DEV_VERSION_RE = re.compile(r'\d+\.\d+(?:\.\d+)?\.dev(\d+)')
 
-ASTROPY_HELPERS_PATH = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..'))
+extension_helpers_PATH = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..'))
 
 TEST_VERSION_SETUP_PY_OLDSTYLE = """\
 #!/usr/bin/env python
@@ -27,10 +27,10 @@ NAME = 'apyhtest_eva'
 VERSION = {version!r}
 RELEASE = 'dev' not in VERSION
 
-sys.path.insert(0, r'{astropy_helpers_path}')
+sys.path.insert(0, r'{extension_helpers_path}')
 
-from astropy_helpers.git_helpers import get_git_devstr
-from astropy_helpers.version_helpers import generate_version_py
+from extension_helpers.git_helpers import get_git_devstr
+from extension_helpers.version_helpers import generate_version_py
 
 if not RELEASE:
     VERSION += get_git_devstr(False)
@@ -50,9 +50,9 @@ TEST_VERSION_SETUP_PY_NEWSTYLE = """\
 #!/usr/bin/env python
 
 import sys
-sys.path.insert(0, r'{astropy_helpers_path}')
+sys.path.insert(0, r'{extension_helpers_path}')
 
-from astropy_helpers.setup_helpers import setup
+from extension_helpers.setup_helpers import setup
 setup()
 """
 
@@ -77,7 +77,7 @@ def version_test_package(tmpdir, request):
         test_package = tmpdir.mkdir('test_package')
         test_package.join('setup.py').write(
             TEST_VERSION_SETUP_PY_OLDSTYLE.format(version=version,
-                                                  astropy_helpers_path=ASTROPY_HELPERS_PATH))
+                                                  extension_helpers_path=extension_helpers_PATH))
         test_package.mkdir('apyhtest_eva').join('__init__.py').write(TEST_VERSION_INIT)
         with test_package.as_cwd():
             run_cmd('git', ['init'])
@@ -102,7 +102,7 @@ def version_test_package(tmpdir, request):
             TEST_VERSION_SETUP_CFG.format(version=version))
 
         test_package.join('setup.py').write(
-            TEST_VERSION_SETUP_PY_NEWSTYLE.format(astropy_helpers_path=ASTROPY_HELPERS_PATH))
+            TEST_VERSION_SETUP_PY_NEWSTYLE.format(extension_helpers_path=extension_helpers_PATH))
 
         test_package.mkdir('apyhtest_eva').join('__init__.py').write(TEST_VERSION_INIT)
         with test_package.as_cwd():
@@ -169,12 +169,12 @@ def test_update_git_devstr(version_test_package, capsys):
     assert m
     assert int(m.group(1)) == revcount + 1
 
-    # This doesn't test astropy_helpers.get_helpers.update_git_devstr directly
+    # This doesn't test extension_helpers.get_helpers.update_git_devstr directly
     # since a copy of that function is made in packagename.version (so that it
-    # can work without astropy_helpers installed).  In order to get test
-    # coverage on the actual astropy_helpers copy of that function just call it
+    # can work without extension_helpers installed).  In order to get test
+    # coverage on the actual extension_helpers copy of that function just call it
     # directly and compare to the value in packagename
-    from astropy_helpers.git_helpers import update_git_devstr
+    from extension_helpers.git_helpers import update_git_devstr
 
     newversion = update_git_devstr(version, path=str(test_pkg))
     assert newversion == apyhtest_eva.version.version
@@ -182,8 +182,8 @@ def test_update_git_devstr(version_test_package, capsys):
 
 def test_version_update_in_other_repos(version_test_package, tmpdir):
     """
-    Regression test for https://github.com/astropy/astropy-helpers/issues/114
-    and for https://github.com/astropy/astropy-helpers/issues/107
+    Regression test for https://github.com/astropy/extension-helpers/issues/114
+    and for https://github.com/astropy/extension-helpers/issues/107
     """
 
     test_pkg = version_test_package()
@@ -232,9 +232,9 @@ def test_version_update_in_other_repos(version_test_package, tmpdir):
 @pytest.mark.parametrize('version', ['1.0.dev', '1.0'])
 def test_installed_git_version(version_test_package, version, tmpdir, capsys):
     """
-    Test for https://github.com/astropy/astropy-helpers/issues/87
+    Test for https://github.com/astropy/extension-helpers/issues/87
 
-    Ensures that packages installed with astropy_helpers have a correct copy
+    Ensures that packages installed with extension_helpers have a correct copy
     of the git hash of the installed commit.
     """
 

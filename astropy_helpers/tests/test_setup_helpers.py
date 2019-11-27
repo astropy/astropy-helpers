@@ -11,7 +11,7 @@ from ..setup_helpers import get_package_info, register_commands
 from . import reset_setup_helpers, reset_distutils_log  # noqa
 from . import run_setup, cleanup_import
 
-ASTROPY_HELPERS_PATH = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..'))  # noqa
+extension_helpers_PATH = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..'))  # noqa
 
 
 def teardown_module(module):
@@ -81,13 +81,13 @@ def _extension_test_package(tmpdir, request, extension_type='c',
         import sys
         from os.path import join
         from setuptools import setup
-        sys.path.insert(0, r'{astropy_helpers_path}')
-        from astropy_helpers.setup_helpers import register_commands
-        from astropy_helpers.setup_helpers import get_package_info
-        from astropy_helpers.version_helpers import generate_version_py
+        sys.path.insert(0, r'{extension_helpers_path}')
+        from extension_helpers.setup_helpers import register_commands
+        from extension_helpers.setup_helpers import get_package_info
+        from extension_helpers.version_helpers import generate_version_py
 
         if '--no-cython' in sys.argv:
-            from astropy_helpers.commands import build_ext
+            from extension_helpers.commands import build_ext
             build_ext.should_build_with_cython = lambda *args: False
             sys.argv.remove('--no-cython')
 
@@ -105,7 +105,7 @@ def _extension_test_package(tmpdir, request, extension_type='c',
             cmdclass=cmdclassd,
             **package_info
         )
-    """.format(astropy_helpers_path=ASTROPY_HELPERS_PATH)))
+    """.format(extension_helpers_path=extension_helpers_PATH)))
 
     if '' in sys.path:
         sys.path.remove('')
@@ -140,7 +140,7 @@ def pyx_extension_test_package(tmpdir, request):
 
 def test_cython_autoextensions(tmpdir):
     """
-    Regression test for https://github.com/astropy/astropy-helpers/pull/19
+    Regression test for https://github.com/astropy/extension-helpers/pull/19
 
     Ensures that Cython extensions in sub-packages are discovered and built
     only once.
@@ -195,9 +195,9 @@ def test_compiler_module(capsys, c_extension_test_package):
 
 def test_no_cython_buildext(capsys, c_extension_test_package, monkeypatch):
     """
-    Regression test for https://github.com/astropy/astropy-helpers/pull/35
+    Regression test for https://github.com/astropy/extension-helpers/pull/35
 
-    This tests the custom build_ext command installed by astropy_helpers when
+    This tests the custom build_ext command installed by extension_helpers when
     used with a project that has no Cython extensions (but does have one or
     more normal C extensions).
     """
@@ -224,7 +224,7 @@ def test_no_cython_buildext(capsys, c_extension_test_package, monkeypatch):
 def test_missing_cython_c_files(capsys, pyx_extension_test_package,
                                 monkeypatch):
     """
-    Regression test for https://github.com/astropy/astropy-helpers/pull/181
+    Regression test for https://github.com/astropy/extension-helpers/pull/181
 
     Test failure mode when building a package that has Cython modules, but
     where Cython is not installed and the generated C files are missing.
@@ -294,10 +294,10 @@ def test_build_docs(capsys, tmpdir, mode):
 
     test_pkg.join('setup.py').write(dedent("""\
         import sys
-        sys.path.insert(0, r'{astropy_helpers_path}')
-        from astropy_helpers.setup_helpers import setup
+        sys.path.insert(0, r'{extension_helpers_path}')
+        from extension_helpers.setup_helpers import setup
         setup()
-    """.format(astropy_helpers_path=ASTROPY_HELPERS_PATH)))
+    """.format(extension_helpers_path=extension_helpers_PATH)))
 
     with test_pkg.as_cwd():
 
@@ -338,8 +338,8 @@ def test_command_hooks(tmpdir, capsys):
         import sys
         from os.path import join
         from setuptools import setup, Extension
-        sys.path.insert(0, r'{astropy_helpers_path}')
-        from astropy_helpers.setup_helpers import register_commands, get_package_info
+        sys.path.insert(0, r'{extension_helpers_path}')
+        from extension_helpers.setup_helpers import register_commands, get_package_info
 
         NAME = '_welltall_'
         VERSION = '0.1'
@@ -352,7 +352,7 @@ def test_command_hooks(tmpdir, capsys):
             version=VERSION,
             cmdclass=cmdclassd
         )
-    """.format(astropy_helpers_path=ASTROPY_HELPERS_PATH)))
+    """.format(extension_helpers_path=extension_helpers_PATH)))
 
     with test_pkg.as_cwd():
         try:
@@ -379,8 +379,8 @@ def test_invalid_package_exclusion(tmpdir, capsys):
         import sys
         from os.path import join
         from setuptools import setup, Extension
-        sys.path.insert(0, r'{astropy_helpers_path}')
-        from astropy_helpers.setup_helpers import register_commands, \\
+        sys.path.insert(0, r'{extension_helpers_path}')
+        from extension_helpers.setup_helpers import register_commands, \\
             get_package_info, add_exclude_packages
 
         NAME = {module_name!r}
@@ -388,7 +388,7 @@ def test_invalid_package_exclusion(tmpdir, capsys):
         RELEASE = True
 
     """.format(module_name=module_name,
-               astropy_helpers_path=ASTROPY_HELPERS_PATH))
+               extension_helpers_path=extension_helpers_PATH))
 
     setup_footer = dedent("""\
         setup(

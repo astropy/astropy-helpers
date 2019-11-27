@@ -1,18 +1,18 @@
 [run]
 
-source = astropy_helpers
+source = extension_helpers
 
 omit =
-   astropy_helpers/*/setup_package.py
-   astropy_helpers/tests/*
-   astropy_helpers/conftest.py
+   extension_helpers/*/setup_package.py
+   extension_helpers/tests/*
+   extension_helpers/conftest.py
 
 [report]
 
 omit =
-   astropy_helpers/*/setup_package.py
-   astropy_helpers/tests/*
-   astropy_helpers/conftest.py
+   extension_helpers/*/setup_package.py
+   extension_helpers/tests/*
+   extension_helpers/conftest.py
 
 exclude_lines =
    # Have to re-enable the standard pragma

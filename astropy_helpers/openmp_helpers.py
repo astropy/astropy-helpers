@@ -3,7 +3,7 @@
 # add_openmp_flags_if_available function in a setup_package.py file where you
 # are defining your extensions:
 #
-#     from astropy_helpers.openmp_helpers import add_openmp_flags_if_available
+#     from extension_helpers.openmp_helpers import add_openmp_flags_if_available
 #
 # then call it with a single extension as the only argument:
 #

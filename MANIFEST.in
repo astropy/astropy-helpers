@@ -7,4 +7,4 @@ include ah_bootstrap.py
 
 exclude *.pyc *.o
 prune build
-prune astropy_helpers/tests
+prune extension_helpers/tests

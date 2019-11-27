@@ -1,15 +1,15 @@
 # -*- coding: utf-8 -*-
 
-project = 'astropy-helpers'
+project = 'extension-helpers'
 copyright = '2014, The Astropy Developers'
 author = 'The Astropy Developers'
 
 # We need to get the version number from the package
 import sys  # noqa
 sys.path.insert(0, '..')
-import astropy_helpers  # noqa
-version = astropy_helpers.__version__
-release = astropy_helpers.__version__
+import extension_helpers  # noqa
+version = extension_helpers.__version__
+release = extension_helpers.__version__
 
 extensions = [
     'sphinx.ext.autodoc',

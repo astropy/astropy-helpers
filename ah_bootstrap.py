@@ -1,12 +1,12 @@
 """
-This bootstrap module contains code for ensuring that the astropy_helpers
+This bootstrap module contains code for ensuring that the extension_helpers
 package will be importable by the time the setup.py script runs.  It also
 includes some workarounds to ensure that a recent-enough version of setuptools
 is being used for the installation.
 
 This module should be the first thing imported in the setup.py of distributions
-that make use of the utilities in astropy_helpers.  If the distribution ships
-with its own copy of astropy_helpers, this module will first attempt to import
+that make use of the utilities in extension_helpers.  If the distribution ships
+with its own copy of extension_helpers, this module will first attempt to import
 from the shipped copy.  However, it will also check PyPI to see if there are
 any bug-fix releases on top of the current version that may be useful to get
 past platform-specific bugs that have been fixed.  When running setup.py, use
@@ -18,21 +18,21 @@ checks for a configuration section called ``[ah_bootstrap]`` the presences of
 that section, and options therein, determine the next step taken:  If it
 contains an option called ``auto_use`` with a value of ``True``, it will
 automatically call the main function of this module called
-`use_astropy_helpers` (see that function's docstring for full details).
+`use_extension_helpers` (see that function's docstring for full details).
 Otherwise no further action is taken and by default the system-installed version
-of astropy-helpers will be used (however, ``ah_bootstrap.use_astropy_helpers``
+of extension-helpers will be used (however, ``ah_bootstrap.use_extension_helpers``
 may be called manually from within the setup.py script).
 
 This behavior can also be controlled using the ``--auto-use`` and
 ``--no-auto-use`` command-line flags. For clarity, an alias for
-``--no-auto-use`` is ``--use-system-astropy-helpers``, and we recommend using
+``--no-auto-use`` is ``--use-system-extension-helpers``, and we recommend using
 the latter if needed.
 
 Additional options in the ``[ah_boostrap]`` section of setup.cfg have the same
-names as the arguments to `use_astropy_helpers`, and can be used to configure
+names as the arguments to `use_extension_helpers`, and can be used to configure
 the bootstrap script when ``auto_use = True``.
 
-See https://github.com/astropy/astropy-helpers for more details, and for the
+See https://github.com/astropy/extension-helpers for more details, and for the
 latest version of this module.
 """
 
@@ -55,12 +55,12 @@ import pkg_resources
 from setuptools import Distribution
 from setuptools.package_index import PackageIndex
 
-# This is the minimum Python version required for astropy-helpers
+# This is the minimum Python version required for extension-helpers
 __minimum_python_version__ = (3, 5)
 
-# TODO: Maybe enable checking for a specific version of astropy_helpers?
-DIST_NAME = 'astropy-helpers'
-PACKAGE_NAME = 'astropy_helpers'
+# TODO: Maybe enable checking for a specific version of extension_helpers?
+DIST_NAME = 'extension-helpers'
+PACKAGE_NAME = 'extension_helpers'
 UPPER_VERSION_EXCLUSIVE = None
 
 # Defaults for other options
@@ -80,8 +80,8 @@ CFG_OPTIONS = [
 # Start off by parsing the setup.cfg file
 
 _err_help_msg = """
-If the problem persists consider installing astropy_helpers manually using pip
-(`pip install astropy_helpers`) or by manually downloading the source archive,
+If the problem persists consider installing extension_helpers manually using pip
+(`pip install extension_helpers`) or by manually downloading the source archive,
 extracting it, and installing by running `python setup.py install` from the
 root of the extracted source code.
 """
@@ -137,10 +137,10 @@ if SETUP_CFG.has_option('options', 'python_requires'):
 if sys.version_info < __minimum_python_version__:
 
     if parent_package is None:
-        message = "ERROR: Python {} or later is required by astropy-helpers\n".format(
+        message = "ERROR: Python {} or later is required by extension-helpers\n".format(
             __minimum_python_version__)
     else:
-        message = "ERROR: Python {} or later is required by astropy-helpers for {}\n".format(
+        message = "ERROR: Python {} or later is required by extension-helpers for {}\n".format(
             __minimum_python_version__, parent_package)
 
     sys.stderr.write(message)
@@ -160,13 +160,13 @@ try:
     import setuptools
     assert LooseVersion(setuptools.__version__) >= LooseVersion('30.3')
 except (ImportError, AssertionError):
-    sys.stderr.write("ERROR: setuptools 30.3 or later is required by astropy-helpers\n")
+    sys.stderr.write("ERROR: setuptools 30.3 or later is required by extension-helpers\n")
     sys.exit(1)
 
 # typing as a dependency for 1.6.1+ Sphinx causes issues when imported after
 # initializing submodule with ah_boostrap.py
 # See discussion and references in
-# https://github.com/astropy/astropy-helpers/issues/302
+# https://github.com/astropy/extension-helpers/issues/302
 
 try:
     import typing   # noqa
@@ -175,7 +175,7 @@ except ImportError:
 
 
 # Note: The following import is required as a workaround to
-# https://github.com/astropy/astropy-helpers/issues/89; if we don't import this
+# https://github.com/astropy/extension-helpers/issues/89; if we don't import this
 # module now, it will get cleaned up after `run_setup` is called, but that will
 # later cause the TemporaryDirectory class defined in it to stop working when
 # used later on by setuptools
@@ -206,7 +206,7 @@ except:
 
 class _Bootstrapper(object):
     """
-    Bootstrapper implementation.  See ``use_astropy_helpers`` for parameter
+    Bootstrapper implementation.  See ``use_extension_helpers`` for parameter
     documentation.
     """
 
@@ -247,7 +247,7 @@ class _Bootstrapper(object):
             use_git = False
 
         self.use_git = use_git if use_git is not None else USE_GIT
-        # Declared as False by default--later we check if astropy-helpers can be
+        # Declared as False by default--later we check if extension-helpers can be
         # upgraded from PyPI, but only if not using a source distribution (as in
         # the case of import from a git submodule)
         self.is_submodule = False
@@ -265,7 +265,7 @@ class _Bootstrapper(object):
 
         if auto_use:
             # Run the bootstrapper, otherwise the setup.py is using the old
-            # use_astropy_helpers() interface, in which case it will run the
+            # use_extension_helpers() interface, in which case it will run the
             # bootstrapper manually after reconfiguring it.
             bootstrapper.run()
 
@@ -321,9 +321,9 @@ class _Bootstrapper(object):
             config['auto_use'] = False
             argv.remove('--no-auto-use')
 
-        if '--use-system-astropy-helpers' in argv:
+        if '--use-system-extension-helpers' in argv:
             config['auto_use'] = False
-            argv.remove('--use-system-astropy-helpers')
+            argv.remove('--use-system-extension-helpers')
 
         return config
 
@@ -331,7 +331,7 @@ class _Bootstrapper(object):
         strategies = ['local_directory', 'local_file', 'index']
         dist = None
 
-        # First, remove any previously imported versions of astropy_helpers;
+        # First, remove any previously imported versions of extension_helpers;
         # this is necessary for nested installs where one package's installer
         # is installing another package via setuptools.sandbox.run_setup, as in
         # the case of setup_requires
@@ -358,7 +358,7 @@ class _Bootstrapper(object):
                 "available and importable as a prerequisite to building "
                 "or installing this package.".format(PACKAGE_NAME))
 
-        # This is a bit hacky, but if astropy_helpers was loaded from a
+        # This is a bit hacky, but if extension_helpers was loaded from a
         # directory/submodule its Distribution object gets a "precedence" of
         # "DEVELOP_DIST".  However, in other cases it gets a precedence of
         # "EGG_DIST".  However, when activing the distribution it will only be
@@ -366,7 +366,7 @@ class _Bootstrapper(object):
         # do that
         dist = dist.clone(precedence=pkg_resources.EGG_DIST)
 
-        # Otherwise we found a version of astropy-helpers, so we're done
+        # Otherwise we found a version of extension-helpers, so we're done
         # Just active the found distribution on sys.path--if we did a
         # download this usually happens automatically but it doesn't hurt to
         # do it again
@@ -403,7 +403,7 @@ class _Bootstrapper(object):
         if not os.path.isdir(self.path):
             return
 
-        log.info('Attempting to import astropy_helpers from {0} {1!r}'.format(
+        log.info('Attempting to import extension_helpers from {0} {1!r}'.format(
                  'submodule' if self.is_submodule else 'directory',
                  self.path))
 
@@ -415,7 +415,7 @@ class _Bootstrapper(object):
                 'exist, or does not contain a copy of the {1} '
                 'package.'.format(self.path, PACKAGE_NAME))
         elif self.auto_upgrade and not self.is_submodule:
-            # A version of astropy-helpers was found on the available path, but
+            # A version of extension-helpers was found on the available path, but
             # check to see if a bugfix release is available on PyPI
             upgrade = self._do_upgrade(dist)
             if upgrade is not None:
@@ -432,7 +432,7 @@ class _Bootstrapper(object):
         if not os.path.isfile(self.path):
             return
 
-        log.info('Attempting to unpack and import astropy_helpers from '
+        log.info('Attempting to unpack and import extension_helpers from '
                  '{0!r}'.format(self.path))
 
         try:
@@ -447,7 +447,7 @@ class _Bootstrapper(object):
             dist = None
 
         if dist is not None and self.auto_upgrade:
-            # A version of astropy-helpers was found on the available path, but
+            # A version of extension-helpers was found on the available path, but
             # check to see if a bugfix release is available on PyPI
             upgrade = self._do_upgrade(dist)
             if upgrade is not None:
@@ -480,7 +480,7 @@ class _Bootstrapper(object):
 
     def _directory_import(self):
         """
-        Import astropy_helpers from the given path, which will be added to
+        Import extension_helpers from the given path, which will be added to
         sys.path.
 
         Must return True if the import succeeded, and False otherwise.
@@ -931,7 +931,7 @@ def _silence():
 class _AHBootstrapSystemExit(SystemExit):
     def __init__(self, *args):
         if not args:
-            msg = 'An unknown problem occurred bootstrapping astropy_helpers.'
+            msg = 'An unknown problem occurred bootstrapping extension_helpers.'
         else:
             msg = args[0]
 
@@ -943,10 +943,10 @@ class _AHBootstrapSystemExit(SystemExit):
 BOOTSTRAPPER = _Bootstrapper.main()
 
 
-def use_astropy_helpers(**kwargs):
+def use_extension_helpers(**kwargs):
     """
-    Ensure that the `astropy_helpers` module is available and is importable.
-    This supports automatic submodule initialization if astropy_helpers is
+    Ensure that the `extension_helpers` module is available and is importable.
+    This supports automatic submodule initialization if extension_helpers is
     included in a project as a git submodule, or will download it from PyPI if
     necessary.
 
@@ -955,13 +955,13 @@ def use_astropy_helpers(**kwargs):
 
     path : str or None, optional
         A filesystem path relative to the root of the project's source code
-        that should be added to `sys.path` so that `astropy_helpers` can be
+        that should be added to `sys.path` so that `extension_helpers` can be
         imported from that path.
 
         If the path is a git submodule it will automatically be initialized
         and/or updated.
 
-        The path may also be to a ``.tar.gz`` archive of the astropy_helpers
+        The path may also be to a ``.tar.gz`` archive of the extension_helpers
         source distribution.  In this case the archive is automatically
         unpacked and made temporarily available on `sys.path` as a ``.egg``
         archive.
@@ -970,7 +970,7 @@ def use_astropy_helpers(**kwargs):
 
     download_if_needed : bool, optional
         If the provided filesystem path is not found an attempt will be made to
-        download astropy_helpers from PyPI.  It will then be made temporarily
+        download extension_helpers from PyPI.  It will then be made temporarily
         available on `sys.path` as a ``.egg`` archive (using the
         ``setup_requires`` feature of setuptools.  If the ``--offline`` option
         is given at the command line the value of this argument is overridden
@@ -988,7 +988,7 @@ def use_astropy_helpers(**kwargs):
     auto_upgrade : bool, optional
         By default, when installing a package from a non-development source
         distribution ah_boostrap will try to automatically check for patch
-        releases to astropy-helpers on PyPI and use the patched version over
+        releases to extension-helpers on PyPI and use the patched version over
         any bundled versions.  Setting this to `False` will disable that
         functionality. If the ``--offline`` option is given at the command line
         the value of this argument is overridden to `False`.

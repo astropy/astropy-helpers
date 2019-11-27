@@ -1,8 +1,8 @@
-# This file contains settings for pytest that are specific to astropy-helpers.
+# This file contains settings for pytest that are specific to extension-helpers.
 # Since we run many of the tests in sub-processes, we need to collect coverage
 # data inside each subprocess and then combine it into a single .coverage file.
 # To do this we set up a list which run_setup appends coverage objects to.
-# This is not intended to be used by packages other than astropy-helpers.
+# This is not intended to be used by packages other than extension-helpers.
 
 import os
 import glob
@@ -30,12 +30,12 @@ def pytest_unconfigure(config):
         # We create an empty coverage data object
         combined_cdata = CoverageData()
 
-        # Add all files from astropy_helpers to make sure we compute the total
+        # Add all files from extension_helpers to make sure we compute the total
         # coverage, not just the coverage of the files that have non-zero
         # coverage.
 
         lines = {}
-        for filename in glob.glob(os.path.join('astropy_helpers', '**', '*.py'), recursive=True):
+        for filename in glob.glob(os.path.join('extension_helpers', '**', '*.py'), recursive=True):
             lines[os.path.abspath(filename)] = []
 
         for cdata in SUBPROCESS_COVERAGE:
@@ -45,7 +45,7 @@ def pytest_unconfigure(config):
             # exist.
             for filename in cdata.measured_files():
                 try:
-                    pos = filename.rindex('astropy_helpers')
+                    pos = filename.rindex('extension_helpers')
                 except ValueError:
                     continue
                 short_filename = filename[pos:]

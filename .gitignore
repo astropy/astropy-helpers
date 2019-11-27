@@ -12,8 +12,8 @@ __pycache__
 
 # Other generated files
 MANIFEST
-astropy_helpers/version.py
-astropy_helpers/cython_version.py
+extension_helpers/version.py
+extension_helpers/cython_version.py
 
 # Sphinx
 _build

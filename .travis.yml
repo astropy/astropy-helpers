@@ -127,7 +127,7 @@ before_script:
 script:
 
     # First run tests in the repository
-    - pytest --cov astropy_helpers astropy_helpers
+    - pytest --cov extension_helpers extension_helpers
 
     # In conftest.py we produce a .coverage.subprocess that contains coverage
     # statistics for sub-processes, so we combine it with the main one here.
@@ -142,9 +142,9 @@ script:
     - cd dist
     - tar xvzf *.tar.gz
     - rm *.tar.gz
-    - cd astropy-helpers*
-    - cp -RP ../../astropy_helpers/tests astropy_helpers/tests
-    - pytest astropy_helpers
+    - cd extension-helpers*
+    - cp -RP ../../extension_helpers/tests extension_helpers/tests
+    - pytest extension_helpers
 
 after_success:
     - codecov

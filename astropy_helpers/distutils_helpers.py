@@ -3,7 +3,7 @@ This module contains various utilities for introspecting the distutils
 module and the setup process.
 
 Some of these utilities require the
-`astropy_helpers.setup_helpers.register_commands` function to be called first,
+`extension_helpers.setup_helpers.register_commands` function to be called first,
 as it will affect introspection of setuptools command-line arguments.  Other
 utilities in this module do not have that restriction.
 """
@@ -19,7 +19,7 @@ from .utils import silence
 
 
 # This function, and any functions that call it, require the setup in
-# `astropy_helpers.setup_helpers.register_commands` to be run first.
+# `extension_helpers.setup_helpers.register_commands` to be run first.
 def get_dummy_distribution():
     """
     Returns a distutils Distribution object used to instrument the setup
@@ -30,9 +30,9 @@ def get_dummy_distribution():
 
     if _module_state['registered_commands'] is None:
         raise RuntimeError(
-            'astropy_helpers.setup_helpers.register_commands() must be '
+            'extension_helpers.setup_helpers.register_commands() must be '
             'called before using '
-            'astropy_helpers.setup_helpers.get_dummy_distribution()')
+            'extension_helpers.setup_helpers.get_dummy_distribution()')
 
     # Pre-parse the Distutils command-line options and config files to if
     # the option is set.
@@ -183,8 +183,8 @@ def add_command_option(command, name, doc, is_bool=False):
     dist = get_dummy_distribution()
     cmdcls = dist.get_command_class(command)
 
-    if (hasattr(cmdcls, '_astropy_helpers_options') and
-            name in cmdcls._astropy_helpers_options):
+    if (hasattr(cmdcls, '_extension_helpers_options') and
+            name in cmdcls._extension_helpers_options):
         return
 
     attr = name.replace('-', '_')
@@ -217,10 +217,10 @@ def add_command_option(command, name, doc, is_bool=False):
     # run multiple times in the same interpreter repeated adds are ignored
     # (this way we can still raise a RuntimeError if a custom option overrides
     # a built-in option)
-    if not hasattr(cmdcls, '_astropy_helpers_options'):
-        cmdcls._astropy_helpers_options = set([name])
+    if not hasattr(cmdcls, '_extension_helpers_options'):
+        cmdcls._extension_helpers_options = set([name])
     else:
-        cmdcls._astropy_helpers_options.add(name)
+        cmdcls._extension_helpers_options.add(name)
 
 
 def get_distutils_display_options():

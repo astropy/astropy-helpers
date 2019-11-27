@@ -86,16 +86,16 @@ def run_setup(setup_script, args):
 @pytest.fixture(scope='function', autouse=True)
 def reset_setup_helpers(request):
     """
-    Saves and restores the global state of the astropy_helpers.setup_helpers
+    Saves and restores the global state of the extension_helpers.setup_helpers
     module between tests.
     """
 
-    mod = __import__('astropy_helpers.setup_helpers', fromlist=[''])
+    mod = __import__('extension_helpers.setup_helpers', fromlist=[''])
 
     old_state = mod._module_state.copy()
 
     def finalizer(old_state=old_state):
-        mod = sys.modules.get('astropy_helpers.setup_helpers')
+        mod = sys.modules.get('extension_helpers.setup_helpers')
         if mod is not None:
             mod._module_state.update(old_state)
 
@@ -119,11 +119,11 @@ TEST_PACKAGE_SETUP_PY = """\
 
 from setuptools import setup
 
-NAME = 'astropy-helpers-test'
+NAME = 'extension-helpers-test'
 VERSION = {version!r}
 
 setup(name=NAME, version=VERSION,
-      packages=['_astropy_helpers_test_'],
+      packages=['_extension_helpers_test_'],
       zip_safe=False)
 """
 
@@ -133,8 +133,8 @@ def create_testpackage(tmpdir, version='0.1'):
     source = tmpdir.mkdir('testpkg')
 
     with source.as_cwd():
-        source.mkdir('_astropy_helpers_test_')
-        init = source.join('_astropy_helpers_test_', '__init__.py')
+        source.mkdir('_extension_helpers_test_')
+        init = source.join('_extension_helpers_test_', '__init__.py')
         init.write('__version__ = {0!r}'.format(version))
         setup_py = TEST_PACKAGE_SETUP_PY.format(version=version)
         source.join('setup.py').write(setup_py)
@@ -150,10 +150,10 @@ def create_testpackage(tmpdir, version='0.1'):
 @pytest.fixture
 def testpackage(tmpdir, version='0.1'):
     """
-    This fixture creates a simplified package called _astropy_helpers_test_
+    This fixture creates a simplified package called _extension_helpers_test_
     used primarily for testing ah_boostrap, but without using the
-    astropy_helpers package directly and getting it confused with the
-    astropy_helpers package already under test.
+    extension_helpers package directly and getting it confused with the
+    extension_helpers package already under test.
     """
 
     return create_testpackage(tmpdir, version=version)
@@ -166,7 +166,7 @@ def cleanup_import(package_name):
         if not isinstance(k, str):
             # Some things will actually do this =_=
             continue
-        elif k.startswith('astropy_helpers.tests'):
+        elif k.startswith('extension_helpers.tests'):
             # Don't delete imported test modules or else the tests will break,
             # badly
             continue

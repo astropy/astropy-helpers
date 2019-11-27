@@ -137,7 +137,7 @@ class AstropyBuildDocs(SphinxBuildDoc):
         build_cmd = self.get_finalized_command('build')
         build_cmd_path = os.path.abspath(build_cmd.build_lib)
 
-        ah_importer = pkgutil.get_importer('astropy_helpers')
+        ah_importer = pkgutil.get_importer('extension_helpers')
         if ah_importer is None:
             ah_path = '.'
         else:

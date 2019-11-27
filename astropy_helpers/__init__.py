@@ -6,10 +6,10 @@ except ImportError:
     __githash__ = ''
 
 
-# If we've made it as far as importing astropy_helpers, we don't need
+# If we've made it as far as importing extension_helpers, we don't need
 # ah_bootstrap in sys.modules anymore.  Getting rid of it is actually necessary
 # if the package we're installing has a setup_requires of another package that
-# uses astropy_helpers (and possibly a different version at that)
+# uses extension_helpers (and possibly a different version at that)
 # See https://github.com/astropy/astropy/issues/3541
 import sys
 if 'ah_bootstrap' in sys.modules:
@@ -17,7 +17,7 @@ if 'ah_bootstrap' in sys.modules:
 
 
 # Note, this is repeated from ah_bootstrap.py, but is here too in case this
-# astropy-helpers was upgraded to from an older version that did not have this
+# extension-helpers was upgraded to from an older version that did not have this
 # check in its ah_bootstrap.
 # matplotlib can cause problems if it is imported from within a call of
 # run_setup(), because in some circumstances it will try to write to the user's
