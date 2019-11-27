@@ -6,7 +6,7 @@ import pytest
 
 from textwrap import dedent
 
-from ..setup_helpers import get_package_info, register_commands
+from ..setup_helpers import get_package_info
 
 from . import reset_setup_helpers, reset_distutils_log  # noqa
 from . import run_setup, cleanup_import
@@ -82,27 +82,17 @@ def _extension_test_package(tmpdir, request, extension_type='c',
         from os.path import join
         from setuptools import setup
         sys.path.insert(0, r'{extension_helpers_path}')
-        from extension_helpers.setup_helpers import register_commands
         from extension_helpers.setup_helpers import get_package_info
-        from extension_helpers.version_helpers import generate_version_py
-
-        if '--no-cython' in sys.argv:
-            from extension_helpers.commands import build_ext
-            build_ext.should_build_with_cython = lambda *args: False
-            sys.argv.remove('--no-cython')
 
         NAME = 'apyhtest_eva'
         VERSION = '0.1'
         RELEASE = True
 
-        cmdclassd = register_commands(NAME, VERSION, RELEASE)
-        generate_version_py(NAME, VERSION, RELEASE, False, False)
         package_info = get_package_info()
 
         setup(
             name=NAME,
             version=VERSION,
-            cmdclass=cmdclassd,
             **package_info
         )
     """.format(extension_helpers_path=extension_helpers_PATH)))
@@ -155,10 +145,9 @@ def test_cython_autoextensions(tmpdir):
         """def testfunc(): pass""")
 
     # Required, currently, for get_package_info to work
-    register_commands('yoda', '0.0', False, srcdir=str(test_pkg))
     package_info = get_package_info(str(test_pkg))
 
-    assert len(package_info['ext_modules']) == 1
+    assert len(package_info['ext_modules']) == 2
     assert package_info['ext_modules'][0].name == 'yoda.luke.dagobah'
 
 
@@ -180,9 +169,6 @@ def test_compiler_module(capsys, c_extension_test_package):
                    '--install-lib={0}'.format(install_temp),
                    '--record={0}'.format(install_temp.join('record.txt'))])
 
-        stdout, stderr = capsys.readouterr()
-        assert "No git repository present at" in stderr
-
     with install_temp.as_cwd():
         import apyhtest_eva
         # Make sure we imported the apyhtest_eva package from the correct place
@@ -193,185 +179,6 @@ def test_compiler_module(capsys, c_extension_test_package):
         assert apyhtest_eva.compiler_version != 'unknown'
 
 
-def test_no_cython_buildext(capsys, c_extension_test_package, monkeypatch):
-    """
-    Regression test for https://github.com/astropy/extension-helpers/pull/35
-
-    This tests the custom build_ext command installed by extension_helpers when
-    used with a project that has no Cython extensions (but does have one or
-    more normal C extensions).
-    """
-
-    test_pkg = c_extension_test_package
-
-    with test_pkg.as_cwd():
-
-        run_setup('setup.py', ['build_ext', '--inplace', '--no-cython'])
-
-        stdout, stderr = capsys.readouterr()
-        assert "No git repository present at" in stderr
-
-    sys.path.insert(0, str(test_pkg))
-
-    try:
-        import apyhtest_eva.unit01
-        dirname = os.path.abspath(os.path.dirname(apyhtest_eva.unit01.__file__))
-        assert dirname == str(test_pkg.join('apyhtest_eva'))
-    finally:
-        sys.path.remove(str(test_pkg))
-
-
-def test_missing_cython_c_files(capsys, pyx_extension_test_package,
-                                monkeypatch):
-    """
-    Regression test for https://github.com/astropy/extension-helpers/pull/181
-
-    Test failure mode when building a package that has Cython modules, but
-    where Cython is not installed and the generated C files are missing.
-    """
-
-    test_pkg = pyx_extension_test_package
-
-    with test_pkg.as_cwd():
-
-        with pytest.raises(SystemExit):
-            run_setup('setup.py', ['build_ext', '--inplace', '--no-cython'])
-
-        stdout, stderr = capsys.readouterr()
-        assert "No git repository present at" in stderr
-
-        msg = ('Could not find C/C++ file {0}'
-               '.(c/cpp)'.format('apyhtest_eva/unit02'.replace('/', os.sep)))
-
-        assert msg in stderr
-
-
-@pytest.mark.parametrize('mode', ['cli', 'cli-w', 'cli-sphinx', 'cli-l', 'cli-parallel'])
-def test_build_docs(capsys, tmpdir, mode):
-    """
-    Test for build_docs
-    """
-
-    test_pkg = tmpdir.mkdir('test_pkg')
-
-    test_pkg.mkdir('mypackage')
-
-    test_pkg.join('mypackage').join('__init__.py').write(dedent("""\
-        def test_function():
-            pass
-
-        class A():
-            pass
-
-        class B(A):
-            pass
-    """))
-
-    test_pkg.mkdir('docs')
-
-    docs_dir = test_pkg.join('docs')
-    docs_dir.join('conf.py').write(dedent("""\
-        import warnings
-        with warnings.catch_warnings():  # ignore matplotlib warning
-            warnings.simplefilter("ignore")
-            from sphinx_astropy.conf import *
-        exclude_patterns.append('_templates')
-        suppress_warnings = ['app.add_directive', 'app.add_node', 'app.add_role']
-    """))  # noqa
-
-    docs_dir.join('index.rst').write(dedent("""\
-        .. automodapi:: mypackage
-           :no-inheritance-diagram:
-    """))
-
-    # For this test we try out the new way of calling register_commands without
-    # arugments, instead getting the information from setup.cfg.
-    test_pkg.join('setup.cfg').write(dedent("""
-        [metadata]
-        name = mypackage
-        version = 0.1
-    """))
-
-    test_pkg.join('setup.py').write(dedent("""\
-        import sys
-        sys.path.insert(0, r'{extension_helpers_path}')
-        from extension_helpers.setup_helpers import setup
-        setup()
-    """.format(extension_helpers_path=extension_helpers_PATH)))
-
-    with test_pkg.as_cwd():
-
-        if mode == 'cli':
-            run_setup('setup.py', ['build_docs'])
-        elif mode == 'cli-w':
-            run_setup('setup.py', ['build_docs', '-w'])
-        elif mode == 'cli-l':
-            run_setup('setup.py', ['build_docs', '-l'])
-        elif mode == 'cli-sphinx':
-            run_setup('setup.py', ['build_sphinx'])
-        elif mode == 'cli-parallel':
-            run_setup('setup.py', ['build_docs', '--parallel=2'])
-
-    assert os.path.exists(docs_dir.join('_build', 'html', 'index.html').strpath)
-
-
-def test_command_hooks(tmpdir, capsys):
-    """A basic test for pre- and post-command hooks."""
-
-    test_pkg = tmpdir.mkdir('test_pkg')
-    test_pkg.mkdir('_welltall_')
-    test_pkg.join('_welltall_', '__init__.py').ensure()
-
-    # Create a setup_package module with a couple of command hooks in it
-    test_pkg.join('_welltall_', 'setup_package.py').write(dedent("""\
-        def pre_build_hook(cmd_obj):
-            print('Hello build!')
-
-        def post_build_hook(cmd_obj):
-            print('Goodbye build!')
-
-    """))
-
-    # A simple setup.py for the test package--running register_commands should
-    # discover and enable the command hooks
-    test_pkg.join('setup.py').write(dedent("""\
-        import sys
-        from os.path import join
-        from setuptools import setup, Extension
-        sys.path.insert(0, r'{extension_helpers_path}')
-        from extension_helpers.setup_helpers import register_commands, get_package_info
-
-        NAME = '_welltall_'
-        VERSION = '0.1'
-        RELEASE = True
-
-        cmdclassd = register_commands(NAME, VERSION, RELEASE)
-
-        setup(
-            name=NAME,
-            version=VERSION,
-            cmdclass=cmdclassd
-        )
-    """.format(extension_helpers_path=extension_helpers_PATH)))
-
-    with test_pkg.as_cwd():
-        try:
-            run_setup('setup.py', ['build'])
-        finally:
-            cleanup_import('_welltall_')
-
-    stdout, stderr = capsys.readouterr()
-    want = dedent("""\
-        running build
-        running pre_hook from _welltall_.setup_package for build command
-        Hello build!
-        running post_hook from _welltall_.setup_package for build command
-        Goodbye build!
-    """).strip()
-
-    assert want in stdout.replace('\r\n', '\n').replace('\r', '\n')
-
-
 def test_invalid_package_exclusion(tmpdir, capsys):
 
     module_name = 'foobar'
@@ -380,8 +187,7 @@ def test_invalid_package_exclusion(tmpdir, capsys):
         from os.path import join
         from setuptools import setup, Extension
         sys.path.insert(0, r'{extension_helpers_path}')
-        from extension_helpers.setup_helpers import register_commands, \\
-            get_package_info, add_exclude_packages
+        from extension_helpers.setup_helpers import get_package_info, add_exclude_packages
 
         NAME = {module_name!r}
         VERSION = '0.1'
@@ -394,14 +200,12 @@ def test_invalid_package_exclusion(tmpdir, capsys):
         setup(
             name=NAME,
             version=VERSION,
-            cmdclass=cmdclassd,
             **package_info
         )
     """)
 
     # Test error when using add_package_excludes out of order
     error_commands = dedent("""\
-        cmdclassd = register_commands(NAME, VERSION, RELEASE)
         package_info = get_package_info()
         add_exclude_packages(['tests*'])
 
@@ -420,7 +224,6 @@ def test_invalid_package_exclusion(tmpdir, capsys):
 
     # Test warning when using deprecated exclude parameter
     warn_commands = dedent("""\
-        cmdclassd = register_commands(NAME, VERSION, RELEASE)
         package_info = get_package_info(exclude=['test*'])
 
     """)

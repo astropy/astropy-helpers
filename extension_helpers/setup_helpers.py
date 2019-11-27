@@ -11,6 +11,7 @@ import subprocess
 import sys
 import traceback
 import warnings
+import shutil
 from configparser import ConfigParser
 import builtins
 
@@ -27,79 +28,19 @@ from setuptools import find_packages as _find_packages
 from .distutils_helpers import (add_command_option, get_compiler_option,
                                 get_dummy_distribution, get_distutils_build_option,
                                 get_distutils_build_or_install_option)
-from .version_helpers import get_pkg_version_module, generate_version_py
 from .utils import (walk_skip_hidden, import_file, extends_doc,
                     resolve_name, AstropyDeprecationWarning)
-
-from .commands.build_ext import AstropyHelpersBuildExt
-from .commands.test import AstropyTest
 
 # These imports are not used in this module, but are included for backwards
 # compat with older versions of this module
 from .utils import get_numpy_include_path, write_if_different  # noqa
 
-__all__ = ['register_commands', 'get_package_info']
+__all__ = ['get_package_info']
 
 _module_state = {'registered_commands': None,
-                 'have_sphinx': False,
                  'package_cache': None,
                  'exclude_packages': set(),
                  'excludes_too_late': False}
-
-try:
-    import sphinx  # noqa
-    _module_state['have_sphinx'] = True
-except ValueError as e:
-    # This can occur deep in the bowels of Sphinx's imports by way of docutils
-    # and an occurrence of this bug: http://bugs.python.org/issue18378
-    # In this case sphinx is effectively unusable
-    if 'unknown locale' in e.args[0]:
-        log.warn(
-            "Possible misconfiguration of one of the environment variables "
-            "LC_ALL, LC_CTYPES, LANG, or LANGUAGE.  For an example of how to "
-            "configure your system's language environment on OSX see "
-            "http://blog.remibergsma.com/2012/07/10/"
-            "setting-locales-correctly-on-mac-osx-terminal-application/")
-except ImportError:
-    pass
-except SyntaxError:
-    # occurs if markupsafe is recent version, which doesn't support Python 3.2
-    pass
-
-
-def setup(**kwargs):
-    """
-    A wrapper around setuptools' setup() function that automatically sets up
-    custom commands, generates a version file, and customizes the setup process
-    via the ``setup_package.py`` files.
-    """
-
-    # DEPRECATED: store the package name in a built-in variable so it's easy
-    # to get from other parts of the setup infrastructure. We should phase this
-    # out in packages that use it - the cookiecutter template should now be
-    # able to put the right package name where needed.
-    conf = read_configuration('setup.cfg')
-    builtins._ASTROPY_PACKAGE_NAME_ = conf['metadata']['name']
-
-    # Create a dictionary with setup command overrides. Note that this gets
-    # information about the package (name and version) from the setup.cfg file.
-    cmdclass = register_commands()
-
-    # Freeze build information in version.py. Note that this gets information
-    # about the package (name and version) from the setup.cfg file.
-    version = generate_version_py()
-
-    # Get configuration information from all of the various subpackages.
-    # See the docstring for setup_helpers.update_package_files for more
-    # details.
-    package_info = get_package_info()
-    package_info['cmdclass'] = cmdclass
-    package_info['version'] = version
-
-    # Override using any specified keyword arguments
-    package_info.update(kwargs)
-
-    setuptools_setup(**package_info)
 
 
 def adjust_compiler(package):
@@ -149,94 +90,6 @@ def add_exclude_packages(excludes):
             "functions in order to properly handle excluded packages")
 
     _module_state['exclude_packages'].update(set(excludes))
-
-
-def register_commands(package=None, version=None, release=None, srcdir='.'):
-    """
-    This function generates a dictionary containing customized commands that
-    can then be passed to the ``cmdclass`` argument in ``setup()``.
-    """
-
-    if package is not None:
-        warnings.warn('The package argument to generate_version_py has '
-                      'been deprecated and will be removed in future. Specify '
-                      'the package name in setup.cfg instead', AstropyDeprecationWarning)
-
-    if version is not None:
-        warnings.warn('The version argument to generate_version_py has '
-                      'been deprecated and will be removed in future. Specify '
-                      'the version number in setup.cfg instead', AstropyDeprecationWarning)
-
-    if release is not None:
-        warnings.warn('The release argument to generate_version_py has '
-                      'been deprecated and will be removed in future. We now '
-                      'use the presence of the "dev" string in the version to '
-                      'determine whether this is a release', AstropyDeprecationWarning)
-
-    # We use ConfigParser instead of read_configuration here because the latter
-    # only reads in keys recognized by setuptools, but we need to access
-    # package_name below.
-    conf = ConfigParser()
-    conf.read('setup.cfg')
-
-    if conf.has_option('metadata', 'name'):
-        package = conf.get('metadata', 'name')
-    elif conf.has_option('metadata', 'package_name'):
-        # The package-template used package_name instead of name for a while
-        warnings.warn('Specifying the package name using the "package_name" '
-                      'option in setup.cfg is deprecated - use the "name" '
-                      'option instead.', AstropyDeprecationWarning)
-        package = conf.get('metadata', 'package_name')
-    elif package is not None:  # deprecated
-        pass
-    else:
-        sys.stderr.write('ERROR: Could not read package name from setup.cfg\n')
-        sys.exit(1)
-
-    if _module_state['registered_commands'] is not None:
-        return _module_state['registered_commands']
-
-    if _module_state['have_sphinx']:
-        try:
-            from .commands.build_sphinx import (AstropyBuildSphinx,
-                                                AstropyBuildDocs)
-        except ImportError:
-            AstropyBuildSphinx = AstropyBuildDocs = FakeBuildSphinx
-    else:
-        AstropyBuildSphinx = AstropyBuildDocs = FakeBuildSphinx
-
-    _module_state['registered_commands'] = registered_commands = {
-        'test': generate_test_command(package),
-
-        # Use distutils' sdist because it respects package_data.
-        # setuptools/distributes sdist requires duplication of information in
-        # MANIFEST.in
-        'sdist': DistutilsSdist,
-
-        'build_ext': AstropyHelpersBuildExt,
-        'build_sphinx': AstropyBuildSphinx,
-        'build_docs': AstropyBuildDocs
-    }
-
-    # Need to override the __name__ here so that the commandline options are
-    # presented as being related to the "build" command, for example; normally
-    # this wouldn't be necessary since commands also have a command_name
-    # attribute, but there is a bug in distutils' help display code that it
-    # uses __name__ instead of command_name. Yay distutils!
-    for name, cls in registered_commands.items():
-        cls.__name__ = name
-
-    # Add a few custom options; more of these can be added by specific packages
-    # later
-    for option in [
-            ('use-system-libraries',
-             "Use system libraries whenever possible", True)]:
-        add_command_option('build', *option)
-        add_command_option('install', *option)
-
-    add_command_hooks(registered_commands, srcdir=srcdir)
-
-    return registered_commands
 
 
 def add_command_hooks(commands, srcdir='.'):
@@ -470,6 +323,15 @@ def get_package_info(srcdir='.', exclude=()):
     if get_compiler_option() == 'msvc':
         for ext in ext_modules:
             ext.extra_link_args.append('/MANIFEST')
+
+    if len(ext_modules) > 0:
+        main_package_dir = min(packages, key=len)
+        src_path = os.path.relpath(os.path.join(os.path.dirname(__file__), 'src'))
+        shutil.copy(os.path.join(src_path, 'compiler.c'),
+                    os.path.join(srcdir, main_package_dir, '_compiler.c'))
+        ext = Extension(main_package_dir + '.compiler_version',
+                        [os.path.join(main_package_dir, '_compiler.c')])
+        ext_modules.append(ext)
 
     return {
         'ext_modules': ext_modules,

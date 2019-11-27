@@ -18,8 +18,6 @@ from distutils.errors import DistutilsError
 from .utils import silence
 
 
-# This function, and any functions that call it, require the setup in
-# `extension_helpers.setup_helpers.register_commands` to be run first.
 def get_dummy_distribution():
     """
     Returns a distutils Distribution object used to instrument the setup
@@ -28,17 +26,10 @@ def get_dummy_distribution():
 
     from .setup_helpers import _module_state
 
-    if _module_state['registered_commands'] is None:
-        raise RuntimeError(
-            'extension_helpers.setup_helpers.register_commands() must be '
-            'called before using '
-            'extension_helpers.setup_helpers.get_dummy_distribution()')
-
     # Pre-parse the Distutils command-line options and config files to if
     # the option is set.
     dist = Distribution({'script_name': os.path.basename(sys.argv[0]),
                          'script_args': sys.argv[1:]})
-    dist.cmdclass.update(_module_state['registered_commands'])
 
     with silence():
         try:
