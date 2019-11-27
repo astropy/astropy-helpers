@@ -12,22 +12,18 @@ import sys
 import traceback
 import warnings
 import shutil
-from configparser import ConfigParser
-import builtins
 
 from distutils import log
 from distutils.errors import DistutilsOptionError, DistutilsModuleError
 from distutils.core import Extension
 from distutils.core import Command
-from distutils.command.sdist import sdist as DistutilsSdist
 
 from setuptools import setup as setuptools_setup
 from setuptools.config import read_configuration
 from setuptools import find_packages as _find_packages
 
-from .distutils_helpers import (add_command_option, get_compiler_option,
-                                get_dummy_distribution, get_distutils_build_option,
-                                get_distutils_build_or_install_option)
+from .distutils_helpers import (get_compiler_option,
+                                get_dummy_distribution)
 from .utils import (walk_skip_hidden, import_file, extends_doc,
                     resolve_name, AstropyDeprecationWarning)
 
@@ -48,38 +44,6 @@ def adjust_compiler(package):
         'The adjust_compiler function in setup.py is '
         'deprecated and can be removed from your setup.py.',
         AstropyDeprecationWarning)
-
-
-def get_debug_option(packagename):
-    """ Determines if the build is in debug mode.
-
-    Returns
-    -------
-    debug : bool
-        True if the current build was started with the debug option, False
-        otherwise.
-
-    """
-
-    try:
-        current_debug = get_pkg_version_module(packagename,
-                                               fromlist=['debug'])[0]
-    except (ImportError, AttributeError):
-        current_debug = None
-
-    # Only modify the debug flag if one of the build commands was explicitly
-    # run (i.e. not as a sub-command of something else)
-    dist = get_dummy_distribution()
-    if any(cmd in dist.commands for cmd in ['build', 'build_ext']):
-        debug = bool(get_distutils_build_option('debug'))
-    else:
-        debug = bool(current_debug)
-
-    if current_debug is not None and current_debug != debug:
-        build_ext_cmd = dist.get_command_class('build_ext')
-        build_ext_cmd._force_rebuild = True
-
-    return debug
 
 
 def add_exclude_packages(excludes):
@@ -220,7 +184,7 @@ def update_package_files(srcdir, extensions, package_data, packagenames,
     package_dirs.update(info['package_dir'])
 
 
-def get_package_info(srcdir='.', exclude=()):
+def get_package_info(srcdir='.'):
     """
     Collates all of the information for building all subpackages
     and returns a dictionary of keyword arguments that can
@@ -269,15 +233,8 @@ def get_package_info(srcdir='.', exclude=()):
     else:
         package_data = {}
 
-    if exclude:
-        warnings.warn(
-            "Use of the exclude parameter is no longer supported since it does "
-            "not work as expected. Use add_exclude_packages instead. Note that "
-            "it must be called prior to any other calls from setup helpers.",
-            AstropyDeprecationWarning)
-
     # Use the find_packages tool to locate all packages and modules
-    packages = find_packages(srcdir, exclude=exclude)
+    packages = find_packages(srcdir)
 
     # Update package_dir if the package lies in a subdirectory
     if srcdir != '.':
@@ -539,62 +496,13 @@ def pkg_config(packages, default_libraries, executable='pkg-config'):
     return result
 
 
-def add_external_library(library):
-    """
-    Add a build option for selecting the internal or system copy of a library.
-
-    Parameters
-    ----------
-    library : str
-        The name of the library.  If the library is `foo`, the build
-        option will be called `--use-system-foo`.
-    """
-
-    for command in ['build', 'build_ext', 'install']:
-        add_command_option(command, str('use-system-' + library),
-                           'Use the system {0} library'.format(library),
-                           is_bool=True)
-
-
-def use_system_library(library):
-    """
-    Returns `True` if the build configuration indicates that the given
-    library should use the system copy of the library rather than the
-    internal one.
-
-    For the given library `foo`, this will be `True` if
-    `--use-system-foo` or `--use-system-libraries` was provided at the
-    commandline or in `setup.cfg`.
-
-    Parameters
-    ----------
-    library : str
-        The name of the library
-
-    Returns
-    -------
-    use_system : bool
-        `True` if the build should use the system copy of the library.
-    """
-    return (
-        get_distutils_build_or_install_option('use_system_{0}'.format(library)) or
-        get_distutils_build_or_install_option('use_system_libraries'))
-
-
 @extends_doc(_find_packages)
-def find_packages(where='.', exclude=(), invalidate_cache=False):
+def find_packages(where='.', invalidate_cache=False):
     """
     This version of ``find_packages`` caches previous results to speed up
     subsequent calls.  Use ``invalide_cache=True`` to ignore cached results
     from previous ``find_packages`` calls, and repeat the package search.
     """
-
-    if exclude:
-        warnings.warn(
-            "Use of the exclude parameter is no longer supported since it does "
-            "not work as expected. Use add_exclude_packages instead. Note that "
-            "it must be called prior to any other calls from setup helpers.",
-            AstropyDeprecationWarning)
 
     # Calling add_exclude_packages after this point will have no effect
     _module_state['excludes_too_late'] = True
@@ -602,8 +510,7 @@ def find_packages(where='.', exclude=(), invalidate_cache=False):
     if not invalidate_cache and _module_state['package_cache'] is not None:
         return _module_state['package_cache']
 
-    packages = _find_packages(
-        where=where, exclude=list(_module_state['exclude_packages']))
+    packages = _find_packages(where=where)
     _module_state['package_cache'] = packages
 
     return packages
