@@ -6,167 +6,20 @@ setup/build/packaging that are useful to astropy as a whole.
 
 import collections
 import os
-import re
 import subprocess
 import sys
-import traceback
-import warnings
 import shutil
 
 from distutils import log
-from distutils.errors import DistutilsOptionError, DistutilsModuleError
 from distutils.core import Extension
-from distutils.core import Command
 
-from setuptools import setup as setuptools_setup
+from setuptools import find_packages
 from setuptools.config import read_configuration
-from setuptools import find_packages as _find_packages
 
-from .distutils_helpers import (get_compiler_option,
-                                get_dummy_distribution)
-from .utils import (walk_skip_hidden, import_file, extends_doc,
-                    resolve_name, AstropyDeprecationWarning)
-
-# These imports are not used in this module, but are included for backwards
-# compat with older versions of this module
-from .utils import get_numpy_include_path, write_if_different  # noqa
+from .distutils_helpers import get_compiler_option
+from .utils import walk_skip_hidden, import_file
 
 __all__ = ['get_package_info']
-
-_module_state = {'registered_commands': None,
-                 'package_cache': None,
-                 'exclude_packages': set(),
-                 'excludes_too_late': False}
-
-
-def adjust_compiler(package):
-    warnings.warn(
-        'The adjust_compiler function in setup.py is '
-        'deprecated and can be removed from your setup.py.',
-        AstropyDeprecationWarning)
-
-
-def add_exclude_packages(excludes):
-
-    if _module_state['excludes_too_late']:
-        raise RuntimeError(
-            "add_package_excludes must be called before all other setup helper "
-            "functions in order to properly handle excluded packages")
-
-    _module_state['exclude_packages'].update(set(excludes))
-
-
-def add_command_hooks(commands, srcdir='.'):
-    """
-    Look through setup_package.py modules for functions with names like
-    ``pre_<command_name>_hook`` and ``post_<command_name>_hook`` where
-    ``<command_name>`` is the name of a ``setup.py`` command (e.g. build_ext).
-
-    If either hook is present this adds a wrapped version of that command to
-    the passed in ``commands`` `dict`.  ``commands`` may be pre-populated with
-    other custom distutils command classes that should be wrapped if there are
-    hooks for them (e.g. `AstropyBuildPy`).
-    """
-
-    hook_re = re.compile(r'^(pre|post)_(.+)_hook$')
-
-    # Distutils commands have a method of the same name, but it is not a
-    # *classmethod* (which probably didn't exist when distutils was first
-    # written)
-    def get_command_name(cmdcls):
-        if hasattr(cmdcls, 'command_name'):
-            return cmdcls.command_name
-        else:
-            return cmdcls.__name__
-
-    packages = find_packages(srcdir)
-    dist = get_dummy_distribution()
-
-    hooks = collections.defaultdict(dict)
-
-    for setuppkg in iter_setup_packages(srcdir, packages):
-        for name, obj in vars(setuppkg).items():
-            match = hook_re.match(name)
-            if not match:
-                continue
-
-            hook_type = match.group(1)
-            cmd_name = match.group(2)
-
-            if hook_type not in hooks[cmd_name]:
-                hooks[cmd_name][hook_type] = []
-
-            hooks[cmd_name][hook_type].append((setuppkg.__name__, obj))
-
-    for cmd_name, cmd_hooks in hooks.items():
-        commands[cmd_name] = generate_hooked_command(
-            cmd_name, dist.get_command_class(cmd_name), cmd_hooks)
-
-
-def generate_hooked_command(cmd_name, cmd_cls, hooks):
-    """
-    Returns a generated subclass of ``cmd_cls`` that runs the pre- and
-    post-command hooks for that command before and after the ``cmd_cls.run``
-    method.
-    """
-
-    def run(self, orig_run=cmd_cls.run):
-        self.run_command_hooks('pre_hooks')
-        orig_run(self)
-        self.run_command_hooks('post_hooks')
-
-    return type(cmd_name, (cmd_cls, object),
-                {'run': run, 'run_command_hooks': run_command_hooks,
-                 'pre_hooks': hooks.get('pre', []),
-                 'post_hooks': hooks.get('post', [])})
-
-
-def run_command_hooks(cmd_obj, hook_kind):
-    """Run hooks registered for that command and phase.
-
-    *cmd_obj* is a finalized command object; *hook_kind* is either
-    'pre_hook' or 'post_hook'.
-    """
-
-    hooks = getattr(cmd_obj, hook_kind, None)
-
-    if not hooks:
-        return
-
-    for modname, hook in hooks:
-        if isinstance(hook, str):
-            try:
-                hook_obj = resolve_name(hook)
-            except ImportError as exc:
-                raise DistutilsModuleError(
-                    'cannot find hook {0}: {1}'.format(hook, exc))
-        else:
-            hook_obj = hook
-
-        if not callable(hook_obj):
-            raise DistutilsOptionError('hook {0!r} is not callable' % hook)
-
-        log.info('running {0} from {1} for {2} command'.format(
-                 hook_kind.rstrip('s'), modname, cmd_obj.get_command_name()))
-
-        try:
-            hook_obj(cmd_obj)
-        except Exception:
-            log.error('{0} command hook {1} raised an exception: %s\n'.format(
-                hook_obj.__name__, cmd_obj.get_command_name()))
-            log.error(traceback.format_exc())
-            sys.exit(1)
-
-
-def generate_test_command(package_name):
-    """
-    Creates a custom 'test' command for the given package which sets the
-    command's ``package_name`` class attribute to the name of the package being
-    tested.
-    """
-
-    return type(package_name.title() + 'Test', (AstropyTest,),
-                {'package_name': package_name})
 
 
 def update_package_files(srcdir, extensions, package_data, packagenames,
@@ -200,8 +53,7 @@ def get_package_info(srcdir='.'):
     This function obtains that information by iterating through all
     packages in ``srcdir`` and locating a ``setup_package.py`` module.
     This module can contain the following functions:
-    ``get_extensions()``, ``get_package_data()``,
-    ``get_build_options()``, and ``get_external_libraries()``.
+    ``get_extensions()``, ``get_package_data()``.
 
     Each of those functions take no arguments.
 
@@ -210,13 +62,6 @@ def get_package_info(srcdir='.'):
 
     - ``get_package_data()`` returns a dict formatted as required by
       the ``package_data`` argument to ``setup()``.
-
-    - ``get_build_options()`` returns a list of tuples describing the
-      extra build options to add.
-
-    - ``get_external_libraries()`` returns
-      a list of libraries that can optionally be built using external
-      dependencies.
     """
     ext_modules = []
     packages = []
@@ -239,20 +84,6 @@ def get_package_info(srcdir='.'):
     # Update package_dir if the package lies in a subdirectory
     if srcdir != '.':
         package_dir[''] = srcdir
-
-    # For each of the setup_package.py modules, extract any
-    # information that is needed to install them.  The build options
-    # are extracted first, so that their values will be available in
-    # subsequent calls to `get_extensions`, etc.
-    for setuppkg in iter_setup_packages(srcdir, packages):
-        if hasattr(setuppkg, 'get_build_options'):
-            options = setuppkg.get_build_options()
-            for option in options:
-                add_command_option('build', *option)
-        if hasattr(setuppkg, 'get_external_libraries'):
-            libraries = setuppkg.get_external_libraries()
-            for library in libraries:
-                add_external_library(library)
 
     for setuppkg in iter_setup_packages(srcdir, packages):
         # get_extensions must include any Cython extensions by their .pyx
@@ -494,59 +325,3 @@ def pkg_config(packages, default_libraries, executable='pkg-config'):
                     result['extra_compile_args'].append(value)
 
     return result
-
-
-@extends_doc(_find_packages)
-def find_packages(where='.', invalidate_cache=False):
-    """
-    This version of ``find_packages`` caches previous results to speed up
-    subsequent calls.  Use ``invalide_cache=True`` to ignore cached results
-    from previous ``find_packages`` calls, and repeat the package search.
-    """
-
-    # Calling add_exclude_packages after this point will have no effect
-    _module_state['excludes_too_late'] = True
-
-    if not invalidate_cache and _module_state['package_cache'] is not None:
-        return _module_state['package_cache']
-
-    packages = _find_packages(where=where)
-    _module_state['package_cache'] = packages
-
-    return packages
-
-
-class FakeBuildSphinx(Command):
-    """
-    A dummy build_sphinx command that is called if Sphinx is not
-    installed and displays a relevant error message
-    """
-
-    # user options inherited from sphinx.setup_command.BuildDoc
-    user_options = [
-        ('fresh-env', 'E', ''),
-        ('all-files', 'a', ''),
-        ('source-dir=', 's', ''),
-        ('build-dir=', None, ''),
-        ('config-dir=', 'c', ''),
-        ('builder=', 'b', ''),
-        ('project=', None, ''),
-        ('version=', None, ''),
-        ('release=', None, ''),
-        ('today=', None, ''),
-        ('link-index', 'i', '')]
-
-    # user options appended in astropy.setup_helpers.AstropyBuildSphinx
-    user_options.append(('warnings-returncode', 'w', ''))
-    user_options.append(('clean-docs', 'l', ''))
-    user_options.append(('no-intersphinx', 'n', ''))
-    user_options.append(('open-docs-in-browser', 'o', ''))
-
-    def initialize_options(self):
-        try:
-            raise RuntimeError("Sphinx and its dependencies must be installed "
-                               "for build_docs.")
-        except:
-            log.error('error: Sphinx and its dependencies must be installed '
-                      'for build_docs.')
-            sys.exit(1)

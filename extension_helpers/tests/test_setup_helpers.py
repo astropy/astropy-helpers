@@ -8,7 +8,7 @@ from textwrap import dedent
 
 from ..setup_helpers import get_package_info
 
-from . import reset_setup_helpers, reset_distutils_log  # noqa
+from . import reset_distutils_log  # noqa
 from . import run_setup, cleanup_import
 
 extension_helpers_PATH = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..'))  # noqa

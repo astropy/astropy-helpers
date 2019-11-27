@@ -11,7 +11,7 @@ utilities in this module do not have that restriction.
 import os
 import sys
 
-from distutils import ccompiler, log
+from distutils import ccompiler
 from distutils.dist import Distribution
 from distutils.errors import DistutilsError
 
@@ -23,8 +23,6 @@ def get_dummy_distribution():
     Returns a distutils Distribution object used to instrument the setup
     environment before calling the actual setup() function.
     """
-
-    from .setup_helpers import _module_state
 
     # Pre-parse the Distutils command-line options and config files to if
     # the option is set.
@@ -49,6 +47,7 @@ def get_main_package_directory(distribution):
     Given a Distribution object, return the main package directory.
     """
     return min(distribution.packages, key=len).replace('.', os.sep)
+
 
 def get_distutils_option(option, commands):
     """ Returns the value of the given distutils option.

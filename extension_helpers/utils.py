@@ -42,29 +42,6 @@ def _get_platlib_dir(cmd):
     return os.path.join(cmd.build_base, 'lib' + plat_specifier)
 
 
-def get_numpy_include_path():
-    """
-    Gets the path to the numpy headers.
-    """
-    # We need to go through this nonsense in case setuptools
-    # downloaded and installed Numpy for us as part of the build or
-    # install, since Numpy may still think it's in "setup mode", when
-    # in fact we're ready to use it to build astropy now.
-
-    import builtins
-    if hasattr(builtins, '__NUMPY_SETUP__'):
-        del builtins.__NUMPY_SETUP__
-    import imp
-    import numpy
-    imp.reload(numpy)
-
-    try:
-        numpy_include = numpy.get_include()
-    except AttributeError:
-        numpy_include = numpy.get_numpy_include()
-    return numpy_include
-
-
 class _DummyFile(object):
     """A noop writeable object."""
 
@@ -169,30 +146,6 @@ def walk_skip_hidden(top, onerror=None, followlinks=False):
         yield root, dirs, files
 
 
-def write_if_different(filename, data):
-    """Write `data` to `filename`, if the content of the file is different.
-
-    Parameters
-    ----------
-    filename : str
-        The file name to be written to.
-    data : bytes
-        The data to be written to `filename`.
-    """
-
-    assert isinstance(data, bytes)
-
-    if os.path.exists(filename):
-        with open(filename, 'rb') as fd:
-            original_data = fd.read()
-    else:
-        original_data = None
-
-    if original_data != data:
-        with open(filename, 'wb') as fd:
-            fd.write(data)
-
-
 def import_file(filename, name=None):
     """
     Imports a module from a single file as if it doesn't belong to a
@@ -225,86 +178,3 @@ def import_file(filename, name=None):
             mod = imp.load_module(name, fd, filename, ('.py', mode, 1))
 
     return mod
-
-
-def resolve_name(name):
-    """Resolve a name like ``module.object`` to an object and return it.
-
-    Raise `ImportError` if the module or name is not found.
-    """
-
-    parts = name.split('.')
-    cursor = len(parts) - 1
-    module_name = parts[:cursor]
-    attr_name = parts[-1]
-
-    while cursor > 0:
-        try:
-            ret = __import__('.'.join(module_name), fromlist=[attr_name])
-            break
-        except ImportError:
-            if cursor == 0:
-                raise
-            cursor -= 1
-            module_name = parts[:cursor]
-            attr_name = parts[cursor]
-            ret = ''
-
-    for part in parts[cursor:]:
-        try:
-            ret = getattr(ret, part)
-        except AttributeError:
-            raise ImportError(name)
-
-    return ret
-
-
-def extends_doc(extended_func):
-    """
-    A function decorator for use when wrapping an existing function but adding
-    additional functionality.  This copies the docstring from the original
-    function, and appends to it (along with a newline) the docstring of the
-    wrapper function.
-
-    Examples
-    --------
-
-        >>> def foo():
-        ...     '''Hello.'''
-        ...
-        >>> @extends_doc(foo)
-        ... def bar():
-        ...     '''Goodbye.'''
-        ...
-        >>> print(bar.__doc__)
-        Hello.
-
-        Goodbye.
-
-    """
-
-    def decorator(func):
-        if not (extended_func.__doc__ is None or func.__doc__ is None):
-            func.__doc__ = '\n\n'.join([extended_func.__doc__.rstrip('\n'),
-                                        func.__doc__.lstrip('\n')])
-        return func
-
-    return decorator
-
-
-def find_data_files(package, pattern):
-    """
-    Include files matching ``pattern`` inside ``package``.
-
-    Parameters
-    ----------
-    package : str
-        The package inside which to look for data files
-    pattern : str
-        Pattern (glob-style) to match for the data files (e.g. ``*.dat``).
-        This supports the``**``recursive syntax. For example, ``**/*.fits``
-        matches all files ending with ``.fits`` recursively. Only one
-        instance of ``**`` can be included in the pattern.
-    """
-
-    return glob.glob(os.path.join(package, pattern), recursive=True)
