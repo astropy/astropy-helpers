@@ -146,6 +146,30 @@ def walk_skip_hidden(top, onerror=None, followlinks=False):
         yield root, dirs, files
 
 
+def write_if_different(filename, data):
+    """Write `data` to `filename`, if the content of the file is different.
+
+    Parameters
+    ----------
+    filename : str
+        The file name to be written to.
+    data : bytes
+        The data to be written to `filename`.
+    """
+
+    assert isinstance(data, bytes)
+
+    if os.path.exists(filename):
+        with open(filename, 'rb') as fd:
+            original_data = fd.read()
+    else:
+        original_data = None
+
+    if original_data != data:
+        with open(filename, 'wb') as fd:
+            fd.write(data)
+
+
 def import_file(filename, name=None):
     """
     Imports a module from a single file as if it doesn't belong to a
