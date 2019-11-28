@@ -60,8 +60,9 @@ def get_extensions(srcdir='.'):
 
     # Locate any .pyx files not already specified, and add their extensions in.
     # The default include dirs include numpy to facilitate numerical work.
+    import numpy
     ext_modules.extend(get_cython_extensions(srcdir, packages, ext_modules,
-                                             ['numpy']))
+                                             [numpy.get_include()]))
 
     # Now remove extensions that have the special name 'skip_cython', as they
     # exist Only to indicate that the cython extensions shouldn't be built
