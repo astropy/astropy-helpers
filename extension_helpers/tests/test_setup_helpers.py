@@ -80,20 +80,15 @@ def _extension_test_package(tmpdir, request, extension_type='c',
     test_pkg.join('setup.py').write(dedent("""\
         import sys
         from os.path import join
-        from setuptools import setup
+        from setuptools import setup, find_packages
         sys.path.insert(0, r'{extension_helpers_path}')
         from extension_helpers.setup_helpers import get_extensions
 
-        NAME = 'apyhtest_eva'
-        VERSION = '0.1'
-        RELEASE = True
-
-        package_info = get_extensions()
-
         setup(
-            name=NAME,
-            version=VERSION,
-            **package_info
+            name='apyhtest_eva',
+            version='0.1',
+            packages=find_packages(),
+            ext_modules=get_extensions()
         )
     """.format(extension_helpers_path=extension_helpers_PATH)))
 
@@ -145,10 +140,10 @@ def test_cython_autoextensions(tmpdir):
         """def testfunc(): pass""")
 
     # Required, currently, for get_extensions to work
-    package_info = get_extensions(str(test_pkg))
+    ext_modules = get_extensions(str(test_pkg))
 
-    assert len(package_info['ext_modules']) == 2
-    assert package_info['ext_modules'][0].name == 'yoda.luke.dagobah'
+    assert len(ext_modules) == 2
+    assert ext_modules[0].name == 'yoda.luke.dagobah'
 
 
 def test_compiler_module(capsys, c_extension_test_package):

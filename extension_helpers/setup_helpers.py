@@ -86,11 +86,7 @@ def get_extensions(srcdir='.'):
                         [os.path.join(main_package_dir, '_compiler.c')])
         ext_modules.append(ext)
 
-    return {
-        'ext_modules': ext_modules,
-        'packages': packages,
-        'package_dir': package_dir,
-        }
+    return ext_modules
 
 
 def iter_setup_packages(srcdir, packages):
