@@ -533,7 +533,7 @@ class _Bootstrapper(object):
                         opts['find_links'] = ('setup script', find_links)
                     if index_url is not None:
                         opts['index_url'] = ('setup script', index_url)
-                    if allow_hosts is not None:
+                    if allow_hosts is not None and allow_hosts != '':
                         opts['allow_hosts'] = ('setup script', allow_hosts)
                 return opts
 
