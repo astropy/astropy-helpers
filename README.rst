@@ -1,5 +1,5 @@
 extension-helpers
-===============
+=================
 
 .. image:: https://travis-ci.org/astropy/extension-helpers.svg
   :target: https://travis-ci.org/astropy/extension-helpers
