@@ -1,7 +1,6 @@
 # Licensed under a 3-clause BSD style license - see LICENSE.rst
 
 import contextlib
-import imp
 import os
 import sys
 import glob
@@ -194,11 +193,7 @@ def import_file(filename, name=None):
     if not os.path.exists(filename):
         raise ImportError('Could not import file {0}'.format(filename))
 
-    if import_machinery:
-        loader = import_machinery.SourceFileLoader(name, filename)
-        mod = loader.load_module()
-    else:
-        with open(filename, mode) as fd:
-            mod = imp.load_module(name, fd, filename, ('.py', mode, 1))
+    loader = import_machinery.SourceFileLoader(name, filename)
+    mod = loader.load_module()
 
     return mod
