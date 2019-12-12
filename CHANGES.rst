@@ -1,6 +1,11 @@
 astropy-helpers Changelog
 *************************
 
+4.0.1 (unreleased)
+------------------
+
+- No changes yet.
+
 
 4.0 (2019-12-13)
 ----------------
@@ -12,6 +17,7 @@ astropy-helpers Changelog
 - Added a --parallel option for build_docs. [#498]
 
 - Fix compatibility with setuptools 42.x. [#504]
+
 
 3.2.2 (2019-10-25)
 ------------------
