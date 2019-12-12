@@ -1,8 +1,9 @@
 astropy-helpers Changelog
 *************************
 
-4.0.rc1 (2019-11-17)
---------------------
+
+4.0 (2019-12-13)
+----------------
 
 - Changed minimum required Python version to 3.6. [#498]
 
@@ -12,7 +13,7 @@ astropy-helpers Changelog
 
 - Fix compatibility with setuptools 42.x. [#504]
 
-3.2.2 (unreleased)
+3.2.2 (2019-10-25)
 ------------------
 
 - Correctly handle main package directory inside namespace package. [#486]
@@ -126,8 +127,10 @@ astropy-helpers Changelog
   with twine and get registered automatically. [#332]
 
 
-2.0.11 (unreleased)
+2.0.11 (2019-10-25)
 -------------------
+
+- Fixed deprecation warning in sphinx theme. [#493]
 
 - Fixed an issue that caused pytest to crash if it tried to collect
   tests. [#488]
