@@ -1,4 +1,4 @@
-Basic functionality
+Defining extensions
 ===================
 
 The main functionality in extension-helpers is the
@@ -19,7 +19,7 @@ extension-helpers is not really necessary since you can just define these direct
 in ``setup.py``.
 
 To use this, you should modify your ``setup.py`` file to use
-:func:`~extension_helpers.setup_helpers.get_extensions`  as follows:
+:func:`~extension_helpers.setup_helpers.get_extensions`  as follows::
 
     from extension_helpers.setup_helpers import get_extensions
     ...

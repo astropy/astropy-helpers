@@ -1,22 +1,18 @@
-About
------
-
 The **extension-helpers** package includes convenience helpers to assist with
-building Python packages with compiled C/Cython extensions.
+building Python packages with compiled C/Cython extensions. It is developed by
+the Astropy project but is intended to be general and usable by any Python
+package.
 
-extension-helpers is not a traditional package in the sense that it
-is not intended to be installed directly by users or developers. Instead, it
-is meant to be accessed when the ``setup.py`` command is run and should be
-defined as a build-time dependency in ``pyproject.toml`` files - see :doc:`using`
-for how to do this.
+This is not a traditional package in the sense that it is not intended to be
+installed directly by users or developers. Instead, it is meant to be accessed
+when the ``setup.py`` command is run and should be defined as a build-time
+dependency in ``pyproject.toml`` files.
 
-User/developer guide
---------------------
 .. toctree::
    :maxdepth: 1
 
-   basic.rst
-   advanced.rst
    using.rst
+   basic.rst
+   openmp.rst
    known_issues.rst
    api.rst

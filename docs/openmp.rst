@@ -1,8 +1,5 @@
-Advanced functionality
-======================
-
 OpenMP helpers
---------------
+==============
 
 We provide a helper function
 :func:`~extension_helpers.openmp_helpers.add_openmp_flags_if_available` that can

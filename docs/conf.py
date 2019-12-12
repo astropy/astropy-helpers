@@ -46,7 +46,7 @@ pygments_style = 'sphinx'
 html_theme = 'bootstrap-astropy'
 
 html_theme_options = {
-    'logotext1': 'astropy',  # white,  semi-bold
+    'logotext1': 'extension',  # white,  semi-bold
     'logotext2': '-helpers',  # orange, light
     'logotext3': ':docs'   # white,  light
     }
