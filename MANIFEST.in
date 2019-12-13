@@ -1,6 +1,7 @@
 include README.rst
 include CHANGES.rst
 include LICENSE.rst
+include pyproject.toml
 recursive-include licenses *
 
 include ah_bootstrap.py
