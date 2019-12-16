@@ -4,7 +4,7 @@ astropy-helpers Changelog
 4.0.1 (unreleased)
 ------------------
 
-- No changes yet.
+- Fix pip installation. [#506]
 
 
 4.0 (2019-12-13)
