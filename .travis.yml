@@ -146,5 +146,9 @@ script:
     - cp -RP ../../astropy_helpers/tests astropy_helpers/tests
     - pytest astropy_helpers
 
+    # We also make sure we can pip install astropy-helpers without error
+    - pip install -e .
+    - python -c 'import astropy_helpers'
+
 after_success:
     - codecov
