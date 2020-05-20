@@ -174,48 +174,48 @@ def check_openmp_support(openmp_flags=None):
     compile_flags = openmp_flags.get('compiler_flags')
     link_flags = openmp_flags.get('linker_flags')
 
-    tmp_dir = tempfile.mkdtemp()
-    start_dir = os.path.abspath('.')
+    with tempfile.TemporaryDirectory() as tmp_dir:
+        start_dir = os.path.abspath('.')
 
-    try:
-        os.chdir(tmp_dir)
+        try:
+            os.chdir(tmp_dir)
 
-        # Write test program
-        with open('test_openmp.c', 'w') as f:
-            f.write(CCODE)
+            # Write test program
+            with open('test_openmp.c', 'w') as f:
+                f.write(CCODE)
 
-        os.mkdir('objects')
+            os.mkdir('objects')
 
-        # Compile, test program
-        ccompiler.compile(['test_openmp.c'], output_dir='objects',
-                          extra_postargs=compile_flags)
+            # Compile, test program
+            ccompiler.compile(['test_openmp.c'], output_dir='objects',
+                              extra_postargs=compile_flags)
 
-        # Link test program
-        objects = glob.glob(os.path.join('objects', '*' + ccompiler.obj_extension))
-        ccompiler.link_executable(objects, 'test_openmp',
-                                  extra_postargs=link_flags)
+            # Link test program
+            objects = glob.glob(os.path.join('objects', '*' + ccompiler.obj_extension))
+            ccompiler.link_executable(objects, 'test_openmp',
+                                      extra_postargs=link_flags)
 
-        # Run test program
-        output = subprocess.check_output('./test_openmp')
-        output = output.decode(sys.stdout.encoding or 'utf-8').splitlines()
+            # Run test program
+            output = subprocess.check_output('./test_openmp')
+            output = output.decode(sys.stdout.encoding or 'utf-8').splitlines()
 
-        if 'nthreads=' in output[0]:
-            nthreads = int(output[0].strip().split('=')[1])
-            if len(output) == nthreads:
-                is_openmp_supported = True
+            if 'nthreads=' in output[0]:
+                nthreads = int(output[0].strip().split('=')[1])
+                if len(output) == nthreads:
+                    is_openmp_supported = True
+                else:
+                    log.warn("Unexpected number of lines from output of test OpenMP "
+                             "program (output was {0})".format(output))
+                    is_openmp_supported = False
             else:
-                log.warn("Unexpected number of lines from output of test OpenMP "
+                log.warn("Unexpected output from test OpenMP "
                          "program (output was {0})".format(output))
                 is_openmp_supported = False
-        else:
-            log.warn("Unexpected output from test OpenMP "
-                     "program (output was {0})".format(output))
+        except (CompileError, LinkError, subprocess.CalledProcessError):
             is_openmp_supported = False
-    except (CompileError, LinkError, subprocess.CalledProcessError):
-        is_openmp_supported = False
 
-    finally:
-        os.chdir(start_dir)
+        finally:
+            os.chdir(start_dir)
 
     return is_openmp_supported
 

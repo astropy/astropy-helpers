@@ -10,7 +10,7 @@ astropy-helpers Changelog
 4.0.2 (unreleased)
 ------------------
 
-- No changes yet.
+- Fixed leaked temporary directory in ``check_openmp_support``. [#511]
 
 
 4.0.1 (2019-12-16)
