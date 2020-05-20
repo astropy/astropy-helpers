@@ -14,11 +14,13 @@ env:
   matrix:
     - PYTHON_VERSION=3.6
     - PYTHON_VERSION=3.7 SETUPTOOLS_VERSION=dev DEBUG=True
-      CONDA_DEPENDENCIES="cython numpy pytest-cov sphinx-astropy'
+      CONDA_DEPENDENCIES="cython numpy pytest-cov sphinx-astropy>=1.2 matplotlib>=3.1"
+      CONDA_CHANNELS="astropy"
       EVENT_TYPE='push pull_request cron'
 
   global:
-    - CONDA_DEPENDENCIES="setuptools sphinx-astropy cython numpy pytest-cov"
+    - CONDA_DEPENDENCIES="setuptools sphinx-astropy>=1.2 cython numpy pytest-cov"
+    - CONDA_CHANNELS="astropy"
     - PIP_DEPENDENCIES="codecov"
     - EVENT_TYPE='push pull_request'
     - DEBUG=True
@@ -36,14 +38,13 @@ matrix:
       env: PYTHON_VERSION=3.6 SPHINX_VERSION='1.7' SETUPTOOLS_VERSION=30
     - os: linux
       env: PYTHON_VERSION=3.6 PIP_DEPENDENCIES='git+https://github.com/sphinx-doc/sphinx.git#egg=sphinx codecov'
-           CONDA_DEPENDENCIES="setuptools cython numpy pytest-cov sphinx-astropy"
-           EVENT_TYPE='push pull_request cron' CONDA_CHANNELS="astropy"
+           CONDA_DEPENDENCIES="setuptools cython numpy pytest-cov sphinx-astropy>=1.2"
+           EVENT_TYPE='push pull_request cron'
 
     # Test without installing numpy beforehand to make sure everything works
     # without assuming numpy is already installed
     - os: linux
-      env: PYTHON_VERSION=3.6 CONDA_DEPENDENCIES='sphinx-astropy cython pytest-cov'
-           CONDA_CHANNELS="astropy"
+      env: PYTHON_VERSION=3.6 CONDA_DEPENDENCIES='sphinx-astropy>=1.2 cython pytest-cov'
 
     # Windows builds - for now we need to install sphinx-astropy with pip since
     # there is not a recent enough version of graphviz according to conda on Windows
@@ -60,8 +61,7 @@ matrix:
     - os: osx
       env:
         - PYTHON_VERSION=3.7
-        - CONDA_DEPENDENCIES="setuptools sphinx-astropy cython numpy pytest-cov clang llvm-openmp matplotlib"
-        - CONDA_CHANNELS="astropy"
+        - CONDA_DEPENDENCIES="setuptools sphinx-astropy>=1.2 cython numpy pytest-cov clang llvm-openmp matplotlib"
         - OPENMP_EXPECTED=True
         - CCOMPILER=clang
 
@@ -69,8 +69,7 @@ matrix:
     - os: osx
       env:
         - PYTHON_VERSION=3.6
-        - CONDA_DEPENDENCIES="setuptools sphinx-astropy cython numpy pytest-cov gcc"
-        - CONDA_CHANNELS="astropy"
+        - CONDA_DEPENDENCIES="setuptools sphinx-astropy>=1.2 cython numpy pytest-cov gcc"
         - OPENMP_EXPECTED=True
         - CONDA_CHANNELS="astropy conda-forge"
         - CCOMPILER=gcc
@@ -81,7 +80,7 @@ matrix:
   #
   # allow_failures:
   #   - env: PYTHON_VERSION=3.6 SETUPTOOLS_VERSION=dev DEBUG=True
-  #          CONDA_DEPENDENCIES='sphinx-astropy cython numpy pytest-cov'
+  #          CONDA_DEPENDENCIES='sphinx-astropy>=1.2 cython numpy pytest-cov'
   #          EVENT_TYPE='push pull_request cron'
 
 before_install:

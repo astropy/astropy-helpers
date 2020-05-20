@@ -1,5 +1,5 @@
 import glob
-import imp
+import importlib as imp
 import os
 import pkgutil
 import re
