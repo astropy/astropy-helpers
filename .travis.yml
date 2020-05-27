@@ -12,9 +12,8 @@ sudo: false
 
 env:
   matrix:
-    - PYTHON_VERSION=3.6
     - PYTHON_VERSION=3.7 SETUPTOOLS_VERSION=dev DEBUG=True
-      CONDA_DEPENDENCIES="cython numpy pytest-cov sphinx-astropy>=1.2 matplotlib>=3.1"
+      CONDA_DEPENDENCIES="cython numpy pytest-cov sphinx-astropy>=1.2"
       CONDA_CHANNELS="astropy"
       EVENT_TYPE='push pull_request cron'
 
@@ -27,6 +26,9 @@ env:
 
 matrix:
   include:
+
+    - os: linux
+      env: PYTHON_VERSION=3.6
 
     # Do one build with sphinx-astropy as one of the tests bypasses the auto-
     # installation but we want to make sure that test runs for coverage.
