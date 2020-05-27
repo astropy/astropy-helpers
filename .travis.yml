@@ -64,16 +64,6 @@ matrix:
         - OPENMP_EXPECTED=True
         - CCOMPILER=clang
 
-    # Test gcc on OSX
-    - os: osx
-      env:
-        - PYTHON_VERSION=3.6
-        - CONDA_DEPENDENCIES="setuptools cython numpy pytest-cov gcc"
-        - CONDA_CHANNELS="astropy"
-        - OPENMP_EXPECTED=True
-        - CONDA_CHANNELS="astropy conda-forge"
-        - CCOMPILER=gcc
-
   # Uncomment the following if there are issues in setuptools that we
   # can't work around quickly - otherwise leave commented so that
   # we notice when things go wrong.
