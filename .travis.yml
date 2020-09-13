@@ -18,6 +18,7 @@ env:
       EVENT_TYPE='push pull_request cron'
 
   global:
+    - MAMBA=True
     - CONDA_DEPENDENCIES="setuptools sphinx-astropy cython numpy pytest-cov"
     - PIP_DEPENDENCIES="codecov"
     - EVENT_TYPE='push pull_request'
