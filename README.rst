@@ -1,11 +1,12 @@
 astropy-helpers
 ===============
 
-.. warning::
-   astropy-helpers is deprecated. As justified and described in 
-   `APE17 <https://github.com/astropy/astropy-APEs/blob/main/APE17.rst>`_, 
-   the astropy-helpers infrastructure is no longer used for Astropy coordinated or infrastructure
-   packages, and hence has limited-to-no maintainience from 2021 onwards.
+DEPRECATED
+----------
+Note: astropy-helpers is deprecated. As justified and described in 
+`APE17 <https://github.com/astropy/astropy-APEs/blob/main/APE17.rst>`_, 
+the astropy-helpers infrastructure is no longer used for Astropy coordinated or infrastructure
+packages, and hence has limited-to-no maintainience from 2021 onwards.
 
 .. image:: https://travis-ci.org/astropy/astropy-helpers.svg
   :target: https://travis-ci.org/astropy/astropy-helpers
