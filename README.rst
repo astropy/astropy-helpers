@@ -1,6 +1,8 @@
 astropy-helpers
 ===============
 
+**This repository is archived. Use it at your own risk. We apologize for any inconvenience caused.**
+
 DEPRECATED
 ----------
 Note: astropy-helpers is deprecated. As justified and described in 
