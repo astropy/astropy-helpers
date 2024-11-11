@@ -1,6 +1,12 @@
 Using astropy-helpers in a package
 ==================================
 
+.. warning::
+    Note that astropy-helpers is deprecated. As justified and described in `APE17
+    <https://github.com/astropy/astropy-APEs/blob/main/APE17.rst>`_, the astropy-helpers
+    infrastructure is no longer used for Astropy coordinated or infrastructure packages,
+    and hence is no longer maintained.
+
 astropy-helpers includes a special "bootstrap" module called ``ah_bootstrap.py``
 which is intended to be used by a project's setup.py in order to ensure that the
 astropy-helpers package is available for build/installation.

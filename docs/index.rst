@@ -1,6 +1,12 @@
 About
 -----
 
+.. warning::
+    Note that astropy-helpers is deprecated. As justified and described in `APE17
+    <https://github.com/astropy/astropy-APEs/blob/main/APE17.rst>`_, the astropy-helpers
+    infrastructure is no longer used for Astropy coordinated or infrastructure packages,
+    and hence is no longer maintained.
+
 The **astropy-helpers** package includes
 many build, installation, and documentation-related tools used by the Astropy
 project, but packaged separately for use by other projects that wish to

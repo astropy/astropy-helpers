@@ -1,6 +1,12 @@
 Basic functionality
 ===================
 
+.. warning::
+    Note that astropy-helpers is deprecated. As justified and described in `APE17
+    <https://github.com/astropy/astropy-APEs/blob/main/APE17.rst>`_, the astropy-helpers
+    infrastructure is no longer used for Astropy coordinated or infrastructure packages,
+    and hence is no longer maintained.
+
 The big-picture purpose of astropy-helpers is to provide customization to Python's
 packaging infrastructure process in ways that the Astropy Project has found to
 help simplifying the developing and releasing packages. This is primarily
